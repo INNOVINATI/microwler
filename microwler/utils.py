@@ -17,3 +17,19 @@ def get_headers(language):
         'Accept': 'test/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
     }
 
+
+# Mostly copied from scrapy.contrib.linkextractor
+IGNORED_EXTENSIONS = [
+    # images
+    'mng', 'pct', 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'pst', 'psp', 'tif',
+    'tiff', 'ai', 'drw', 'dxf', 'eps', 'ps', 'svg',
+
+    # audio
+    'mp3', 'wma', 'ogg', 'wav', 'ra', 'aac', 'mid', 'au', 'aiff',
+
+    # video
+    '3gp', 'asf', 'asx', 'avi', 'mov', 'mp4', 'mpg', 'qt', 'rm', 'swf', 'wmv', 'm4a',
+
+    # other
+    'css', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'dmg', 'exe', 'bin', 'rss', 'zip', 'rar',
+]
