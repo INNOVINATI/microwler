@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s : %(
 
 class Crawler:
 
-    def __init__(self, start_url, max_depth, max_concurrency=200, selectors: dict = None, lang: str = 'en-gb'):
+    def __init__(self, start_url, max_depth, max_concurrency=200, selectors: dict = None, lang: str = 'en-us'):
         self.start_url = start_url
         parsed = urlparse(self.start_url)
         self.domain = parsed.netloc
