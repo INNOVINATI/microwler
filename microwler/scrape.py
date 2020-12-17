@@ -11,7 +11,7 @@ def selector(func):
     def select(dom: HtmlElement):
         data = func(dom)
         if data is not None:
-            return data
+            return data[0] if len(data) == 1 else data
         raise ValueError(f'Selector <{func.__name__}> did not return anything. '
                          'Must be the result of either dom.xpath(..) or dom.css(...)')
     return select
@@ -19,7 +19,7 @@ def selector(func):
 
 @selector
 def title(dom):
-    return dom.xpath('/title/text()')
+    return dom.xpath('//title/text()')
 
 
 @selector
