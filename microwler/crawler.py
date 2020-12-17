@@ -109,13 +109,13 @@ class Crawler:
     def _find_links(self, html):
         dom = DOMParser.fromstring(html)
         dom.make_links_absolute(self.base_url)
-        urls = [
+        urls = {                                                                    # ignore local duplicates
             href for href in dom.xpath('//a/@href')
-            if href not in self.seen_urls                                   # no duplicates
-            and href.startswith(self.base_url)                              # stay on this website
-            and not href.split('/')[-1].startswith('#')                     # ignore anchors on same page
-            and not any([href.endswith(e) for e in IGNORED_EXTENSIONS])     # ignore file extensions
-        ]
+            if href not in self.seen_urls                                           # ignore global duplicates
+            and href.startswith(self.base_url)                                      # stay on this website
+            and not href.split('/')[-1].startswith('#')                             # ignore anchors on same page
+            and not any([href.lower().endswith(e) for e in IGNORED_EXTENSIONS])     # ignore file extensions
+        }
         return urls
 
     def run(self, verbose=False, export=False):
