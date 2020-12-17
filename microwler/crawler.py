@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import time
-from datetime import datetime
 
 import aiohttp
 from urllib.parse import urlparse
@@ -10,14 +9,11 @@ from urllib.parse import urlparse
 import prettytable
 from lxml import html as DOMParser
 
-from microwler.scraper import title
-from microwler.utils import get_headers
+from microwler.scrape import title
+from microwler.utils import get_headers, IGNORED_EXTENSIONS
 
 
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s : %(message)s')
-
-
-EXCLUDE_EXTENSIONS = ['pdf', 'mp4', 'mp3', 'xlsx', 'xls', 'docx', 'png', 'jpg', 'jpeg', 'svg', 'wav', 'json']
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s : %(message)s', datefmt='%Y-%m-%d %I:%M:%S %p')
 
 
 class Crawler:
@@ -102,7 +98,7 @@ class Crawler:
             if href not in self.seen_urls                                   # no duplicates
             and href.startswith(self.base_url)                              # stay on this website
             and not href.split('/')[-1].startswith('#')                     # ignore anchors on same page
-            and not any([href.endswith(ext) for ext in EXCLUDE_EXTENSIONS]) # ignore file extensions
+            and not any([href.endswith(e) for e in IGNORED_EXTENSIONS])     # ignore file extensions
         ]
         return urls
 
@@ -135,4 +131,4 @@ if __name__ == '__main__':
         selectors={'title': title, 'p_count': lambda dom: len(dom.xpath('//p'))},
         lang='en-us'
     )
-    crawler.run(verbose=False)
+    crawler.run(verbose=False, export=True)
