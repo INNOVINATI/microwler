@@ -94,6 +94,7 @@ class Crawler:
                         # Extract data if selectors are defined, else keep html body
                         if self._selectors:
                             data = self._parse(data)
+                    # Append result object { URL, DEPTH, LINKS, DATA }
                     results.append({'url': url, 'depth': depth, 'links': links, 'data': data})
                 # Set a delay between batch requests
                 time.sleep(self._settings.download_delay)
