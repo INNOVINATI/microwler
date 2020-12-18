@@ -27,10 +27,10 @@ class Crawler:
         self._base_url = f'{parsed.scheme}://{self._domain}/'
         self._max_depth = max_depth
         self._selectors = selectors
-        self._settings = Settings(settings)
+        self._settings = Settings(settings or dict())
         self._seen_urls = set()
         self._session = aiohttp.ClientSession()
-        self._limiter = asyncio.BoundedSemaphore(settings.get('max_concurrency', 100))
+        self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
         self.results = []
 
@@ -146,5 +146,6 @@ if __name__ == '__main__':
         'https://quotes.toscrape.com/',
         max_depth=10,
         selectors={'title': scrape.title, 'p_count': lambda dom: len(dom.xpath('//p'))},
+        settings={'download_delay': 1}
     )
     crawler.run(verbose=True, export=True)
