@@ -32,7 +32,7 @@ class Crawler:
         self._session = aiohttp.ClientSession()
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
-        self.results = []
+        self.data = []
 
     async def _get(self, url):
         if self._verbose:
@@ -114,9 +114,13 @@ class Crawler:
         }
         return urls
 
+    @property
+    def clustered_data(self):
+        return  # TODO
+
     def run(self, verbose=False, export=False):
         self._verbose = verbose
-        self.results = None
+        self.data = None
         start = time.time()
         future = asyncio.Task(self._crawl())
         loop = asyncio.get_event_loop()
@@ -138,7 +142,7 @@ class Crawler:
         table.add_column('Pages', [len(results)])
         table.add_column('Duration', [f'{round(duration, 2)}s'])
         table.add_column('Average', [f'{round(len(results)/duration, 2)} p/s'])
-        self.results = results
+        self.data = results
         print(table)
 
 
