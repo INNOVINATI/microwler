@@ -5,8 +5,8 @@ to visit each qualified link it can find and download the corresponding page unt
 
 Optionally, you can also:
 - define selectors using `lxml` (XPath & CSS)
+- define custom export plugins
 - cluster results by URL (coming soon)
-- define custom export plugins (coming soon)
 - crawl dynamic pages using `Selenium` (coming soon)
 
 ## Inspiration
