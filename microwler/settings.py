@@ -3,7 +3,7 @@ import os
 
 class Settings(object):
     max_concurrency = 100
-    download_delay = 3
+    download_delay = 1
     language = 'en-us'
     export_to = os.path.join(os.getcwd(), 'exports')
     exporters = []
