@@ -2,10 +2,13 @@ import os
 
 
 class Settings(object):
+    max_concurrency = 100
+    download_delay = 3
+    language = 'en-us'
+    export_to = os.path.join(os.getcwd(), 'exports')
+    exporters = []
 
-    def __init__(self, params: dict):
-        self.max_concurrency = params.get('max_concurrency', 100),
-        self.download_delay = params.get('download_delay', 3),
-        self.language = params.get('language', 'en-us'),
-        self.export_to = params.get('export_to', os.path.join(os.getcwd(), 'exports'))
-        self.exporters = params.get('exporters', [])
+    def __init__(self, param_dict=None):
+        if param_dict:
+            for key, value in param_dict.items():
+                setattr(self, key, value)

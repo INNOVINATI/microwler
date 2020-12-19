@@ -27,7 +27,7 @@ class Crawler:
         self._base_url = f'{parsed.scheme}://{self._domain}/'
         self._max_depth = max_depth
         self._selectors = selectors
-        self._settings = Settings(settings or dict())
+        self._settings = Settings(settings)
         self._seen_urls = set()
         self._session = aiohttp.ClientSession()
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
