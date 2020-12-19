@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import time
 
@@ -9,7 +8,6 @@ from urllib.parse import urlparse
 import prettytable
 from lxml import html as DOMParser
 
-from microwler import scrape
 from microwler.settings import Settings
 from microwler.utils import get_headers, IGNORED_EXTENSIONS
 

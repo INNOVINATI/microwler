@@ -27,7 +27,7 @@ class BaseExporter:
             os.makedirs(self.settings.export_to, exist_ok=True)
             with open(path, 'w') as file:
                 file.write(data)
-            logging.info(f'Exported data to: {path}')
+            logging.info(f'Exported data as {self.extension.upper()} to: {path}')
         except Exception as e:
             logging.error(f'Error during export: {e}')
 
@@ -62,15 +62,7 @@ class HTMLExporter(BaseExporter):
         styles = 'width: 100%; border: 1px solid grey; text-align: center'
         headers = ''.join([f'<th>{key.upper()}</th>' for key in data[0].keys()])
         rows = ''.join([f"<tr>{''.join([f'<td>{val}</td>' for val in obj.values()])}</tr>" for obj in data])
-        table = '<!DOCTYPE html>' \
-                '<html>' \
-                '<body>' \
-                f'<table style="{styles}">' \
-                f'<tr>{headers}</tr>' \
-                f'<tbody>{rows}</tbody>' \
-                '</table>' \
-                '<body>' \
-                '</html>'
+        table = f'<!DOCTYPE html><html><body><table style="{styles}"><tr>{headers}</tr><tbody>{rows}</tbody></table><body></html>'
         return table
 
 
