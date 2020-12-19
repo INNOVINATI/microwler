@@ -4,15 +4,14 @@ It is designed for deep crawls, i.e. retrieving every page of a specific website
 to visit each qualified link it can find and download the corresponding page until it reaches the depth limit or the whole site has been visited.
 
 Optionally, you can also:
-- define selectors using `lxml` (XPath & CSS)
+- use pre-built common selectors
+- define custom selectors using XPath & CSS
 - define custom export plugins
-- cluster results by URL (coming soon)
-- crawl dynamic pages using `Selenium` (coming soon)
+- crawl dynamic pages (coming soon)
 
 ## Inspiration
-We wanted to design a very minimalistic framework for analysing specific websites. Since this use case
-doesn't require much scalability, we tried to instead focus on making things as simple as possible for developers.
-With Microwler, you can build crawlers and extract relevant data in a breeze.
+The idea was to design a very minimalistic framework for analysing specific websites. We tried to instead focus on making things as simple as possible for developers.
+With Microwler, you can build crawlers and extract relevant data in a breeze - and in a single file.
 
 Built with:
 - Python 3.9
