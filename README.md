@@ -1,4 +1,6 @@
-# Microwler
+<img src="https://github.com/INNOVINATI/microwler/blob/master/logo.png" width="200px" alt="Microwler">
+
+
 As the name suggests, Microwler is a micro-framework for web crawling implemented in Python. 
 It is designed for deep crawls, i.e. retrieving every page of a specific website. Per default, the crawler will attempt
 to visit each qualified link it can find and download the corresponding page until it reaches the depth limit or the whole site has been visited.
