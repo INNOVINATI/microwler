@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import time
-
 import aiohttp
 from urllib.parse import urlparse
 
@@ -32,7 +31,7 @@ class Crawler:
         self._session = aiohttp.ClientSession()
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
-        self.data = []
+        self._results = []
 
     async def _get(self, url):
         if self._verbose:
@@ -99,9 +98,6 @@ class Crawler:
                 # Set a delay between batch requests
                 time.sleep(self._settings.download_delay)
         finally:
-            for exporter_cls in self._settings.exporters:
-                instance = exporter_cls(self)
-                instance.export()
             await self._session.close()
             return results
 
@@ -117,13 +113,14 @@ class Crawler:
         }
         return urls
 
-    @property
-    def clustered_data(self):
-        return  # TODO
+    def get_data(self, clustered=False):
+        if clustered:
+            pass    # TODO: integrate urlclustering
+        return self._results
 
-    def run(self, verbose=False, export=False):
+    def run(self, verbose=False):
         self._verbose = verbose
-        self.data = None
+        self._results = None
         start = time.time()
         future = asyncio.Task(self._crawl())
         loop = asyncio.get_event_loop()
@@ -133,27 +130,18 @@ class Crawler:
         logging.info(f'Crawler stopped [{self._start_url}]')
         results = future.result()
         duration = time.time() - start
-        if export:
-            try:
-                path = os.path.join(os.getcwd(), f'{self._domain}.json')
-                with open(path, 'w') as file:
-                    file.write(json.dumps(results))
-                logging.info(f'Exported results to {path}')
-            except Exception as e:
-                logging.error(f'Failed to export: {e}')
+        self._results = results
+
+        # INVOKE EXPORTERS
+        for exporter_cls in self._settings.exporters:
+            instance = exporter_cls(self._domain, self._results, self._settings)
+            instance.export()
+
         table = prettytable.PrettyTable()
-        table.add_column('Pages', [len(results)])
+        table.add_column('Pages', [len(self._results)])
         table.add_column('Duration', [f'{round(duration, 2)}s'])
-        table.add_column('Average', [f'{round(len(results)/duration, 2)} p/s'])
-        self.data = results
+        table.add_column('Average', [f'{round(len(self._results)/duration, 2)} p/s'])
         print(table)
 
 
-if __name__ == '__main__':
-    crawler = Crawler(
-        'https://quotes.toscrape.com/',
-        max_depth=10,
-        selectors={'title': scrape.title, 'p_count': lambda dom: len(dom.xpath('//p'))},
-        settings={'download_delay': 1}
-    )
-    crawler.run(verbose=True, export=True)
+
