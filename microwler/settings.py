@@ -8,4 +8,4 @@ class Settings(object):
         self.download_delay = params.get('download_delay', 3),
         self.language = params.get('language', 'en-us'),
         self.export_to = params.get('export_to', os.path.join(os.getcwd(), 'exports'))
-        self.storage = params.get('storage', None)
+        self.exporters = params.get('exporters', [])

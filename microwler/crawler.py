@@ -91,7 +91,7 @@ class Crawler:
                     if links is not None:
                         # Queue the URLs found on this page
                         pipeline.extend(links)
-                        # Extract data if selectors are defined, else keep html body
+                        # SELECTOR HOOK
                         if self._selectors:
                             data = self._parse(data)
                     # Append result object { URL, DEPTH, LINKS, DATA }
@@ -99,6 +99,9 @@ class Crawler:
                 # Set a delay between batch requests
                 time.sleep(self._settings.download_delay)
         finally:
+            for exporter_cls in self._settings.exporters:
+                instance = exporter_cls(self)
+                instance.export()
             await self._session.close()
             return results
 
