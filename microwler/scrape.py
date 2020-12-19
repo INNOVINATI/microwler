@@ -44,6 +44,27 @@ def paragraphs(dom):
 
 
 @selector
+def meta(dom):
+    """ Extract <meta> tags """
+    tags = dom.xpath('//meta')
+    return {tag.get('name'): tag.get('content') for tag in tags}
+
+
+@selector
+def canonicals(dom):
+    """ Extract <link rel='canonical'> tags """
+    return dom.xpath('//link[@rel=’canonical’]/@href')
+
+
+@selector
+def schemas(dom):
+    """ Extract itemtype schemas """
+    schema_links = dom.xpath('//*[@itemtype]/@itemtype')
+    return [link.split('/')[-1] for link in schema_links]
+
+
+@selector
 def emails(dom):
     """ Extract email addresses from <a> tags """
-    return dom.xpath('//a[starts-with(@href, "mailto")]')
+    hrefs = dom.xpath('//a[starts-with(@href, "mailto")]/@href')
+    return [href.strip('mailto:') for href in hrefs]
