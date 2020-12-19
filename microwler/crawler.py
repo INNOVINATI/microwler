@@ -1,8 +1,8 @@
 import asyncio
 import json
 import logging
-import os
 import time
+
 import aiohttp
 from urllib.parse import urlparse
 
@@ -113,12 +113,11 @@ class Crawler:
         }
         return urls
 
-    def get_data(self, clustered=False):
-        if clustered:
-            pass    # TODO: integrate urlclustering
+    @property
+    def data(self):
         return self._results
 
-    def run(self, verbose=False):
+    def run(self, verbose=False, sort_urls=True):
         self._verbose = verbose
         self._results = None
         start = time.time()
@@ -130,6 +129,8 @@ class Crawler:
         logging.info(f'Crawler stopped [{self._start_url}]')
         results = future.result()
         duration = time.time() - start
+        if sort_urls:
+            results.sort(key=lambda item: item['url'])
         self._results = results
 
         # INVOKE EXPORTERS
