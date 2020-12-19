@@ -1,18 +1,17 @@
 import functools
+
+from html_text import extract_text
 from lxml.html import HtmlElement
 
 
 def selector(func):
-    """
-    Wrapper for injecting the current page into selector functions
-    The wrapped function MUST return the result of either dom.xpath(..) or dom.css(...)
-    """
+    """ Wrapper for injecting the current page into selector functions """
     @functools.wraps(func)
     def select(dom: HtmlElement):
         data = func(dom)
         if data is not None:
-            # We always receive lists, so let's handle that nicely
-            return data[0] if len(data) == 1 else data
+            # Return 1st element for one-element-lists
+            return data[0] if (type(data) == list and len(data) == 1) else data
         # Force return value
         raise ValueError(f'Selector <{func.__name__}> did not return anything.')
     return select
@@ -44,6 +43,12 @@ def paragraphs(dom):
 
 
 @selector
+def text(dom):
+    """ Extract and clean text content """
+    return extract_text(str(dom))
+
+
+@selector
 def meta(dom):
     """ Extract <meta> tags """
     tags = dom.xpath('//meta')
@@ -68,3 +73,9 @@ def emails(dom):
     """ Extract email addresses from <a> tags """
     hrefs = dom.xpath('//a[starts-with(@href, "mailto")]/@href')
     return [href.strip('mailto:') for href in hrefs]
+
+
+@selector
+def images(dom):
+    """ Extract URLs from <img> tags """
+    return dom.xpath('//img/@src')
