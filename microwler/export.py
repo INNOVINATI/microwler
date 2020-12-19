@@ -24,8 +24,7 @@ class BaseExporter:
         timestamp = datetime.now().strftime('%Y-%m-%d-%H:%M')
         path = os.path.join(self.settings.export_to, f'{self.domain}_{timestamp}.{self.extension}')
         try:
-            if not os.path.exists(self.settings.export_to):
-                os.mkdir(self.settings.export_to)
+            os.makedirs(self.settings.export_to, exist_ok=True)
             with open(path, 'w') as file:
                 file.write(data)
             logging.info(f'Exported data to: {path}')
