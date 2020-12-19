@@ -7,7 +7,7 @@ operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value]
 UAFactory = UserAgent(software_names=software_names, operating_systems=operating_systems, limit=100)
 
 
-def get_headers(language):
+def get_headers(language: str):
     return {
         'User-Agent': UAFactory.get_random_user_agent(),
         'Accept-Language': language,
@@ -31,3 +31,7 @@ IGNORED_EXTENSIONS = [
     # other
     'css', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'dmg', 'exe', 'bin', 'rss', 'zip', 'rar',
 ]
+
+
+def urldiff(urls1: [str], urls2: [str]):
+    return list(set(urls1).difference(set(urls2)))
