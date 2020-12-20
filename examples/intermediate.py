@@ -8,7 +8,6 @@ selectors = {
 settings = {
     'max_depth': 5,
     'max_concurrency': 50,
-    'download_delay': 1
 }
 
 if __name__ == '__main__':
