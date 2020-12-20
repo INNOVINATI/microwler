@@ -10,16 +10,15 @@ selectors = {
 settings = {
     'max_depth': 5,
     'max_concurrency': 50,
-    'download_delay': 1,
     'export_to': './export/project_folder',
     'exporters': [JSONExporter, HTMLExporter]
 }
 
 
-def transform(data: dict):
+def transform(page: dict):
     """ Define a transformer to manipulate your scraped data """
-    data['title'] = data['title'].upper()
-    return data
+    page['data']['title'] = page['data']['title'].upper()
+    return page
 
 
 if __name__ == '__main__':
