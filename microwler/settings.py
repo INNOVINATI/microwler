@@ -2,6 +2,7 @@ import os
 
 
 class Settings(object):
+    max_depth = 10
     max_concurrency = 100
     download_delay = 1
     language = 'en-us'

@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from typing import Callable
 
 import aiohttp
 from urllib.parse import urlparse
@@ -11,19 +12,22 @@ from lxml import html as DOMParser
 from microwler.settings import Settings
 from microwler.utils import get_headers, IGNORED_EXTENSIONS
 
-
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
 class Crawler:
 
-    def __init__(self, start_url, max_depth: int = 10, selectors: dict = None, settings: dict = None):
+    def __init__(self,
+                 start_url: str,
+                 selectors: dict = None,
+                 transformer: Callable[[dict], dict] = None,
+                 settings: dict = None):
         self._start_url = start_url
         parsed = urlparse(start_url)
         self._domain = parsed.netloc
         self._base_url = f'{parsed.scheme}://{self._domain}/'
-        self._max_depth = max_depth
         self._selectors = selectors
+        self._transformer = transformer
         self._settings = Settings(settings)
         self._seen_urls = set()
         self._session = aiohttp.ClientSession()
@@ -69,18 +73,23 @@ class Crawler:
                 logging.warning(f'Encountered exception: {e}')
         return results
 
-    def _parse(self, html):
-        dom = DOMParser.fromstring(html)
-        # Selectors are either XPaths (strings) or lambdas
-        data = {field: dom.xpath(selector) if (type(selector) == str) else selector(dom)
-                for field, selector in self._selectors.items()}
-        return data
+    async def _scrape(self, page: dict):
+        """
+        Extracts data using the given selectors. Selectors are either XPaths (strings) or callables.
+        If a callable is given, it will receive the parsed DOM as only argument,
+        which is an lxml.html.HtmlElement instance. This means you can apply dom.xpath(...) or dom.css(...)
+        from lxml.etree._Element and return whatever you want.
+        """
+        dom = DOMParser.fromstring(page['data'])
+        page['data'] = {field: dom.xpath(selector) if (type(selector) == str) else selector(dom)
+                        for field, selector in self._selectors.items()}
+        return page
 
     async def _crawl(self):
         pipeline = [self._start_url]
         results = []
         try:
-            for depth in range(self._max_depth + 1):
+            for depth in range(self._settings.max_depth + 1):
                 batch = await self._get_batch(pipeline)
                 pipeline = []
                 for url, data, links in batch:
@@ -88,9 +97,6 @@ class Crawler:
                     if links is not None:
                         # Queue the URLs found on this page
                         pipeline.extend(links)
-                        # SELECTOR HOOK
-                        if self._selectors:
-                            data = self._parse(data)
                     # Append result object { URL, DEPTH, LINKS, DATA }
                     results.append({'url': url, 'depth': depth, 'links': links, 'data': data})
                 # Set a delay between batch requests
@@ -102,12 +108,13 @@ class Crawler:
     def _find_links(self, html):
         dom = DOMParser.fromstring(html)
         dom.make_links_absolute(self._base_url)
-        urls = {                                                                    # ignore local duplicates
+        urls = {
+            # use set to ignore local duplicates
             href for href in dom.xpath('//a/@href')
-            if href not in self._seen_urls                                           # ignore global duplicates
-            and href.startswith(self._base_url)                                      # stay on this website
-            and not href.split('/')[-1].startswith('#')                             # ignore anchors on same page
-            and not any([href.lower().endswith(e) for e in IGNORED_EXTENSIONS])     # ignore file extensions
+            if href not in self._seen_urls  # ignore global duplicates
+            and href.startswith(self._base_url)  # stay on this website
+            and not href.split('/')[-1].startswith('#')  # ignore anchors on same page
+            and not any([href.lower().endswith(e) for e in IGNORED_EXTENSIONS])  # ignore file extensions
         }
         return urls
 
@@ -115,7 +122,7 @@ class Crawler:
     def data(self):
         return self._results
 
-    def run(self, verbose=False, sort_urls=True):
+    def run(self, verbose=False, sort_urls=False):
         self._verbose = verbose
         self._results = None
         start = time.time()
@@ -128,10 +135,21 @@ class Crawler:
         results = future.result()
         duration = time.time() - start
         if sort_urls:
+            logging.info(f'Sorting {len(results)} results...')
             results.sort(key=lambda item: item['url'])
+
+        # INVOKE SELECTORS #
+        if self._selectors:
+            results = list(map(self._scrape, results))
+
+        # INVOKE TRANSFORMER #
+        if self._transformer is not None:
+            logging.info(f'Applying transformer ...')
+            results = list(map(self._transformer, results))
+
         self._results = results
 
-        # INVOKE EXPORTERS
+        # INVOKE EXPORTERS #
         for exporter_cls in self._settings.exporters:
             instance = exporter_cls(self._domain, self._results, self._settings)
             instance.export()
@@ -139,8 +157,5 @@ class Crawler:
         table = prettytable.PrettyTable()
         table.add_column('Pages', [len(self._results)])
         table.add_column('Duration', [f'{round(duration, 2)}s'])
-        table.add_column('Average', [f'{round(len(self._results)/duration, 2)} p/s'])
+        table.add_column('Average', [f'{round(len(self._results) / duration, 2)} p/s'])
         print(table)
-
-
-
