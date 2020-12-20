@@ -28,8 +28,17 @@ Built with:
 coming soon...
 
 ## Usage
-coming soon...
+### Python script
+```python
+from microwler import Crawler, scrape
 
+crawler = Crawler('https://quotes.toscrape.com/', selectors={'title': scrape.title})
+crawler.run(verbose=True)
+```
+Take a look at `examples/` to find out more.
+
+### Command line
+coming soon...
 ## Contributing
 coming soon...
 
