@@ -23,7 +23,7 @@ def transform(page: dict):
 
 if __name__ == '__main__':
     crawler = Crawler(
-        'https://quotes.toscrape.com/',
+        'https://saaris.de/',
         selectors=selectors,
         transformer=transform,
         settings=settings
