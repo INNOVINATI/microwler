@@ -20,19 +20,19 @@ def selector(func):
 @selector
 def title(dom):
     """ Extract <title> tag """
-    return dom.xpath('//title/text()')
+    return dom.xpath('//title//text()')
 
 
 @selector
 def headings(dom):
     """ Extract heading tags, i.e. <h1>, <h2>, ... """
     return {
-        'h1': dom.xpath('//h1/text()'),
-        'h2': dom.xpath('//h2/text()'),
-        'h3': dom.xpath('//h3/text()'),
-        'h4': dom.xpath('//h4/text()'),
-        'h5': dom.xpath('//h5/text()'),
-        'h6': dom.xpath('//h6/text()')
+        'h1': dom.xpath('//h1//text()'),
+        'h2': dom.xpath('//h2//text()'),
+        'h3': dom.xpath('//h3//text()'),
+        'h4': dom.xpath('//h4//text()'),
+        'h5': dom.xpath('//h5//text()'),
+        'h6': dom.xpath('//h6//text()')
     }
 
 
