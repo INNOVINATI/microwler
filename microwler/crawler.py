@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 import prettytable
 from lxml import html as DOMParser
+from lxml.etree import ParserError
 
 from microwler.settings import Settings
 from microwler.utils import get_headers, IGNORED_EXTENSIONS
@@ -82,9 +83,12 @@ class Crawler:
         which is an lxml.html.HtmlElement instance. This means you can apply dom.xpath(...) or dom.css(...)
         from lxml.etree._Element and return whatever you want.
         """
-        dom = DOMParser.fromstring(page['data'])
-        page['data'] = {field: dom.xpath(selector) if (type(selector) == str) else selector(dom)
-                        for field, selector in self._selectors.items()}
+        try:
+            dom = DOMParser.fromstring(page['data'])
+            page['data'] = {field: dom.xpath(selector) if (type(selector) == str) else selector(dom)
+                            for field, selector in self._selectors.items()}
+        except ParserError as e:
+            page['data'] = None
         return page
 
     async def _crawl(self):
