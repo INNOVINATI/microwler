@@ -64,6 +64,7 @@ class Crawler:
     async def _get_batch(self, to_fetch):
         futures, results = [], []
         for url in to_fetch:
+            # TODO: Handle trailing slashes
             if url in self._seen_urls:
                 continue
             self._seen_urls.add(url)
@@ -75,21 +76,6 @@ class Crawler:
             except Exception as e:
                 logging.warning(f'Encountered exception: {e}')
         return results
-
-    def _scrape(self, page: dict):
-        """
-        Extracts data using the given selectors. Selectors are either XPaths (strings) or callables.
-        If a callable is given, it will receive the parsed DOM as only argument,
-        which is an lxml.html.HtmlElement instance. This means you can apply dom.xpath(...) or dom.css(...)
-        from lxml.etree._Element and return whatever you want.
-        """
-        try:
-            dom = DOMParser.fromstring(page['data'])
-            page['data'] = {field: dom.xpath(selector) if (type(selector) == str) else selector(dom)
-                            for field, selector in self._selectors.items()}
-        except ParserError as e:
-            page['data'] = None
-        return page
 
     async def _crawl(self):
         pipeline = [self._start_url]
@@ -117,14 +103,28 @@ class Crawler:
         urls = {
             # use set to ignore local duplicates
             # add trailing slash to avoid unnecessary requests (possibly unstable?)
-            href if href.endswith('/') else href + '/'
-            for href in dom.xpath('//a/@href')
+            href for href in dom.xpath('//a/@href')
             if href not in self._seen_urls  # ignore global duplicates
             and href.startswith(self._base_url)  # stay on this website
             and not href.split('/')[-1].startswith('#')  # ignore anchors on same page
             and not any([href.lower().endswith(e) for e in IGNORED_EXTENSIONS])  # ignore file extensions
         }
         return urls
+
+    def _scrape(self, page: dict):
+        """
+        Extracts data using the given selectors. Selectors are either XPaths (strings) or callables.
+        If a callable is given, it will receive the parsed DOM as only argument,
+        which is an lxml.html.HtmlElement instance. This means you can apply dom.xpath(...) or dom.css(...)
+        from lxml.etree._Element and return whatever you want.
+        """
+        try:
+            dom = DOMParser.fromstring(page['data'])
+            page['data'] = {field: dom.xpath(selector) if (type(selector) == str) else selector(dom)
+                            for field, selector in self._selectors.items()}
+        except ParserError as e:
+            logging.warning(f'Parsing error: {e}')
+        return page
 
     @property
     def data(self):
