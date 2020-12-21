@@ -11,7 +11,7 @@ from lxml import html as DOMParser
 from lxml.etree import ParserError
 
 from microwler.settings import Settings
-from microwler.utils import get_headers, IGNORED_EXTENSIONS
+from microwler.utils import get_headers, IGNORED_EXTENSIONS, fingerprint
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -64,10 +64,10 @@ class Crawler:
     async def _get_batch(self, to_fetch):
         futures, results = [], []
         for url in to_fetch:
-            # TODO: Handle trailing slashes
-            if url in self._seen_urls:
+            # the fingerprint function can handle trailing slashes and params
+            if fp := fingerprint(url) in self._seen_urls:
                 continue
-            self._seen_urls.add(url)
+            self._seen_urls.add(fp)
             futures.append(self._get_one(url))
 
         for future in asyncio.as_completed(futures):

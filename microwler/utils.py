@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
 
@@ -31,6 +33,13 @@ IGNORED_EXTENSIONS = [
     # other
     'css', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'dmg', 'exe', 'bin', 'rss', 'zip', 'rar',
 ]
+
+
+def fingerprint(url: str):
+    url_obj = urlparse(url)
+    path_stripped = "".join([p for p in url_obj.path.split("/")])
+    fp = hash(f'{url_obj.scheme}://{url_obj.netloc}{path_stripped}')
+    return fp
 
 
 def urldiff(urls1: [str], urls2: [str]):
