@@ -163,10 +163,11 @@ class Crawler:
         self._results = results
 
         # EXPORT #
-        logging.info('Running exporters ...')
-        for exporter_cls in self._settings.exporters:
-            instance = exporter_cls(self._domain, self._results, self._settings)
-            instance.export()
+        if len(self._settings.exporters):
+            logging.info('Running exporters ...')
+            for exporter_cls in self._settings.exporters:
+                instance = exporter_cls(self._domain, self._results, self._settings)
+                instance.export()
 
         table = prettytable.PrettyTable()
         table.add_column('Pages', [len(self._results)])
