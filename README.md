@@ -16,7 +16,7 @@ Optionally, you can also:
 - crawl dynamic pages (coming soon)
 
 ## Inspiration
-Many concepts were inspired by years of experience with `Scrapy`, the industry standard for web crawling with Python.
+Many concepts were inspired by experience with `Scrapy`, the industry standard for web crawling with Python.
 The idea was to design a very minimalistic framework for analysing specific websites. We tried to focus on making things as simple as possible for developers.
 With Microwler, you can build crawlers and extract relevant data in a breeze - and in a single file.
 

@@ -4,14 +4,14 @@ import time
 from typing import Callable
 
 import aiohttp
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode, parse_qsl
 
 import prettytable
 from lxml import html as DOMParser
 from lxml.etree import ParserError
 
 from microwler.settings import Settings
-from microwler.utils import get_headers, IGNORED_EXTENSIONS
+from microwler.utils import get_headers, IGNORED_EXTENSIONS, fingerprint
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -64,11 +64,14 @@ class Crawler:
     async def _get_batch(self, to_fetch):
         futures, results = [], []
         for url in to_fetch:
-            # TODO: Handle trailing slashes
-            if url in self._seen_urls:
+            parsed = urlparse(url)
+            # Sort the query parameters and drop fragments
+            query = urlencode(sorted(parse_qsl(parsed.query)))
+            normalized_url = f'{parsed.scheme}://{parsed.netloc}{parsed.path}?{query}'
+            if normalized_url in self._seen_urls:
                 continue
-            self._seen_urls.add(url)
-            futures.append(self._get_one(url))
+            self._seen_urls.add(normalized_url)
+            futures.append(self._get_one(normalized_url))
 
         for future in asyncio.as_completed(futures):
             try:
