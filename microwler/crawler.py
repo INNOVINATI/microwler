@@ -11,7 +11,7 @@ from lxml import html as DOMParser
 from lxml.etree import ParserError
 
 from microwler.settings import Settings
-from microwler.utils import get_headers, IGNORED_EXTENSIONS, fingerprint
+from microwler.utils import get_headers, IGNORED_EXTENSIONS
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
