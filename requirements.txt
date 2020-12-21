@@ -1,0 +1,13 @@
+aiohttp==3.7.3
+async-timeout==3.0.1
+attrs==20.3.0
+chardet==3.0.4
+html-text==0.5.2
+idna==2.10
+lxml==4.6.2
+multidict==5.1.0
+prettytable==2.0.0
+random-user-agent==1.0.1
+typing-extensions==3.7.4.3
+wcwidth==0.2.5
+yarl==1.6.3
