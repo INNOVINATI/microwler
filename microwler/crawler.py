@@ -43,20 +43,20 @@ class Crawler:
             try:
                 async with self._session.get(url, timeout=15, headers=get_headers(self._settings.language)) as response:
                     html = await response.read()
-                    return html
+                    return html, response.status
             except TimeoutError:
                 logging.warning(f'Timeout error: {url}')
                 return None
 
     async def _get_one(self, url):
         try:
-            html = await self._get(url)
-            found_urls = set()
+            html, status = await self._get(url)
+            links = set()
             if html:
                 # find internal links
                 for url in self._find_links(html):
-                    found_urls.add(url)
-            return url, html, found_urls
+                    links.add(url)
+            return url, status, html, links
         except Exception as e:
             logging.error(f'Processing error: {e} [{url}]')
             return url, e, None
@@ -82,22 +82,22 @@ class Crawler:
 
     async def _crawl(self):
         pipeline = [self._start_url]
-        results = []
+        pages = []
         try:
             for depth in range(self._settings.max_depth + 1):
                 batch = await self._get_batch(pipeline)
                 pipeline = []
-                for url, data, links in batch:
+                for url, status, data, links in batch:
                     # If links is None, there was an error
                     if links is not None:
                         # Queue the URLs found on this page
                         pipeline.extend(links)
-                    # Append result object { URL, DEPTH, LINKS, DATA }
-                    results.append({'url': url, 'depth': depth, 'links': list(links), 'data': data})
-                # Set a delay between batch requests
+                    # Append result object { URL, STATUS_CODE, DEPTH, LINKS, DATA/HTML/NONE }
+                    obj = {'url': url, 'status_code': status, 'depth': depth, 'links': list(links), 'data': data}
+                    pages.append(obj)
         finally:
             await self._session.close()
-            return results
+            return pages
 
     def _find_links(self, html):
         """ Extract relevant links from an HTML document """
