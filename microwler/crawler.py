@@ -37,12 +37,12 @@ class Crawler:
         self._results = []
 
     async def _get(self, url):
-        if self._verbose:
-            logging.info(f'Processing: {url}')
         async with self._limiter:
             try:
                 async with self._session.get(url, timeout=15, headers=get_headers(self._settings.language)) as response:
                     html = await response.read()
+                    if self._verbose:
+                        logging.info(f'Processed: {url} [{response.status}]')
                     return html, response.status
             except TimeoutError:
                 logging.warning(f'Timeout error: {url}')
@@ -51,11 +51,10 @@ class Crawler:
     async def _get_one(self, url):
         try:
             html, status = await self._get(url)
-            links = set()
+            links = []
             if html:
                 # find internal links
-                for url in self._find_links(html):
-                    links.add(url)
+                links.extend(self._find_links(html))
             return url, status, html, links
         except Exception as e:
             logging.error(f'Processing error: {e} [{url}]')
@@ -65,9 +64,9 @@ class Crawler:
         futures, results = [], []
         for url in to_fetch:
             parsed = urlparse(url)
-            # Sort the query parameters and drop fragments
-            query = urlencode(sorted(parse_qsl(parsed.query)))
-            normalized_url = f'{parsed.scheme}://{parsed.netloc}{parsed.path}?{query}'
+            # Sort query parameters if there are any
+            query = '?' + urlencode(sorted(parse_qsl(parsed.query))) if parsed.query else ''
+            normalized_url = f'{parsed.scheme}://{parsed.netloc}{parsed.path}{query}'   # Drop URL fragments
             if normalized_url in self._seen_urls:
                 continue
             self._seen_urls.add(normalized_url)
@@ -103,16 +102,14 @@ class Crawler:
         """ Extract relevant links from an HTML document """
         dom = DOMParser.fromstring(html)
         dom.make_links_absolute(self._base_url)
-        urls = {
+        links = {
             # use set to ignore local duplicates
-            # add trailing slash to avoid unnecessary requests (possibly unstable?)
-            href for href in dom.xpath('//a/@href')
-            if href not in self._seen_urls  # ignore global duplicates
-            and href.startswith(self._base_url)  # stay on this website
-            and not href.split('/')[-1].startswith('#')  # ignore anchors on same page
-            and not any([href.lower().endswith(e) for e in IGNORED_EXTENSIONS])  # ignore file extensions
+            link for link in dom.xpath('//a/@href')
+            if link.startswith(self._base_url)  # stay on this website
+            if link not in self._seen_urls  # try to filter global duplicates in order to avoid extra loop steps later
+            and not any([link.lower().endswith(e) for e in IGNORED_EXTENSIONS])  # ignore file extensions
         }
-        return urls
+        return list(links)
 
     def _scrape(self, page: dict):
         """
