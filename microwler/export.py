@@ -9,12 +9,23 @@ logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(me
 
 
 class BaseExporter:
-    extension = ''
+    """
+    Use this class to build your custom export functionality, i.e. send data per HTTP or SMTP.
+    The Crawler instance will call export() once it's done with everything else.
+    You can plug your Exporter into the crawler by adding the class to settings['exporters']
+    """
 
     def __init__(self, domain: str, data: list, settings: Settings):
         self.domain = domain
         self.data = data
         self.settings = settings
+
+    def export(self):
+        raise NotImplementedError()
+
+
+class FileExporter(BaseExporter):
+    extension = ''
 
     def convert(self):
         raise NotImplementedError()
@@ -32,7 +43,7 @@ class BaseExporter:
             logging.error(f'Error during export: {e}')
 
 
-class JSONExporter(BaseExporter):
+class JSONExporter(FileExporter):
     extension = 'json'
 
     def convert(self):
@@ -40,7 +51,7 @@ class JSONExporter(BaseExporter):
         return data
 
 
-class CSVExporter(BaseExporter):
+class CSVExporter(FileExporter):
     extension = 'csv'
 
     def convert(self):
@@ -53,7 +64,7 @@ class CSVExporter(BaseExporter):
         return table
 
 
-class HTMLExporter(BaseExporter):
+class HTMLExporter(FileExporter):
     extension = 'html'
 
     def convert(self):
