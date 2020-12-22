@@ -17,12 +17,23 @@ logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(me
 
 
 class Crawler:
+    """
+    Every crawl will be executed by a single Crawler instance.
+    """
 
     def __init__(self,
                  start_url: str,
                  selectors: dict = None,
                  transformer: Callable[[dict], dict] = None,
                  settings: dict = None):
+        """
+        Setup a new Crawler instance
+        Arguments:
+            start_url: the URL to start crawling
+            selectors: A `dict` with *selectors* [(read more)](/scraping)
+            transformer: Function to transform scraped data after crawling (check out [an example](/examples#advanced))
+            settings: A `dict` with configuration parameters for the crawler [(read more)](#settings)
+        """
         self._start_url = start_url
         parsed = urlparse(start_url)
         self._domain = parsed.netloc
@@ -126,11 +137,15 @@ class Crawler:
             logging.warning(f'Parsing error: {e}')
         return page
 
-    @property
-    def data(self):
-        return self._results
-
-    def run(self, verbose=False, sort_urls=False):
+    def run(self, verbose: bool = False, sort_urls: bool = False):
+        """
+        Starts the crawler instance. The results will be stored as
+        list of dictionaries, where each `dict` corresponds to one webpage.
+        You can retrieve the results using the `Crawler.data` property.
+        Arguments:
+            verbose: log progress to `stdout` while crawling
+            sort_urls: sort result list by URL
+        """
         self._verbose = verbose
         self._results = None
         start = time.time()
@@ -171,3 +186,7 @@ class Crawler:
         table.add_column('Duration', [f'{round(duration, 2)}s'])
         table.add_column('Average', [f'{round(len(self._results) / duration, 2)} p/s'])
         print(table)
+
+    @property
+    def data(self):
+        return self._results

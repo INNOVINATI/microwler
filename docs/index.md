@@ -1,4 +1,7 @@
-# Microwler
+# Documentation
+
+<img src="https://github.com/INNOVINATI/microwler/raw/master/logo.png" width="200px" alt="Microwler">
+
 ![GitHub](https://img.shields.io/github/license/INNOVINATI/microwler)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
 
@@ -14,36 +17,11 @@ Optionally, you can also:
 - use pre-built export plugins or build your own
 - crawl dynamic pages (coming soon)
 
-## Inspiration
-Many concepts were inspired by experience with `Scrapy`, the industry standard for web crawling with Python.
-The idea was to design a very minimalistic framework for analysing specific websites. We tried to focus on making things as simple as possible for developers.
-With Microwler, you can build crawlers and extract relevant data in a breeze - and in a single file.
-
 Built with:
+
 - Python 3.9
 - aiohttp & asyncio
 - lxml
-
-
-
-## Getting Started
-coming soon...
-
-## Usage
-### Python script
-```python
-from microwler import Crawler, scrape
-
-crawler = Crawler('https://quotes.toscrape.com/', selectors={'title': scrape.title})
-crawler.run(verbose=True)
-```
-Take a look at `examples/` to find out more.
-
-### Command line
-coming soon...
-## Contributing
-coming soon...
-
 
 ## License
 

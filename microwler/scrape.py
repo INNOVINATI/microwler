@@ -5,7 +5,15 @@ from lxml.html import HtmlElement
 
 
 def selector(func):
-    """ Wrapper for injecting the current page into selector functions """
+    """
+    Wrapper for injecting the current page into selectors.
+    Use it to decorate your custom functions:
+    ```
+    @selector
+    def my_selector(dom):
+        return dom.xpath(...)
+    ```
+   """
     @functools.wraps(func)
     def select(dom: HtmlElement):
         data = func(dom)
