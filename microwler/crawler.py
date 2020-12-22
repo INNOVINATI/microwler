@@ -8,8 +8,8 @@ from urllib.parse import urlparse, urlencode, parse_qsl
 
 import prettytable
 from lxml import html as DOMParser
-from lxml.etree import ParserError
 
+from microwler.scrape import Page
 from microwler.settings import Settings
 from microwler.utils import get_headers, IGNORED_EXTENSIONS
 
@@ -59,6 +59,19 @@ class Crawler:
                 logging.warning(f'Timeout error: {url}')
                 return None
 
+    def _find_links(self, html):
+        """ Extract relevant links from an HTML document """
+        dom = DOMParser.fromstring(html)
+        dom.make_links_absolute(self._base_url)
+        links = {
+            # use set to ignore local duplicates
+            link for link in dom.xpath('//a/@href')
+            if link.startswith(self._base_url)  # stay on this website
+            if link not in self._seen_urls  # try to filter global duplicates in order to avoid extra loop steps later
+            and not any([link.lower().endswith(e) for e in IGNORED_EXTENSIONS])  # ignore file extensions
+        }
+        return list(links)
+
     async def _get_one(self, url):
         try:
             html, status = await self._get(url)
@@ -102,40 +115,12 @@ class Crawler:
                     if links is not None:
                         # Queue the URLs found on this page
                         pipeline.extend(links)
-                    # Append result object { URL, STATUS_CODE, DEPTH, LINKS, DATA/HTML/NONE }
-                    obj = {'url': url, 'status_code': status, 'depth': depth, 'links': list(links), 'data': data}
+                    # Append result object
+                    obj = Page(url, status, depth, list(links), data)
                     pages.append(obj)
         finally:
             await self._session.close()
             return pages
-
-    def _find_links(self, html):
-        """ Extract relevant links from an HTML document """
-        dom = DOMParser.fromstring(html)
-        dom.make_links_absolute(self._base_url)
-        links = {
-            # use set to ignore local duplicates
-            link for link in dom.xpath('//a/@href')
-            if link.startswith(self._base_url)  # stay on this website
-            if link not in self._seen_urls  # try to filter global duplicates in order to avoid extra loop steps later
-            and not any([link.lower().endswith(e) for e in IGNORED_EXTENSIONS])  # ignore file extensions
-        }
-        return list(links)
-
-    def _scrape(self, page: dict):
-        """
-        Extracts data using the given selectors. Selectors are either XPaths (strings) or callables.
-        If a callable is given, it will receive the parsed DOM as only argument,
-        which is an lxml.html.HtmlElement instance. This means you can apply dom.xpath(...) or dom.css(...)
-        from lxml.etree._Element and return whatever you want.
-        """
-        try:
-            dom = DOMParser.fromstring(page['data'])
-            page['data'] = {field: dom.xpath(selector) if (type(selector) == str) else selector(dom)
-                            for field, selector in self._selectors.items()}
-        except ParserError as e:
-            logging.warning(f'Parsing error: {e}')
-        return page
 
     def run(self, verbose: bool = False, sort_urls: bool = False):
         """
@@ -165,12 +150,12 @@ class Crawler:
 
         # SELECT #
         if self._selectors:
-            results = list(map(self._scrape, results))
+            results = [page.scrape(self._selectors) for page in results]
 
         # TRANSFORM #
         if self._transformer is not None:
             logging.info(f'Applying transformer ...')
-            results = list(map(self._transformer, results))
+            results = [page.transform(self._transformer) for page in results]
 
         self._results = results
 

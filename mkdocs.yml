@@ -5,6 +5,7 @@ nav:
     - Configuration: configuration.md
     - Scraping: scraping.md
     - Examples: examples.md
+    - License: license.md
 theme: material
 plugins:
 - mkdocstrings:
@@ -22,4 +23,4 @@ extra:
     - icon: fontawesome/brands/linkedin
       link: https://linkedin.com/company/innovinati
 
-copyright: © MIT License
+copyright: powered by <a href="https://innovinati.com">INNOVINATI</a>

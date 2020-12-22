@@ -1,7 +1,9 @@
 <img src="https://github.com/INNOVINATI/microwler/blob/master/logo.png" width="200px" alt="Microwler">
 
-![GitHub](https://img.shields.io/github/license/INNOVINATI/microwler)
+![PyPI - Status](https://img.shields.io/pypi/status/microwler)
+![GitHub deployments](https://img.shields.io/github/deployments/INNOVINATI/microwler/github-pages)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
+![GitHub](https://img.shields.io/github/license/INNOVINATI/microwler)
 
 Microwler is a micro-framework for asynchronous web crawling implemented in Python. 
 It is designed for deep crawls, i.e. retrieving every page of a specific website. 

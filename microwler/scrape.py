@@ -1,37 +1,48 @@
-import functools
+import logging
 
 from html_text import extract_text
-from lxml.html import HtmlElement
+from lxml.etree import ParserError
+from lxml import html as DOMParser
 
 
-def selector(func):
+class Page(object):
     """
-    Wrapper for injecting the current page into selectors.
-    Use it to decorate your custom functions:
-    ```
-    @selector
-    def my_selector(dom):
-        return dom.xpath(...)
-    ```
-   """
-    @functools.wraps(func)
-    def select(dom: HtmlElement):
-        data = func(dom)
-        if data is not None:
-            # Return 1st element for one-element-lists
-            return data[0] if (type(data) == list and len(data) == 1) else data
-        # Force return value
-        raise ValueError(f'Selector <{func.__name__}> did not return anything.')
-    return select
+    Represents a crawled page.
+    Arguments:
+        url: the URL of this page
+        status_code: the request's status code
+        depth: the depth at which this page was crawled
+        links: list of internal links found on this page
+        data: HTML body OR data dictionary (if [selectors](#selectors)) are defined
+    """
+
+    def __init__(self, url: str, status_code: int, depth: int, links: list = None, data: dict = None):
+        self.url = url
+        self.status_code = status_code
+        self.depth = depth
+        self.links = links
+        self.data = data
+
+    def scrape(self, selectors: dict):
+        """
+        Extracts data using the given selectors. Selectors are either `XPaths` (strings) or callables.
+        If a callable is given, it will receive the parsed DOM as only argument,
+        which is an [lxml.html.HtmlElement](https://lxml.de/api/lxml.html.HtmlElement-class.html) instance. This means you can apply dom.xpath(...) or dom.css(...)
+        from `lxml.etree._Element` and return whatever you want.
+        """
+        try:
+            dom = DOMParser.fromstring(self.data)
+            self.data = {field: dom.xpath(selector) if (type(selector) == str) else selector(dom)
+                         for field, selector in selectors.items()}
+        except ParserError as e:
+            logging.warning(f'Parsing error: {e}')
 
 
-@selector
 def title(dom):
     """ Extract <title> tag """
     return dom.xpath('//title//text()')
 
 
-@selector
 def headings(dom):
     """ Extract heading tags, i.e. <h1>, <h2>, ... """
     return {
@@ -44,46 +55,39 @@ def headings(dom):
     }
 
 
-@selector
 def paragraphs(dom):
     """ Extract <p> tags """
     return dom.xpath('//p/text()')
 
 
-@selector
 def text(dom):
     """ Extract and clean text content """
     return extract_text(str(dom))
 
 
-@selector
 def meta(dom):
     """ Extract <meta> tags """
     tags = dom.xpath('//meta')
     return {tag.get('name'): tag.get('content') for tag in tags}
 
 
-@selector
 def canonicals(dom):
     """ Extract <link rel='canonical'> tags """
     return dom.xpath('//link[@rel=’canonical’]/@href')
 
 
-@selector
 def schemas(dom):
     """ Extract itemtype schemas """
     schema_links = dom.xpath('//*[@itemtype]/@itemtype')
     return [link.split('/')[-1] for link in schema_links]
 
 
-@selector
 def emails(dom):
     """ Extract email addresses from <a> tags """
     hrefs = dom.xpath('//a[starts-with(@href, "mailto")]/@href')
     return [href.strip('mailto:') for href in hrefs]
 
 
-@selector
 def images(dom):
     """ Extract URLs from <img> tags """
     return dom.xpath('//img/@src')
