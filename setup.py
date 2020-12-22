@@ -7,7 +7,7 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='microwler',
-    version='0.9',
+    version='0.0.9',
     description='A micro-framework for deep crawls and scraping written in Python',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -26,7 +26,7 @@ setup(
     package_dir={'': 'microwler'},
     packages=find_packages(where='microwler'),
     python_requires='>=3.6, <4',
-    install_requires=['aiohttp', 'lxml', 'prettytable'],
+    install_requires=['aiohttp', 'lxml', 'prettytable', 'random-user-agent'],
     extras_require={
         'dev': ['mkdocs'],
     },
