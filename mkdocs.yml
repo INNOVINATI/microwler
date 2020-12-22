@@ -5,6 +5,7 @@ nav:
     - Configuration: configuration.md
     - Scraping: scraping.md
     - Examples: examples.md
+    - License: ../LICENSE
 theme: material
 plugins:
 - mkdocstrings:
