@@ -27,9 +27,6 @@ setup(
     packages=find_packages(where='microwler'),
     python_requires='>=3.6, <4',
     install_requires=['aiohttp', 'lxml', 'prettytable', 'random-user-agent'],
-    extras_require={
-        'dev': ['mkdocs'],
-    },
     project_urls={
         'Bug Reports': 'https://github.com/INNOVINATI/microwler/issues',
         'Source': 'https://github.com/INNOVINATI/microwler/',
