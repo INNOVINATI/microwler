@@ -17,12 +17,6 @@ Optionally, you can also:
 - use pre-built export plugins or build your own
 - crawl dynamic pages (coming soon)
 
-Built with:
-
-- Python 3.9
-- aiohttp & asyncio
-- lxml
-
 ## License
 
 Copyright © 2020 Maximilian Wolf
