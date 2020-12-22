@@ -1,9 +1,16 @@
 # Scraping Data
+Before diving into the actual scraping process, let's take a look at how **Microwler** represents
+the data it's working with.
+
+::: microwler.scrape.Page
+    rendering:
+        show_root_heading: true
+        show_source: True
+
+## Selectors
 In most cases, you'll want to extract or calculate some data based on the HTML documents you crawl.
 For this scenario, **Microwler** allows you to define *selectors*, which can extract data using
 the powerful `XPath` language and/or the `lxml` package.
-
-## Selectors
 
 ### Custom
 

@@ -26,7 +26,7 @@ from microwler import Crawler
 crawler = Crawler('https://quotes.toscrape.com/')
 crawler.run(verbose=True)
 for page in crawler.data:
-    print(page['url'], page['data'][:10])
+    print(page.url, page.data)
 ```
 Without any further configuration, the crawler will try to visit every qualified link it can find and download
 every page's content.
