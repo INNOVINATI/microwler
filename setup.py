@@ -11,7 +11,7 @@ setup(
     description='A micro-framework for deep crawls and scraping written in Python',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/INNOVINATI/microwler',
+    url='https://innovinati.github.io/microwler/',
     author='Maximilian Wolf',
     author_email='maximilian.wolf@innovinati.com',
     classifiers=[
