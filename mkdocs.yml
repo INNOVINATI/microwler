@@ -2,6 +2,7 @@ site_name: Microwler
 nav:
     - Home: index.md
     - Getting Started: getting-started.md
+    - Workflow: workflow.md
     - Configuration: configuration.md
     - Scraping: scraping.md
     - Examples: examples.md

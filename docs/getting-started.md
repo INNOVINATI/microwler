@@ -30,7 +30,4 @@ for page in crawler.pages:
 ```
 Without any further configuration, the crawler will try to visit every qualified link it can find and download
 every page's content. For more advanced scenarios, check out the rest of this documentation or take a look at the
-[examples in our GitHub repository]('https://github.com/INNOVINATI/microwler/tree/master/examples').
-
-## Command line
-coming soon...
+[examples](/examples).
