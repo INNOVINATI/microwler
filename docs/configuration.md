@@ -2,15 +2,15 @@
 Per default, the crawler will visit every qualified link it can find at retrieve the corresponding page content.
 Of course, you can customize and extend this behaviour.
 
-::: microwler.crawler.Crawler
+::: microwler.Crawler
     rendering:
       show_root_heading: true
-
-
 
 ## Settings
 You can further tune your crawler using the `settings` parameter. It holds various configurations
 for the crawler itself, but also for any extensions/plugins you might want to use or build.
+
+> Note: You don't need to create a Settings object. Just put your settings in a `dict` as shown in the more complex [examples](/examples)
 
 ### Crawler settings
 
@@ -38,5 +38,5 @@ The folder in which you want to save exported data files
 A list of export plugins inheriting from [microwler.export.BaseExporter]().
 > Default: [ ]
 
-### Extensions / Plugins
+### Plugin/Extension settings
 *coming soon*...

@@ -17,7 +17,7 @@ class BaseExporter:
 
     def __init__(self, domain: str, data: list, settings: Settings):
         self.domain = domain
-        self.data = data
+        self.data = [page.__dict__ for page in data]
         self.settings = settings
 
     def export(self):
@@ -55,11 +55,8 @@ class CSVExporter(FileExporter):
     extension = 'csv'
 
     def convert(self):
-        # Flatten the result dicts and throw away the links
-        flat = map(lambda obj: {'url': obj['url'], 'depth': obj['depth'], **obj.get('data', {})}, self.data)
-        data = list(flat)
-        headers = ';'.join([key.upper() for key in data[0].keys()])
-        rows = '\n'.join([';'.join([str(val) for val in obj.values()]) for obj in data])
+        headers = ';'.join([key.upper() for key in self.data[0].keys()])
+        rows = '\n'.join([';'.join([str(val) for val in obj.values()]) for obj in self.data])
         table = '\n'.join([headers, rows])
         return table
 
@@ -68,11 +65,9 @@ class HTMLExporter(FileExporter):
     extension = 'html'
 
     def convert(self):
-        flat = map(lambda obj: {'url': obj['url'], 'depth': obj['depth'], **obj.get('data', {})}, self.data)
-        data = list(flat)
         styles = 'width: 100%; border: 1px solid grey; text-align: center'
-        headers = ''.join([f'<th>{key.upper()}</th>' for key in data[0].keys()])
-        rows = ''.join([f"<tr>{''.join([f'<td>{val}</td>' for val in obj.values()])}</tr>" for obj in data])
+        headers = ''.join([f'<th>{key.upper()}</th>' for key in self.data[0].keys()])
+        rows = ''.join([f"<tr>{''.join([f'<td>{val}</td>' for val in obj.values()])}</tr>" for obj in self.data])
         table = f'<!DOCTYPE html><html><body><table style="{styles}"><tr>{headers}</tr><tbody>{rows}</tbody></table><body></html>'
         return table
 

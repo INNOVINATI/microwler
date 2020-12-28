@@ -7,11 +7,11 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='microwler',
-    version='0.0.9',
+    version='0.1.0',
     description='A micro-framework for deep crawls and scraping written in Python',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/INNOVINATI/microwler',
+    url='https://innovinati.github.io/microwler/',
     author='Maximilian Wolf',
     author_email='maximilian.wolf@innovinati.com',
     classifiers=[
@@ -26,7 +26,7 @@ setup(
     package_dir={'': 'microwler'},
     packages=find_packages(where='microwler'),
     python_requires='>=3.6, <4',
-    install_requires=['aiohttp', 'lxml', 'prettytable', 'random-user-agent'],
+    install_requires=['aiohttp', 'lxml', 'prettytable', 'random-user-agent', 'html-text'],
     project_urls={
         'Bug Reports': 'https://github.com/INNOVINATI/microwler/issues',
         'Source': 'https://github.com/INNOVINATI/microwler/',

@@ -5,7 +5,6 @@ the data it's working with.
 ::: microwler.scrape.Page
     rendering:
         show_root_heading: true
-        show_source: True
 
 ## Selectors
 In most cases, you'll want to extract or calculate some data based on the HTML documents you crawl.
@@ -24,7 +23,7 @@ selectors = {
 }
 ```
 
- In case you want to do something more complex, you can also choose to *define 
+In case you want to do something more complex, you can also choose to *define 
 selectors as callables*, i.e. lambda expressions or regular functions. In this case, **Microwler** will
 inject the current HTML document into every selector:
 
@@ -40,8 +39,7 @@ selectors = {
 
 ### Generic
 
-**Microwler** comes with a set of pre-built selectors to save you some time and effort.
-You can check them out in the [source file](https://github.com/INNOVINATI/microwler/blob/master/microwler/scrape.py).
+**Microwler** comes with a set of plug-and-play selectors to save you some time and effort.
 Some examples are:
 
 - `<title>` tags: `scrape.title`
@@ -49,4 +47,5 @@ Some examples are:
 - `<p>` tags: `scrape.paragraphs`
 - Cleaned text: `scrape.text`
 - `<meta>` tags: `scrape.meta`
-- ...
+
+You can check them out in the [source file](https://github.com/INNOVINATI/microwler/blob/master/microwler/scrape.py).

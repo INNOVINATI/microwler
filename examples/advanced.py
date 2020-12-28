@@ -1,32 +1,33 @@
 from microwler import Crawler, scrape
 from microwler.export import JSONExporter, HTMLExporter
 
-selectors = {
+
+select = {
     'title': scrape.title,
     'headings': scrape.headings,
-    'p_count': lambda dom: len(dom.xpath('//p'))    # Provide custom selectors with callables
+    # Define custom selectors as lambdas or functions (Microwler will inject the page as lxml.html.HtmlElement)
+    'p_count': lambda dom: len(dom.xpath('//p'))
 }
 
 settings = {
-    'max_depth': 5,
-    'max_concurrency': 50,
+    'max_depth': 10,
+    'max_concurrency': 15,
     'export_to': './export/project_folder',
     'exporters': [JSONExporter, HTMLExporter]
 }
 
 
-def transform(page: dict):
+def transform(data: dict):
     """ Define a transformer to manipulate your scraped data """
-    page['data']['title'] = page['data']['title'].upper()
-    return page
+    data['title'] = data['title'].upper()
+    return data
 
 
 if __name__ == '__main__':
     crawler = Crawler(
-        'https://saaris.de/',
-        selectors=selectors,
+        'https://quotes.toscrape.com/',
+        selectors=select,
         transformer=transform,
         settings=settings
     )
     crawler.run(verbose=True, sort_urls=True)
-    print(len(crawler.data))

@@ -4,38 +4,72 @@ from html_text import extract_text
 from lxml.etree import ParserError
 from lxml import html as DOMParser
 
+from microwler.utils import get_first_or_list
+
 
 class Page(object):
     """
-    Represents a crawled page.
-    Arguments:
-        url: the URL of this page
-        status_code: the request's status code
-        depth: the depth at which this page was crawled
-        links: list of internal links found on this page
-        data: HTML body OR data dictionary (if [selectors](#selectors)) are defined
+    Internal representation of a webpage
+
+    > The methods `scrape()` and `transform()` will be called by the crawler instance
+    > if selectors and a corresponding transformer function are defined.
     """
 
-    def __init__(self, url: str, status_code: int, depth: int, links: list = None, data: dict = None):
+    def __init__(self, url: str, status_code: int, depth: int, links: list = None, html: bytes = None):
+        """
+        Arguments:
+            url: the URL of this page
+            status_code: the request's status code
+            depth: the depth at which this page was crawled
+            links: list of internal links found on this page
+            html: HTML body
+        """
         self.url = url
         self.status_code = status_code
         self.depth = depth
         self.links = links
-        self.data = data
+        self.html = html
+        self.data = {}
 
-    def scrape(self, selectors: dict):
+    def scrape(self, selectors: dict, keep_source=False):
         """
         Extracts data using the given selectors. Selectors are either `XPaths` (strings) or callables.
-        If a callable is given, it will receive the parsed DOM as only argument,
-        which is an [lxml.html.HtmlElement](https://lxml.de/api/lxml.html.HtmlElement-class.html) instance. This means you can apply dom.xpath(...) or dom.css(...)
-        from `lxml.etree._Element` and return whatever you want.
+        If a callable is given, it will receive the parsed DOM as only argument, which is an [lxml.html.HtmlElement](https://lxml.de/api/lxml.html.HtmlElement-class.html) instance.
+        This means you can apply `dom.xpath(...)` or `dom.css(...)` from `lxml.etree._Element` and return whatever you want.
+
+        > Note: The selected data items will be stored in self.data
         """
+
         try:
-            dom = DOMParser.fromstring(self.data)
-            self.data = {field: dom.xpath(selector) if (type(selector) == str) else selector(dom)
-                         for field, selector in selectors.items()}
+            dom = DOMParser.fromstring(self.html)
+            for field, selector in selectors.items():
+                if type(selector) == str:
+                    self.data[field] = get_first_or_list(dom.xpath(selector))
+                else:
+                    self.data[field] = get_first_or_list(selector(dom))
         except ParserError as e:
             logging.warning(f'Parsing error: {e}')
+
+        if not keep_source:
+            del self.html
+
+        return self
+
+    def transform(self, func):
+        """
+        Applies a given transformer function to this page's data.
+
+        Arguments:
+            func: a Python callable
+        """
+        if len(self.data):
+            try:
+                self.data = func(self.data)
+                return self
+            except Exception as e:
+                logging.warning(f'Transformer error: {e}')
+                return self
+        raise ValueError('You need to provide selectors in order to use a transformer')
 
 
 def title(dom):
@@ -57,7 +91,7 @@ def headings(dom):
 
 def paragraphs(dom):
     """ Extract <p> tags """
-    return dom.xpath('//p/text()')
+    return dom.xpath('//p//text()')
 
 
 def text(dom):
