@@ -1,9 +1,8 @@
 <img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/logo.png" width="200px" alt="Microwler">
 
 ![PyPI - Status](https://img.shields.io/pypi/status/microwler)
-![GitHub deployments](https://img.shields.io/github/deployments/INNOVINATI/microwler/github-pages)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
 ![GitHub](https://img.shields.io/github/license/INNOVINATI/microwler)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
 
 Microwler is a micro-framework for asynchronous web crawling implemented in Python. 
 It is designed for deep crawls, i.e. retrieving every page of a specific website. 
@@ -28,10 +27,6 @@ Built with:
 - lxml
 
 
-
-## Getting Started
-coming soon...
-
 ## Usage
 ### Python script
 ```python
@@ -40,12 +35,14 @@ from microwler import Crawler, scrape
 crawler = Crawler('https://quotes.toscrape.com/', selectors={'title': scrape.title})
 crawler.run(verbose=True)
 ```
-Take a look at `examples/` to find out more.
 
-### Command line
-coming soon...
+Take a look at `examples/` to find out more or read the [official documentation](https://innovinati.github.io/microwler/).
+
+
+
 ## Contributing
-coming soon...
+We're happy about every meaningful contribution to this project via pull requests.
+If needed, we'll setup more precise guidelines on how to contribute at some point.
 
 
 ## License
