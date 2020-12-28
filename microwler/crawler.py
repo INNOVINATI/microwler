@@ -30,8 +30,8 @@ class Crawler:
         Setup a new Crawler instance
         Arguments:
             start_url: the URL to start crawling
-            selectors: A `dict` with *selectors* [(read more)](scraping/#selectors)
-            transformer: Function to transform scraped data after crawling (check out [an example](examples/#advanced))
+            selectors: A `dict` with *selectors* [(read more)](/microwler/scraping/#selectors)
+            transformer: Function to transform scraped data after crawling (check out [an example](/microwler/examples/#advanced))
             settings: A `dict` with configuration parameters for the crawler [(read more)](#settings)
         """
         self._start_url = start_url
