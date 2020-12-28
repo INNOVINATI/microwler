@@ -1,4 +1,4 @@
-<img src="https://github.com/INNOVINATI/microwler/blob/master/logo.png" width="200px" alt="Microwler">
+<img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/logo.png" width="200px" alt="Microwler">
 
 ![PyPI - Status](https://img.shields.io/pypi/status/microwler)
 ![GitHub deployments](https://img.shields.io/github/deployments/INNOVINATI/microwler/github-pages)

@@ -7,7 +7,7 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='microwler',
-    version='0.0.9',
+    version='0.1.0',
     description='A micro-framework for deep crawls and scraping written in Python',
     long_description=long_description,
     long_description_content_type='text/markdown',

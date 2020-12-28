@@ -1,6 +1,6 @@
 # Documentation
 
-<img src="https://github.com/INNOVINATI/microwler/raw/master/logo.png" width="200px" alt="Microwler">
+<img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/logo.png" width="200px" alt="Microwler">
 
 ![GitHub](https://img.shields.io/github/license/INNOVINATI/microwler)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
