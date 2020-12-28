@@ -22,4 +22,4 @@ Run the crawler with a fully configured pipeline:
 4. Apply transformer
 5. Run exporters
 
-[View source](https://github.com/INNOVINATI/microwler/blob/master/examples/basic.py)
+[View source](https://github.com/INNOVINATI/microwler/blob/master/examples/advanced.py)

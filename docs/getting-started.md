@@ -29,5 +29,4 @@ for page in crawler.pages:
     print(page.url, page.html)
 ```
 Without any further configuration, the crawler will try to visit every qualified link it can find and download
-every page's content. For more advanced scenarios, check out the rest of this documentation or take a look at the
-[examples](/examples).
+every page's content. For more advanced scenarios, check out the rest of this documentation.
