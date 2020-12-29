@@ -7,6 +7,7 @@ import aiohttp
 from urllib.parse import urlparse, urlencode, parse_qsl
 
 import prettytable
+from diskcache import Index
 from lxml import html as DOMParser
 
 from microwler.scrape import Page
@@ -45,7 +46,8 @@ class Crawler:
         self._session = None
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
-        self._results = []
+        self._cache = Index(f'./.microwler/cache/{self._domain}') if self._settings.caching else None
+        self._results = dict()
 
     async def _get(self, url):
         async with self._limiter:
@@ -68,7 +70,7 @@ class Crawler:
             # use set to ignore local duplicates
             link for link in dom.xpath('//a/@href')
             if link.startswith(self._base_url)  # stay on this website
-            if link not in self._seen_urls  # try to filter global duplicates in order to avoid extra loop steps later
+            if link not in self._results  # try to filter global duplicates in order to avoid extra loop steps later
             and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore file extensions
         }
         return list(links)
@@ -89,16 +91,20 @@ class Crawler:
         futures, results = [], []
         for url in to_fetch:
             normalized_url = utils.norm_url(url)
-            if normalized_url in self._seen_urls:
+            if normalized_url in self._results:
                 continue
-            self._seen_urls.add(normalized_url)
+            if self._settings.delta_crawl:
+                if normalized_url in self._cache:
+                    logging.info(f'Dropped pre-cached URL [{normalized_url}]')
+                    continue
+            self._results[normalized_url] = None
             futures.append(self._get_one(normalized_url))
 
         for future in asyncio.as_completed(futures):
             try:
                 results.append((await future))
             except Exception as e:
-                logging.warning(f'Encountered exception: {e}')
+                logging.warning(f'Exception: {e}')
         return results
 
     async def _crawl(self) -> [Page]:
@@ -129,19 +135,17 @@ class Crawler:
             keep_source: per default, the page content will be after scraping
         """
         self._verbose = verbose
-        self._results = None
         start = time.time()
         logging.info('Starting engine ...')
         future = asyncio.Task(self._crawl())
         loop = asyncio.get_event_loop()
         self._session = aiohttp.ClientSession(loop=loop)
-        logging.info(f'Crawler started [{self._start_url}]')
+        logging.info(f'Crawler started [{self._domain}]')
         loop.run_until_complete(future)
         loop.close()
-        logging.info(f'Crawler stopped [{self._start_url}]')
+        logging.info(f'Crawler stopped [{self._domain}]')
         pages = future.result()
         crawl_time = time.time() - start
-        self._session.close()
 
         if len(pages):
             # SORT #
@@ -166,20 +170,33 @@ class Crawler:
                     instance = exporter_cls(self._domain, pages, self._settings)
                     instance.export()
 
-        self._results = pages
-        total_time = time.time() - start
+        for page in pages:
+            self._results[page.url] = page
+            if self._settings.caching:
+                self._cache[page.url] = page
 
-        table = prettytable.PrettyTable()
-        table.add_column('Pages', [len(self._results)])
-        table.add_column('Crawl Duration', [f'{round(crawl_time, 2)}s'])
-        table.add_column('Crawl Speed', [f'{round(len(self._results) / crawl_time, 2)} p/s'])
-        table.add_column('Total Duration', [f'{round(total_time, 2)}s'])
-        print(table)
+        if len(pages):
+            total_time = time.time() - start
+            table = prettytable.PrettyTable()
+            table.add_column('Pages', [len(self._results)])
+            table.add_column('Crawl Duration', [f'{round(crawl_time, 2)}s'])
+            table.add_column('Crawl Speed', [f'{round(len(self._results) / crawl_time, 2)} p/s'])
+            table.add_column('Total Duration', [f'{round(total_time, 2)}s'])
+            print(table)
 
     @property
     def data(self) -> [dict]:
-        return [{'url': page.url, 'data': page.data if self._selectors else page.html} for page in self._results]
+        return [{'url': page.url, 'data': page.data if self._selectors else page.html} for page in self._results.values()]
 
     @property
     def pages(self) -> [Page]:
-        return self._results
+        return list(self._results.values())
+
+    @property
+    def cache(self):
+        return list(self._cache.values())
+
+    def clear_cache(self):
+        size = len(self._cache)
+        self._cache.clear()
+        logging.info(f'Removed {size} items from cache')
