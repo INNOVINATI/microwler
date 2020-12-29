@@ -42,7 +42,7 @@ class Crawler:
         self._transformer = transformer
         self._settings = Settings(settings)
         self._seen_urls = set()
-        self._session = aiohttp.ClientSession()
+        self._session = None
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
         self._results = []
@@ -122,7 +122,7 @@ class Crawler:
 
     def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False):
         """
-        Starts the crawler instance. You can retrieve the results using the `crawler.data` or `crawler.pages` properties.
+        Starts the crawler instance. You can retrieve the results using the `crawler.data` or `crawler.pages` properties
         Arguments:
             verbose: log progress to `stdout` while crawling
             sort_urls: sort result list by URL
@@ -131,14 +131,17 @@ class Crawler:
         self._verbose = verbose
         self._results = None
         start = time.time()
+        logging.info('Starting engine ...')
         future = asyncio.Task(self._crawl())
         loop = asyncio.get_event_loop()
+        self._session = aiohttp.ClientSession(loop=loop)
         logging.info(f'Crawler started [{self._start_url}]')
         loop.run_until_complete(future)
         loop.close()
         logging.info(f'Crawler stopped [{self._start_url}]')
         pages = future.result()
-        duration = time.time() - start
+        crawl_time = time.time() - start
+        self._session.close()
 
         if len(pages):
             # SORT #
@@ -164,11 +167,13 @@ class Crawler:
                     instance.export()
 
         self._results = pages
+        total_time = time.time() - start
 
         table = prettytable.PrettyTable()
         table.add_column('Pages', [len(self._results)])
-        table.add_column('Duration', [f'{round(duration, 2)}s'])
-        table.add_column('Average', [f'{round(len(self._results) / duration, 2)} p/s'])
+        table.add_column('Crawl Duration', [f'{round(crawl_time, 2)}s'])
+        table.add_column('Crawl Speed', [f'{round(len(self._results) / crawl_time, 2)} p/s'])
+        table.add_column('Total Duration', [f'{round(total_time, 2)}s'])
         print(table)
 
     @property
