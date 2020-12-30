@@ -9,16 +9,22 @@ into a given transformer function in order to provide a way for manipulating dat
 
 An example can be found [here](https://github.com/INNOVINATI/microwler/blob/master/examples/advanced.py).
 
-## Exporters
+## Cache
+**Microwler** comes with a built-in cache for storing results on-disk.
+You can enable this feature via the `caching` setting parameter. Per default
+caches will be stored in `${CWD}/.microwler/cache`. Optionally, you can activate *incremental crawling* 
+using the `delta_crawl` setting parameter.
 
-### BaseExporter
+Under the hood, **Microwler** uses [diskcache](https://pypi.org/project/diskcache/) to store results on disk.
+
+## Exporters
 
 ::: microwler.export.BaseExporter
     rendering:
       show_source: true
-      
-### FileExporter
+      show_root_heading: true
 
 ::: microwler.export.FileExporter
     rendering:
       show_source: true
+      show_root_heading: true
