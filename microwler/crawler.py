@@ -218,6 +218,6 @@ class Crawler:
         Dump the cache as JSON file to `path`.
         If `path` is not set, will be dumped in current working directory
         """
-        path = path or f'./dump-{self._domain}-{datetime.today()}.json'
+        path = path or f'./dump-{self._domain}.json'
         with open(path, 'w') as file:
             file.write(json.dumps([page.__dict__ for page in self._cache.values()]))
