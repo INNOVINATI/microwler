@@ -10,35 +10,22 @@ Per default, the crawler will attempt to visit each qualified link it can find a
 corresponding page until it reaches the depth limit or the whole site has been visited.
 
 Optionally, you can also:
-- use pre-built common selectors
+- cache your results on disk
+- use *incremental crawling mode* (only crawl new pages)
+- use pre-built common selectors to scrape data
 - define custom selectors using XPath & CSS
 - define "transformers" to manipulate scraped data after crawling
 - use pre-built export plugins or build your own
 - crawl dynamic pages (coming soon)
 
+Take a look at `examples/` to find out more or read the [Getting Started guide](https://innovinati.github.io/microwler/getting-started).
+
+
 ## Inspiration
 Many concepts were inspired by experience with `Scrapy`, the industry standard for web crawling with Python.
-The idea was to design a very minimalistic framework for analysing specific websites. We tried to focus on making things as simple as possible for developers.
+The idea was to design a very minimalistic framework for analysing specific websites.
+We tried to focus on making things as simple as possible for developers.
 With Microwler, you can build crawlers and extract relevant data in a breeze - and in a single file.
-
-Built with:
-- Python 3.9
-- aiohttp & asyncio
-- lxml
-
-
-## Usage
-### Python script
-```python
-from microwler import Crawler, scrape
-
-crawler = Crawler('https://quotes.toscrape.com/', selectors={'title': scrape.title})
-crawler.run(verbose=True)
-```
-
-Take a look at `examples/` to find out more or read the [official documentation](https://innovinati.github.io/microwler/).
-
-
 
 ## Contributing
 We're happy about every meaningful contribution to this project via pull requests.

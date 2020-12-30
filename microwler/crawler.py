@@ -1,12 +1,16 @@
 import asyncio
+import json
 import logging
 import time
+from datetime import datetime
 from typing import Callable
 
 import aiohttp
-from urllib.parse import urlparse, urlencode, parse_qsl
+from urllib.parse import urlparse
 
 import prettytable
+import completely
+from diskcache import Index
 from lxml import html as DOMParser
 
 from microwler.scrape import Page
@@ -42,10 +46,12 @@ class Crawler:
         self._transformer = transformer
         self._settings = Settings(settings)
         self._seen_urls = set()
-        self._session = aiohttp.ClientSession()
+        self._session = None
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
-        self._results = []
+        self._cache = Index(f'./.microwler/cache/{self._domain}') if self._settings.caching else None
+        self._errors = dict()
+        self._results = dict()
 
     async def _get(self, url):
         async with self._limiter:
@@ -58,7 +64,7 @@ class Crawler:
                     return html, response.status
             except TimeoutError:
                 logging.warning(f'Timeout error: {url}')
-                return None
+                return None, None
 
     def _find_links(self, html):
         """ Extract relevant links from an HTML document """
@@ -68,7 +74,7 @@ class Crawler:
             # use set to ignore local duplicates
             link for link in dom.xpath('//a/@href')
             if link.startswith(self._base_url)  # stay on this website
-            if link not in self._seen_urls  # try to filter global duplicates in order to avoid extra loop steps later
+            if link not in self._results  # try to filter global duplicates in order to avoid extra loop steps later
             and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore file extensions
         }
         return list(links)
@@ -76,105 +82,142 @@ class Crawler:
     async def _get_one(self, url):
         try:
             html, status = await self._get(url)
-            links = []
-            if html:
-                # find internal links
-                links.extend(self._find_links(html))
-            return url, status, html, links
+            if html and status:
+                links = self._find_links(html)
+                return url, status, html, links
+            else:
+                self._errors[url] = 'Timeout Error'
         except Exception as e:
             logging.error(f'Processing error: {e} [{url}]')
-            return url, e, None
+            self._errors[url] = str(e)
+        return None
 
     async def _get_batch(self, to_fetch):
         futures, results = [], []
         for url in to_fetch:
             normalized_url = utils.norm_url(url)
-            if normalized_url in self._seen_urls:
+            if normalized_url in self._results:
                 continue
-            self._seen_urls.add(normalized_url)
+            if self._settings.delta_crawl:
+                if normalized_url in self._cache:
+                    logging.info(f'Dropped pre-cached URL [{normalized_url}]')
+                    continue
+            self._results[normalized_url] = None
             futures.append(self._get_one(normalized_url))
 
         for future in asyncio.as_completed(futures):
             try:
-                results.append((await future))
+                result = (await future)
+                if result is not None:
+                    results.append(result)
             except Exception as e:
-                logging.warning(f'Encountered exception: {e}')
+                logging.warning(f'Exception: {e}')
         return results
 
     async def _crawl(self) -> [Page]:
         pipeline = [self._start_url]
-        pages = []
         try:
             for depth in range(self._settings.max_depth + 1):
                 batch = await self._get_batch(pipeline)
                 pipeline = []
                 for url, status, html, links in batch:
-                    # If links is None, there was an error
-                    if links is not None:
-                        # Queue the URLs found on this page
-                        pipeline.extend(links)
-                    # Append result object
-                    obj = Page(url, status, depth, list(links), html)
-                    pages.append(obj)
+                    pipeline.extend(links)
+                    page = Page(url, status, depth, links, html)
+                    self._results[url] = page
         finally:
             await self._session.close()
-            return pages
 
     def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False):
         """
-        Starts the crawler instance. You can retrieve the results using the `crawler.data` or `crawler.pages` properties.
+        Starts the crawler instance. You can retrieve the results using the `crawler.data` or `crawler.pages` properties
         Arguments:
             verbose: log progress to `stdout` while crawling
             sort_urls: sort result list by URL
             keep_source: per default, the page content will be after scraping
         """
         self._verbose = verbose
-        self._results = None
         start = time.time()
+        logging.info('Starting engine ...')
         future = asyncio.Task(self._crawl())
         loop = asyncio.get_event_loop()
-        logging.info(f'Crawler started [{self._start_url}]')
+        self._session = aiohttp.ClientSession(loop=loop)
+        logging.info(f'Crawler started [{self._domain}]')
         loop.run_until_complete(future)
         loop.close()
-        logging.info(f'Crawler stopped [{self._start_url}]')
-        pages = future.result()
-        duration = time.time() - start
+        logging.info(f'Crawler stopped [{self._domain}]')
+        crawl_time = time.time() - start
 
-        if len(pages):
-            # SORT #
+        # PROCESSING PIPELINE
+        if len(self._results):
+
             if sort_urls:
                 logging.info(f'Sorting results ...')
-                pages.sort(key=lambda item: item.url)
+                self._results = {url: self._results[url] for url in sorted(self._results)}
 
-            # SELECT #
             if self._selectors:
-                logging.info(f'Scraping data ...')
-                pages = [page.scrape(self._selectors, keep_source=keep_source) for page in pages]
+                logging.info('Processing data ...')
+                for url, page in self._results.items():
+                    self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
 
-                # TRANSFORM #
-                if self._transformer is not None:
-                    logging.info(f'Applying transformer ...')
-                    pages = [page.transform(self._transformer) for page in pages]
+                    if self._transformer is not None:
+                        self._results[url] = page.transform(self._transformer)
 
-            # EXPORT #
             if len(self._settings.exporters):
-                logging.info('Running exporters ...')
                 for exporter_cls in self._settings.exporters:
-                    instance = exporter_cls(self._domain, pages, self._settings)
+                    instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
                     instance.export()
 
-        self._results = pages
+            if self._settings.caching:
+                logging.info('Caching results ...')
+                for page in self._results.values():
+                    self._cache[page.url] = page
 
-        table = prettytable.PrettyTable()
-        table.add_column('Pages', [len(self._results)])
-        table.add_column('Duration', [f'{round(duration, 2)}s'])
-        table.add_column('Average', [f'{round(len(self._results) / duration, 2)} p/s'])
-        print(table)
+            total_time = time.time() - start
+            table = prettytable.PrettyTable()
+            table.add_column('Pages', [len(self._results)])
+            table.add_column('Crawl Time', [f'{round(crawl_time, 2)}s'])
+            table.add_column('Crawl Speed', [f'{round(len(self._results) / crawl_time, 2)} p/s'])
+            table.add_column('Errors', [len(self._errors)])
+            if len(self._results):
+                table.add_column('Processing Time', [f'{round(total_time - crawl_time, 2)}s'])
+                if self._selectors:
+                    table.add_column('Data Completeness', [f'{int(completely.measure(self.data)*100)}%'])
+            table.add_column('Total Time', [f'{round(total_time, 2)}s'])
+            print(table)
 
     @property
     def data(self) -> [dict]:
-        return [{'url': page.url, 'data': page.data if self._selectors else page.html} for page in self._results]
+        return [{'url': page.url, 'data': page.data if self._selectors else page.html} for page in self._results.values()]
 
     @property
     def pages(self) -> [Page]:
-        return self._results
+        return list(self._results.values())
+
+    @property
+    def errors(self) -> dict:
+        return self._errors
+
+    @property
+    def cache(self):
+        if self._settings.caching:
+            return list(self._cache.values())
+        raise ValueError('Cache is disabled')
+
+    def clear_cache(self):
+        """
+        Permanently remove everything from local cache
+        """
+        if self._settings.caching:
+            size = len(self._cache)
+            self._cache.clear()
+            logging.info(f'Removed {size} items from cache')
+        raise ValueError('Cache is disabled')
+
+    def dump_cache(self, path: str = None):
+        """
+        Dump the cache as JSON file to `path`.
+        If `path` is not set, will be dumped in current working directory
+        """
+        path = path or f'./dump-{self._domain}.json'
+        with open(path, 'w') as file:
+            file.write(json.dumps([page.__dict__ for page in self._cache.values()]))

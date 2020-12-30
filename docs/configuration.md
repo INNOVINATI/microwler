@@ -28,15 +28,21 @@ Will be used to in the `Accept-Language` header
 > Default: 'en-us'
 
 
+#### `settings.caching`
+Persist results using `diskcache`
+> Default: `False`
+
+#### `settings.delta_crawl`
+Incremental crawling mode: drop URLs which have been seen in earlier runs
+> Default: `False`
+
 ### Export settings
 
 #### `settings.export_to`
 The folder in which you want to save exported data files
-> Default: ${CWD}/projects
+> Default: `${CWD}/projects`
 
 #### `settings.exporters`
-A list of export plugins inheriting from [microwler.export.BaseExporter]().
-> Default: [ ]
+A list of export plugins inheriting from [microwler.export.BaseExporter][].
+> Default: `[]`
 
-### Plugin/Extension settings
-*coming soon*...

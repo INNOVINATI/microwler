@@ -37,7 +37,7 @@ class Page(object):
         If a callable is given, it will receive the parsed DOM as only argument, which is an [lxml.html.HtmlElement](https://lxml.de/api/lxml.html.HtmlElement-class.html) instance.
         This means you can apply `dom.xpath(...)` or `dom.css(...)` from `lxml.etree._Element` and return whatever you want.
 
-        > Note: The selected data items will be stored in self.data
+        > Note: The selected data items will be stored in `Page.data`
         """
 
         try:
@@ -57,7 +57,10 @@ class Page(object):
 
     def transform(self, func):
         """
-        Applies a given transformer function to this page's data.
+        Applies a given function to this page's data.
+        Recommended usage of transformers is to manipulate the input (self.data)
+        and return the whole thing. If nothing is returned, the page's data property
+        will be set to None.
 
         Arguments:
             func: a Python callable

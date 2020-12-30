@@ -36,19 +36,6 @@ IGNORED_EXTENSIONS = [
 ]
 
 
-def fingerprint(url: str):
-    """ Fingerprint function for page identification """
-    url_obj = urlparse(url)
-    path_stripped = "".join([p for p in url_obj.path.split("/")])
-    fp = hash(f'{url_obj.scheme}://{url_obj.netloc}{path_stripped}')
-    return fp
-
-
-def urldiff(urls1: [str], urls2: [str]):
-    """ Finds the difference between two set of URLs [WIP] """
-    return list(set(urls1).difference(set(urls2)))
-
-
 def norm_url(url: str):
     parsed = urlparse(url)
     # Sort query parameters if there are any

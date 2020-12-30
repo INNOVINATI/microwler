@@ -13,7 +13,9 @@ settings = {
     'max_depth': 10,
     'max_concurrency': 15,
     'export_to': './export/project_folder',
-    'exporters': [JSONExporter, HTMLExporter]
+    'exporters': [JSONExporter, HTMLExporter],
+    'caching': True,
+    'delta_crawl': True
 }
 
 
