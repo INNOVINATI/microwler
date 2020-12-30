@@ -7,6 +7,7 @@ import aiohttp
 from urllib.parse import urlparse, urlencode, parse_qsl
 
 import prettytable
+import completely
 from diskcache import Index
 from lxml import html as DOMParser
 
@@ -150,7 +151,7 @@ class Crawler:
                 self._results = {url: self._results[url] for url in sorted(self._results)}
 
             if self._selectors:
-                logging.info(f'Processing data {"(transformer enabled)" if self._transformer else ""} ...')
+                logging.info('Processing data ...')
                 for url, page in self._results.items():
                     self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
 
@@ -172,7 +173,10 @@ class Crawler:
             table.add_column('Pages', [len(self._results)])
             table.add_column('Crawl Time', [f'{round(crawl_time, 2)}s'])
             table.add_column('Crawl Speed', [f'{round(len(self._results) / crawl_time, 2)} p/s'])
-            table.add_column('Processing Time', [f'{round(total_time - crawl_time, 2)}s'])
+            if len(self._results):
+                table.add_column('Processing Time', [f'{round(total_time - crawl_time, 2)}s'])
+                if self._selectors:
+                    table.add_column('Data Completeness', [f'{int(completely.measure(self.data)*100)}%'])
             table.add_column('Total Time', [f'{round(total_time, 2)}s'])
             print(table)
 
