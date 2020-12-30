@@ -15,7 +15,7 @@ setup(
     author='Maximilian Wolf',
     author_email='maximilian.wolf@innovinati.com',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Framework :: AsyncIO',
         'License :: OSI Approved :: MIT License',
@@ -26,7 +26,16 @@ setup(
     ],
     packages=['microwler'],
     python_requires='>=3.6, <4',
-    install_requires=['aiohttp', 'lxml', 'diskcache', 'prettytable', 'random-user-agent', 'html-text', 'completely'],
+    install_requires=[
+        'aiohttp', 'lxml', 'diskcache',
+        'prettytable', 'random-user-agent', 'html-text',
+        'completely', 'click'
+    ],
+    entry_points='''
+    [console_scripts]
+    new=microwler.cmd:add_project
+    crawler=microwler.cmd:crawler
+    ''',
     project_urls={
         'Bug Reports': 'https://github.com/INNOVINATI/microwler/issues',
         'Source': 'https://github.com/INNOVINATI/microwler/',

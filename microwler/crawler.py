@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Callable
 
 import aiohttp
-from urllib.parse import urlparse, urlencode, parse_qsl
+from urllib.parse import urlparse
 
 import prettytable
 import completely

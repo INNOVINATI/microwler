@@ -12,3 +12,7 @@ random-user-agent==1.0.1
 typing-extensions==3.7.4.3
 wcwidth==0.2.5
 yarl==1.6.3
+
+setuptools~=51.1.1
+click~=7.1.2
+completely~=0.1.0
