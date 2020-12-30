@@ -1,6 +1,8 @@
 import asyncio
+import json
 import logging
 import time
+from datetime import datetime
 from typing import Callable
 
 import aiohttp
@@ -202,8 +204,20 @@ class Crawler:
         raise ValueError('Cache is disabled')
 
     def clear_cache(self):
+        """
+        Permanently remove everything from local cache
+        """
         if self._settings.caching:
             size = len(self._cache)
             self._cache.clear()
             logging.info(f'Removed {size} items from cache')
         raise ValueError('Cache is disabled')
+
+    def dump_cache(self, path: str = None):
+        """
+        Dump the cache as JSON file to `path`.
+        If `path` is not set, will be dumped in current working directory
+        """
+        path = path or f'./cache-{self._domain}-{datetime.today()}.json'
+        with open(path, 'w') as file:
+            file.write(json.dumps(self._cache))
