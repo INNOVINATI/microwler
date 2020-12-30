@@ -43,6 +43,6 @@ The folder in which you want to save exported data files
 > Default: `${CWD}/projects`
 
 #### `settings.exporters`
-A list of export plugins inheriting from [microwler.export.BaseExporter]().
+A list of export plugins inheriting from [microwler.export.BaseExporter][].
 > Default: `[]`
 
