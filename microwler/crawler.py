@@ -109,22 +109,18 @@ class Crawler:
 
     async def _crawl(self) -> [Page]:
         pipeline = [self._start_url]
-        pages = []
         try:
             for depth in range(self._settings.max_depth + 1):
                 batch = await self._get_batch(pipeline)
                 pipeline = []
                 for url, status, html, links in batch:
-                    # If links is None, there was an error
+                    # If links is None, there was an error in _get_one()
                     if links is not None:
-                        # Queue the URLs found on this page
                         pipeline.extend(links)
-                    # Append result object
-                    obj = Page(url, status, depth, list(links), html)
-                    pages.append(obj)
+                    page = Page(url, status, depth, links, html)
+                    self._results[url] = page
         finally:
             await self._session.close()
-            return pages
 
     def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False):
         """
@@ -144,44 +140,40 @@ class Crawler:
         loop.run_until_complete(future)
         loop.close()
         logging.info(f'Crawler stopped [{self._domain}]')
-        pages = future.result()
         crawl_time = time.time() - start
 
-        if len(pages):
-            # SORT #
+        # PROCESSING PIPELINE
+        if len(self._results):
+
             if sort_urls:
                 logging.info(f'Sorting results ...')
-                pages.sort(key=lambda item: item.url)
+                self._results = {url: self._results[url] for url in sorted(self._results)}
 
-            # SELECT #
             if self._selectors:
-                logging.info(f'Scraping data ...')
-                pages = [page.scrape(self._selectors, keep_source=keep_source) for page in pages]
+                logging.info(f'Processing data {"(transformer enabled)" if self._transformer else ""} ...')
+                for url, page in self._results.items():
+                    self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
 
-                # TRANSFORM #
-                if self._transformer is not None:
-                    logging.info(f'Applying transformer ...')
-                    pages = [page.transform(self._transformer) for page in pages]
+                    if self._transformer is not None:
+                        self._results[url] = page.transform(self._transformer)
 
-            # EXPORT #
             if len(self._settings.exporters):
-                logging.info('Running exporters ...')
                 for exporter_cls in self._settings.exporters:
-                    instance = exporter_cls(self._domain, pages, self._settings)
+                    instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
                     instance.export()
 
-        for page in pages:
-            self._results[page.url] = page
             if self._settings.caching:
-                self._cache[page.url] = page
+                logging.info('Caching results ...')
+                for page in self._results.values():
+                    self._cache[page.url] = page
 
-        if len(pages):
             total_time = time.time() - start
             table = prettytable.PrettyTable()
             table.add_column('Pages', [len(self._results)])
-            table.add_column('Crawl Duration', [f'{round(crawl_time, 2)}s'])
+            table.add_column('Crawl Time', [f'{round(crawl_time, 2)}s'])
             table.add_column('Crawl Speed', [f'{round(len(self._results) / crawl_time, 2)} p/s'])
-            table.add_column('Total Duration', [f'{round(total_time, 2)}s'])
+            table.add_column('Processing Time', [f'{round(total_time - crawl_time, 2)}s'])
+            table.add_column('Total Time', [f'{round(total_time, 2)}s'])
             print(table)
 
     @property
