@@ -7,7 +7,8 @@ nav:
     - Workflow: workflow.md
     - Configuration: configuration.md
     - Scraping: scraping.md
-    - Examples: examples.md
+    - Extensions: extensions.md
+    - FAQs: faq.md
     - License: license.md
 theme: material
 plugins:
