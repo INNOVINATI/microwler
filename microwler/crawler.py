@@ -48,6 +48,7 @@ class Crawler:
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
         self._cache = Index(f'./.microwler/cache/{self._domain}') if self._settings.caching else None
+        self._errors = dict()
         self._results = dict()
 
     async def _get(self, url):
@@ -61,7 +62,7 @@ class Crawler:
                     return html, response.status
             except TimeoutError:
                 logging.warning(f'Timeout error: {url}')
-                return None
+                return None, None
 
     def _find_links(self, html):
         """ Extract relevant links from an HTML document """
@@ -79,14 +80,15 @@ class Crawler:
     async def _get_one(self, url):
         try:
             html, status = await self._get(url)
-            links = []
-            if html:
-                # find internal links
-                links.extend(self._find_links(html))
-            return url, status, html, links
+            if html and status:
+                links = self._find_links(html)
+                return url, status, html, links
+            else:
+                self._errors[url] = 'Timeout Error'
         except Exception as e:
             logging.error(f'Processing error: {e} [{url}]')
-            return url, e, None
+            self._errors[url] = str(e)
+        return None
 
     async def _get_batch(self, to_fetch):
         futures, results = [], []
@@ -103,7 +105,9 @@ class Crawler:
 
         for future in asyncio.as_completed(futures):
             try:
-                results.append((await future))
+                result = (await future)
+                if result is not None:
+                    results.append(result)
             except Exception as e:
                 logging.warning(f'Exception: {e}')
         return results
@@ -115,9 +119,7 @@ class Crawler:
                 batch = await self._get_batch(pipeline)
                 pipeline = []
                 for url, status, html, links in batch:
-                    # If links is None, there was an error in _get_one()
-                    if links is not None:
-                        pipeline.extend(links)
+                    pipeline.extend(links)
                     page = Page(url, status, depth, links, html)
                     self._results[url] = page
         finally:
@@ -173,6 +175,7 @@ class Crawler:
             table.add_column('Pages', [len(self._results)])
             table.add_column('Crawl Time', [f'{round(crawl_time, 2)}s'])
             table.add_column('Crawl Speed', [f'{round(len(self._results) / crawl_time, 2)} p/s'])
+            table.add_column('Errors', [len(self._errors)])
             if len(self._results):
                 table.add_column('Processing Time', [f'{round(total_time - crawl_time, 2)}s'])
                 if self._selectors:
@@ -189,10 +192,18 @@ class Crawler:
         return list(self._results.values())
 
     @property
+    def errors(self) -> dict:
+        return self._errors
+
+    @property
     def cache(self):
-        return list(self._cache.values())
+        if self._settings.caching:
+            return list(self._cache.values())
+        raise ValueError('Cache is disabled')
 
     def clear_cache(self):
-        size = len(self._cache)
-        self._cache.clear()
-        logging.info(f'Removed {size} items from cache')
+        if self._settings.caching:
+            size = len(self._cache)
+            self._cache.clear()
+            logging.info(f'Removed {size} items from cache')
+        raise ValueError('Cache is disabled')
