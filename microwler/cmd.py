@@ -9,6 +9,13 @@ from microwler.template import TEMPLATE
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROJECT_FOLDER = os.path.join(os.getcwd(), 'projects')
 
+COMMANDS = [
+    ('new <START_URL>', 'Create a new project'),
+    ('crawler <PROJECT_NAME> run', 'Run a project\'s crawler'),
+    ('crawler <PROJECT_NAME> dumpcache', 'Dump project cache to JSON file'),
+    ('crawler <PROJECT_NAME> clearcache', 'Clear project cache')
+]
+
 
 def load_project(project_name):
     path = os.path.join(PROJECT_FOLDER, project_name + '.py')
@@ -16,6 +23,22 @@ def load_project(project_name):
     project = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(project)
     return project
+
+
+@click.command()
+def microwler():
+    """ Show available commands and their usage """
+    print(
+        """
+╔╦╗┬┌─┐┬─┐┌─┐┬ ┬┬  ┌─┐┬─┐
+║║║││  ├┬┘│ │││││  ├┤ ├┬┘
+╩ ╩┴└─┘┴└─└─┘└┴┘┴─┘└─┘┴└─            
+- powered by INNOVINATI -                                                                              
+        """
+    )
+    print('USAGE:')
+    for cmd, description in COMMANDS:
+        print(f'> {description}:\n  {cmd}\n')
 
 
 @click.command()

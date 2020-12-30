@@ -18,12 +18,13 @@ Optionally, you can also:
 - use pre-built export plugins or build your own
 - crawl dynamic pages (coming soon)
 
-Take a look at `examples/` to find out more or read the [official documentation](https://innovinati.github.io/microwler/).
+Take a look at `examples/` to find out more or read the [Getting Started guide](https://innovinati.github.io/microwler/getting-started).
 
 
 ## Inspiration
 Many concepts were inspired by experience with `Scrapy`, the industry standard for web crawling with Python.
-The idea was to design a very minimalistic framework for analysing specific websites. We tried to focus on making things as simple as possible for developers.
+The idea was to design a very minimalistic framework for analysing specific websites.
+We tried to focus on making things as simple as possible for developers.
 With Microwler, you can build crawlers and extract relevant data in a breeze - and in a single file.
 
 ## Contributing

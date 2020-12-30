@@ -28,11 +28,12 @@ setup(
     python_requires='>=3.6, <4',
     install_requires=[
         'aiohttp', 'lxml', 'diskcache',
-        'prettytable', 'random-user-agent', 'html-text',
-        'completely', 'click'
+        'prettytable', 'random-user-agent',
+        'html-text', 'completely', 'click'
     ],
     entry_points='''
     [console_scripts]
+    microwler=microwler.cmd:microwler
     new=microwler.cmd:add_project
     crawler=microwler.cmd:crawler
     ''',
