@@ -2,7 +2,7 @@
 Per default, the crawler will visit every qualified link it can find at retrieve the corresponding page content.
 Of course, you can customize and extend this behaviour.
 
-::: microwler.Crawler
+::: microwler.crawler.Crawler
     rendering:
       show_root_heading: true
 
