@@ -17,8 +17,9 @@ COMMANDS = [
 ]
 
 
-def load_project(project_name):
-    path = os.path.join(PROJECT_FOLDER, project_name + '.py')
+def load_project(project_name, project_folder=None):
+    dir_path = project_folder or PROJECT_FOLDER
+    path = os.path.join(dir_path, project_name + '.py')
     spec = importlib.util.spec_from_file_location(project_name, path)
     project = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(project)

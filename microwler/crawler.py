@@ -115,6 +115,7 @@ class Crawler:
         return results
 
     async def _crawl(self) -> [Page]:
+        logging.info(f'Crawler started [{self._domain}]')
         pipeline = [self._start_url]
         try:
             for depth in range(self._settings.max_depth + 1):
@@ -126,6 +127,31 @@ class Crawler:
                     self._results[url] = page
         finally:
             await self._session.close()
+            logging.info(f'Crawler stopped [{self._domain}]')
+
+    def _process(self, sort_urls=False, keep_source=False):
+
+        if sort_urls:
+            logging.info(f'Sorting results ...')
+            self._results = {url: self._results[url] for url in sorted(self._results)}
+
+        if self._selectors:
+            logging.info('Processing data ...')
+            for url, page in self._results.items():
+                self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
+
+                if self._transformer is not None:
+                    self._results[url] = page.transform(self._transformer)
+
+        if len(self._settings.exporters):
+            for exporter_cls in self._settings.exporters:
+                instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
+                instance.export()
+
+        if self._settings.caching:
+            logging.info('Caching results ...')
+            for page in self.pages:
+                self._cache[page.url] = page
 
     def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False):
         """
@@ -138,40 +164,15 @@ class Crawler:
         self._verbose = verbose
         start = time.time()
         logging.info('Starting engine ...')
-        future = asyncio.Task(self._crawl())
         loop = asyncio.get_event_loop()
         self._session = aiohttp.ClientSession(loop=loop)
-        logging.info(f'Crawler started [{self._domain}]')
+        future = asyncio.Task(self._crawl())
         loop.run_until_complete(future)
         loop.close()
-        logging.info(f'Crawler stopped [{self._domain}]')
         crawl_time = time.time() - start
 
-        # PROCESSING PIPELINE
         if len(self._results):
-
-            if sort_urls:
-                logging.info(f'Sorting results ...')
-                self._results = {url: self._results[url] for url in sorted(self._results)}
-
-            if self._selectors:
-                logging.info('Processing data ...')
-                for url, page in self._results.items():
-                    self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
-
-                    if self._transformer is not None:
-                        self._results[url] = page.transform(self._transformer)
-
-            if len(self._settings.exporters):
-                for exporter_cls in self._settings.exporters:
-                    instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
-                    instance.export()
-
-            if self._settings.caching:
-                logging.info('Caching results ...')
-                for page in self._results.values():
-                    self._cache[page.url] = page
-
+            self._process(sort_urls=sort_urls, keep_source=keep_source)
             total_time = time.time() - start
             table = prettytable.PrettyTable()
             table.add_column('Pages', [len(self._results)])
