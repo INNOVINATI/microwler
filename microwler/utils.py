@@ -1,12 +1,17 @@
+import importlib
+import importlib.util
+import os
 from urllib.parse import urlparse, urlencode, parse_qsl
 
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
 
-software_names = [SoftwareName.CHROME.value]
-operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value]
 
-UAFactory = UserAgent(software_names=software_names, operating_systems=operating_systems, limit=100)
+PROJECT_FOLDER = os.path.join(os.getcwd(), 'projects')
+
+_software_names = [SoftwareName.CHROME.value]
+_operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value]
+UAFactory = UserAgent(software_names=_software_names, operating_systems=_operating_systems, limit=100)
 
 
 def get_headers(language: str):
@@ -54,3 +59,13 @@ def remove_multi_whitespace(string_or_list):
     if type(string_or_list) == str:
         return ' '.join(string_or_list.split())
     return list(map(lambda x: ' '.join(x.split()), string_or_list))
+
+
+
+def load_project(project_name, project_folder=None):
+    dir_path = project_folder or PROJECT_FOLDER
+    path = os.path.join(dir_path, project_name + '.py')
+    spec = importlib.util.spec_from_file_location(project_name, path)
+    project = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(project)
+    return project

@@ -1,35 +1,26 @@
-import importlib.util
 import os
 from urllib.parse import urlparse
 
 import click
 
 from microwler.template import TEMPLATE
+from microwler.utils import load_project, PROJECT_FOLDER
+from microwler.webservice import start_app
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PROJECT_FOLDER = os.path.join(os.getcwd(), 'projects')
-
 COMMANDS = [
-    ('new <START_URL>', 'Create a new project'),
-    ('crawler <PROJECT_NAME> run', 'Run a project\'s crawler'),
-    ('crawler <PROJECT_NAME> dumpcache', 'Dump project cache to JSON file'),
-    ('crawler <PROJECT_NAME> clearcache', 'Clear project cache')
+    ('new START_URL', 'Create a new project'),
+    ('crawler PROJECT_NAME run', 'Run a project\'s crawler'),
+    ('crawler PROJECT_NAME dumpcache', 'Dump project cache to JSON file'),
+    ('crawler PROJECT_NAME clearcache', 'Clear project cache'),
+    ('serve [-p|--port]', 'Start the built-in webservice'),
 ]
-
-
-def load_project(project_name, project_folder=None):
-    dir_path = project_folder or PROJECT_FOLDER
-    path = os.path.join(dir_path, project_name + '.py')
-    spec = importlib.util.spec_from_file_location(project_name, path)
-    project = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(project)
-    return project
 
 
 @click.command()
 def microwler():
-    """ Show available commands and their usage """
-    print(
+    """ Show available commands """
+    click.echo(
         """
 ╔╦╗┬┌─┐┬─┐┌─┐┬ ┬┬  ┌─┐┬─┐
 ║║║││  ├┬┘│ │││││  ├┤ ├┬┘
@@ -45,6 +36,7 @@ def microwler():
 @click.command()
 @click.argument('start_url', type=str)
 def add_project(start_url):
+    """ Create a new project """
     project = urlparse(start_url).netloc.replace('.', '_')
     os.makedirs(PROJECT_FOLDER, exist_ok=True)
     template = TEMPLATE.replace('START_URL', start_url)
@@ -67,6 +59,7 @@ def crawler(ctx, project_name):
 @click.option('--keep-html', default=False, is_flag=True)
 @click.pass_context
 def run(ctx, verbose, sort, keep_html):
+    """ Run a project's crawler"""
     project = load_project(ctx.obj['project'])
     project.crawler.run(verbose=verbose, sort_urls=sort, keep_source=keep_html)
 
@@ -75,6 +68,7 @@ def run(ctx, verbose, sort, keep_html):
 @click.option('-p', '--path')
 @click.pass_context
 def dump_cache(ctx, path):
+    """ Dump the project cache to a JSON file """
     project = load_project(ctx.obj['project'])
     if len(project.crawler._cache):
         project.crawler.dump_cache(path)
@@ -85,8 +79,16 @@ def dump_cache(ctx, path):
 @crawler.command('clearcache')
 @click.pass_context
 def clear_cache(ctx):
+    """ Clear the project cache """
     project = load_project(ctx['project'])
     if len(project.crawler._cache):
         project.crawler.clear_cache()
     else:
         click.echo('Cache is disabled for this project')
+
+
+@click.command('serve')
+@click.option('-p', '--port', type=int, default=5000, help='The port to run the webservice on.')
+def serve(port):
+    """ Start the built-in webservice """
+    start_app(port)

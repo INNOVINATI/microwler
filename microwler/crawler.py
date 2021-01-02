@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import time
-from datetime import datetime
 from typing import Callable
 
 import aiohttp

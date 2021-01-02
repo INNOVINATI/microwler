@@ -4,14 +4,16 @@ import time
 from datetime import datetime
 import aiohttp
 from quart import Quart
-from microwler.cmd import load_project
 
-app = Quart('microwler')
+from microwler.utils import load_project, PROJECT_FOLDER
 
-PROJECT_FOLDER = os.path.join(os.pardir, 'projects')    # TODO
+app = Quart('Microwler')
+
 META = {
-    'version': '0.1.3',
-    'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    'app': {
+        'version': '0.1.3',
+        'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    },
     'projects': {path.split('.')[0]: {'running': False, 'last_run': None}
                  for path in os.listdir(PROJECT_FOLDER) if path.endswith('.py')}
 }
@@ -59,5 +61,5 @@ async def data(project_name):
     }
 
 
-if __name__ == '__main__':
-    app.run()
+def start_app(port=5000):
+    app.run(port=port)
