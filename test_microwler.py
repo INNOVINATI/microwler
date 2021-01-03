@@ -1,9 +1,10 @@
 from microwler import Crawler
 from microwler.core import scrape
-from microwler.export import JSONExporter, HTMLExporter
+from microwler.core.export import JSONExporter, HTMLExporter
 
 
 class TestSuite:
+    # TODO: FIX
 
     def test_basic(self):
         crawler = Crawler('https://quotes.toscrape.com/')
