@@ -10,7 +10,7 @@ To start the webservice, activate your workspace and run the following command:
 serve
 ```
 
-> This will start the ASGI server on `localhost:5000`
+> This will start a production-ready ASGI server on `localhost:5000` using `Quart` with `hypercorn`.
 
 You can also define a different port:
 ```bash

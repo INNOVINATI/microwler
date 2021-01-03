@@ -1,4 +1,4 @@
-# Data Exports
+# Exporting Data
 **Microwler** allows you to export scraped data to various formats.
 You can build custom export plugins or use on of its pre-defined exporters:
 

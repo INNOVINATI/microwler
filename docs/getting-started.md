@@ -17,13 +17,14 @@ pip install microwler
 ```
 
 ## Usage
-### CLI
+### CLI (recommended)
 > Recommended since v0.1.2
 
 Before you start, create a workspace as suggested in the [setup guide](#installation)
 and activate its virtual environment.
 
-Within this folder, **create a new project**:
+Within this folder, **create a new project** providing the URL to start
+crawling with:
 ```bash
 new https://quotes.toscrape.com/
 ```
