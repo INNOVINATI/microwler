@@ -11,12 +11,14 @@ corresponding page until it reaches the depth limit or the whole site has been v
 Optionally, you can also:
 - cache your results on disk
 - use *incremental crawling mode* (only crawl new pages)
-- use pre-built common selectors to scrape data, i.e. `<meta>` or `<title>`
+- use pre-built selectors to scrape common data, i.e. `<meta>` or `<title>`
 - easily define custom selectors using XPath & CSS
 - define "transformers" to manipulate scraped data after crawling
 - export data with pre-built plugins or build your own
 
 Sounds good? Head over to the [Getting Started guide](https://innovinati.github.io/microwler/getting-started) now!
+
+> If you're familiar with **Microwler**, you can install the package using PyPI: `pip install microwler`.
 
 ## Inspiration
 Many concepts were inspired by experience with `Scrapy`, the industry standard for web crawling with Python.
