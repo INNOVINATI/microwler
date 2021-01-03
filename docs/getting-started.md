@@ -43,7 +43,7 @@ microwler
 ```
 
 ### Script
-Simply create a [microwler.crawler.Crawler][] instance and `run` it:
+Simply create a [microwler.core.crawler.Crawler][] instance and `run` it:
 
 ```python
 from microwler import Crawler

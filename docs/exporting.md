@@ -2,19 +2,19 @@
 **Microwler** allows you to export scraped data to various formats.
 You can build custom export plugins or use on of its pre-defined exporters:
 
-- `microwler.export.JSONExporter`
-- `microwler.export.CSVExporter`
-- `microwler.export.HTMLExporter`
+- `microwler.core.export.JSONExporter`
+- `microwler.core.export.CSVExporter`
+- `microwler.core.export.HTMLExporter`
 
 > Use the `export_to` and `exporters` settings to configure the export behaviour.
 
 
-::: microwler.export.BaseExporter
+::: microwler.core.export.BaseExporter
     rendering:
       show_source: true
       show_root_heading: true
 
-::: microwler.export.FileExporter
+::: microwler.core.export.FileExporter
     rendering:
       show_source: true
       show_root_heading: true

@@ -13,8 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 """
+import os
+
 from microwler.core.crawler import Crawler
 
 import logging.config
 
+from microwler.utils import PROJECT_FOLDER
+
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+os.makedirs(PROJECT_FOLDER, exist_ok=True)

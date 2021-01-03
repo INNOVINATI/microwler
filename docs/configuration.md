@@ -2,7 +2,7 @@
 Per default, the crawler will visit every qualified link it can find at retrieve the corresponding page content.
 Of course, you can customize and extend this behaviour.
 
-::: microwler.crawler.Crawler
+::: microwler.core.crawler.Crawler
     rendering:
       show_root_heading: true
 
@@ -43,6 +43,6 @@ The folder in which you want to save exported data files
 > Default: `${CWD}/projects`
 
 #### `settings.exporters`
-A list of export plugins inheriting from [microwler.export.BaseExporter][].
+A list of export plugins inheriting from [microwler.core.export.BaseExporter][].
 > Default: `[]`
 
