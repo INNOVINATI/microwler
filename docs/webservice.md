@@ -1,4 +1,4 @@
-# JSON API
+# Web Service
 
 **Microwler** comes with a production-ready JSON API 
 built with [Quart](https://pypi.org/project/Quart/). It provides 
@@ -10,7 +10,9 @@ To start the webservice, activate your workspace and run the following command:
 serve
 ```
 
-This will start the ASGI server on `localhost:5000`. You can also define a different port:
+> This will start the ASGI server on `localhost:5000`
+
+You can also define a different port:
 ```bash
 serve [-p|--port] 8080
 ```
