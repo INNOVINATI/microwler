@@ -29,3 +29,5 @@ With Microwler, you can build crawlers and extract relevant data in a breeze - a
 ## Contributing
 We're happy about every meaningful contribution to this project via pull requests.
 If needed, we'll setup more precise guidelines on how to contribute at some point.
+
+> Note: you'll need to install `pytest`, `mkdocs-material` and `mkdocstrings` in order to contribute
