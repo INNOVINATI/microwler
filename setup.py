@@ -18,14 +18,14 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Framework :: AsyncIO',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
     packages=['microwler'],
-    python_requires='>=3.6, <4',
+    python_requires='>=3.7, <4',
     install_requires=[
         'aiohttp', 'lxml', 'diskcache',
         'prettytable', 'random-user-agent',
@@ -37,6 +37,7 @@ setup(
     microwler=microwler.cmd:microwler
     new=microwler.cmd:add_project
     crawler=microwler.cmd:crawler
+    serve=microwler.cmd:serve
     ''',
     project_urls={
         'Bug Reports': 'https://github.com/INNOVINATI/microwler/issues',
