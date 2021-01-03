@@ -3,7 +3,7 @@ import logging
 import os
 from datetime import datetime
 
-from microwler.settings import Settings
+from microwler.core.settings import Settings
 
 LOG = logging.getLogger(__name__)
 

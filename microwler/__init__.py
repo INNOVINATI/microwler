@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 """
-from .crawler import Crawler
+from microwler.core.crawler import Crawler
 
 import logging.config
 

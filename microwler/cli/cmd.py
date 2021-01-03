@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 import click
 
-from microwler.template import TEMPLATE
+from microwler.cli.template import TEMPLATE
 from microwler.utils import load_project, PROJECT_FOLDER
 from microwler.webservice import start_app
 
