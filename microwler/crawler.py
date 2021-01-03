@@ -16,7 +16,7 @@ from microwler.scrape import Page
 from microwler.settings import Settings
 from microwler import utils
 
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+LOG = logging.getLogger(__name__)
 
 
 class Crawler:
@@ -59,10 +59,10 @@ class Crawler:
                 async with self._session.get(url, timeout=15, headers=heads) as response:
                     html = await response.text(encoding='utf-8')
                     if self._verbose:
-                        logging.info(f'Processed: {url} [{response.status}]')
+                        LOG.info(f'Processed: {url} [{response.status}]')
                     return html, response.status
             except TimeoutError:
-                logging.warning(f'Timeout error: {url}')
+                LOG.warning(f'Timeout error: {url}')
                 return None, None
 
     def _find_links(self, html):
@@ -87,7 +87,7 @@ class Crawler:
             else:
                 self._errors[url] = 'Timeout Error'
         except Exception as e:
-            logging.error(f'Processing error: {e} [{url}]')
+            LOG.error(f'Processing error: {e} [{url}]')
             self._errors[url] = str(e)
         return None
 
@@ -99,7 +99,7 @@ class Crawler:
                 continue
             if self._settings.delta_crawl:
                 if normalized_url in self._cache:
-                    logging.info(f'Dropped pre-cached URL [{normalized_url}]')
+                    LOG.info(f'Dropped pre-cached URL [{normalized_url}]')
                     continue
             self._results[normalized_url] = None
             futures.append(self._get_one(normalized_url))
@@ -110,11 +110,11 @@ class Crawler:
                 if result is not None:
                     results.append(result)
             except Exception as e:
-                logging.warning(f'Exception: {e}')
+                LOG.warning(f'Exception: {e}')
         return results
 
     async def _crawl(self) -> [Page]:
-        logging.info(f'Crawler started [{self._domain}]')
+        LOG.info(f'Crawler started [{self._domain}]')
         pipeline = [self._start_url]
         try:
             for depth in range(self._settings.max_depth + 1):
@@ -126,16 +126,16 @@ class Crawler:
                     self._results[url] = page
         finally:
             await self._session.close()
-            logging.info(f'Crawler stopped [{self._domain}]')
+            LOG.info(f'Crawler stopped [{self._domain}]')
 
     def _process(self, sort_urls=False, keep_source=False):
 
         if sort_urls:
-            logging.info(f'Sorting results ...')
+            LOG.info(f'Sorting results ...')
             self._results = {url: self._results[url] for url in sorted(self._results)}
 
         if self._selectors:
-            logging.info('Processing data ...')
+            LOG.info('Processing data ...')
             for url, page in self._results.items():
                 self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
 
@@ -148,7 +148,7 @@ class Crawler:
                 instance.export()
 
         if self._settings.caching:
-            logging.info('Caching results ...')
+            LOG.info('Caching results ...')
             for page in self.pages:
                 self._cache[page.url] = page
 
@@ -162,7 +162,7 @@ class Crawler:
         """
         self._verbose = verbose
         start = time.time()
-        logging.info('Starting engine ...')
+        LOG.info('Starting engine ...')
         loop = asyncio.get_event_loop()
         self._session = aiohttp.ClientSession(loop=loop)
         future = asyncio.Task(self._crawl())
@@ -207,7 +207,7 @@ class Crawler:
         if self._settings.caching:
             size = len(self._cache)
             self._cache.clear()
-            logging.info(f'Removed {size} items from cache')
+            LOG.info(f'Removed {size} items from cache')
         raise ValueError('Cache is disabled')
 
     def dump_cache(self, path: str = None):

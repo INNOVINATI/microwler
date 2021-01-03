@@ -14,3 +14,7 @@
    limitations under the License.
 """
 from .crawler import Crawler
+
+import logging.config
+
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')

@@ -6,6 +6,8 @@ from lxml import html as DOMParser
 
 from microwler.utils import get_first_or_list
 
+LOG = logging.getLogger(__name__)
+
 
 class Page(object):
     """
@@ -48,7 +50,7 @@ class Page(object):
                 else:
                     self.data[field] = get_first_or_list(selector(dom))
         except ParserError as e:
-            logging.warning(f'Parsing error: {e}')
+            LOG.warning(f'Parsing error: {e}')
 
         if not keep_source:
             del self.html
@@ -70,7 +72,7 @@ class Page(object):
                 self.data = func(self.data)
                 return self
             except Exception as e:
-                logging.warning(f'Transformer error: {e}')
+                LOG.warning(f'Transformer error: {e}')
                 return self
         raise ValueError('You need to provide selectors in order to use a transformer')
 

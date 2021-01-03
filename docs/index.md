@@ -2,13 +2,14 @@
 
 <img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/logo.png" width="200px" alt="Microwler">
 
-![GitHub](https://img.shields.io/github/license/INNOVINATI/microwler)
+![PyPI - Status](https://img.shields.io/pypi/status/microwler)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
 
 **Microwler** is a micro-framework for asynchronous web crawling and scraping implemented in Python. 
 It is designed for deep crawls, i.e. retrieving every page of a specific website. 
 Per default, the crawler will attempt to visit each qualified link it can find and download the 
 corresponding page until it reaches the depth limit or the whole site has been visited.
+
 Optionally, you can also:
 
 - cache your results on disk

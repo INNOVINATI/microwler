@@ -56,5 +56,5 @@ for page in crawler.pages:
 Without any further configuration, the crawler will try to visit every qualified link it can find and download
 every page's content. For more advanced scenarios, check out the rest of this documentation.
 
-> Note: If you're planning on using the webservice, you should use the CLI
+> Note: If you're planning on using the webservice or the "project" system in general, you should use the CLI
 as recommended above.

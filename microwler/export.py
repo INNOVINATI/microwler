@@ -5,7 +5,7 @@ from datetime import datetime
 
 from microwler.settings import Settings
 
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+LOG = logging.getLogger(__name__)
 
 
 class BaseExporter:
@@ -59,9 +59,9 @@ class FileExporter(BaseExporter):
             os.makedirs(self.settings.export_to, exist_ok=True)
             with open(path, 'w') as file:
                 file.write(data)
-            logging.info(f'Exported data as {self.extension.upper()} to: {path}')
+            LOG.info(f'Exported data as {self.extension.upper()} to: {path}')
         except Exception as e:
-            logging.error(f'Error during export: {e}')
+            LOG.error(f'Error during export: {e}')
 
 
 class JSONExporter(FileExporter):

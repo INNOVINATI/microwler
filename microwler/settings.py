@@ -1,6 +1,8 @@
 import logging
 import os
 
+LOG = logging.getLogger(__name__)
+
 
 class Settings(object):
     max_depth: int = 10
@@ -18,4 +20,4 @@ class Settings(object):
 
             if self.delta_crawl and not self.caching:
                 self.caching = True
-                logging.info('Auto-enabled caching (required for delta_crawl)')
+                LOG.info('Auto-enabled caching (required for delta_crawl)')
