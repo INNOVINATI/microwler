@@ -29,7 +29,10 @@ class BaseExporter:
         self.settings = settings
 
     def export(self):
-        """ Will be called by [microwler.crawler.Crawler][] """
+        """
+        Export data to target destination
+        > Will be called by [microwler.crawler.Crawler][]
+        """
         raise NotImplementedError()
 
 
@@ -43,7 +46,7 @@ class FileExporter(BaseExporter):
     def convert(self):
         """
         Converts `self.data` to output format specified by `FileExporter.extension`.
-        > Must return converted data
+        > Must return converted data as `string`
         """
         raise NotImplementedError()
 

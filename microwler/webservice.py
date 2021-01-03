@@ -21,11 +21,21 @@ META = {
 
 @app.route('/')
 async def status():
+    """
+    Return the service status
+
+    Route: `/`
+    """
     return dict(META)
 
 
 @app.route('/crawl/<project_name>')
-async def crawl(project_name):
+async def crawl(project_name: str):
+    """
+    Run the project's crawler and return the results
+
+    Route: `/crawl/<str:project_name>`
+    """
     try:
         start = time.time()
         project = load_project(project_name, project_folder=PROJECT_FOLDER)
@@ -52,7 +62,12 @@ async def crawl(project_name):
 
 
 @app.route('/data/<project_name>')
-async def data(project_name):
+async def data(project_name: str):
+    """
+    Return the project's cached data
+
+    Route: `/data/<str:project_name>`
+    """
     project = load_project(project_name, project_folder=PROJECT_FOLDER)
     return {
         'project': project_name,
