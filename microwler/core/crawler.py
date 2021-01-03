@@ -164,10 +164,12 @@ class Crawler:
         start = time.time()
         LOG.info('Starting engine ...')
         loop = asyncio.get_event_loop()
-        self._session = aiohttp.ClientSession(loop=loop)
-        future = asyncio.Task(self._crawl())
-        loop.run_until_complete(future)
-        loop.close()
+        try:
+            self._session = aiohttp.ClientSession(loop=loop)
+            future = asyncio.Task(self._crawl())
+            loop.run_until_complete(future)
+        finally:
+            loop.close()
         crawl_time = time.time() - start
 
         if len(self._results):
