@@ -1,6 +1,7 @@
 <img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/logo.png" width="200px" alt="Microwler">
 
 ![PyPI - Status](https://img.shields.io/pypi/status/microwler)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/INNOVINATI/microwler/Run%20Test%20Cases/master)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
 
 Microwler is a micro-framework for asynchronous web crawling and scraping implemented in Python.
@@ -17,8 +18,7 @@ Optionally, you can also:
 - export data with pre-built plugins or build your own
 
 Sounds good? Head over to the [Getting Started guide](https://innovinati.github.io/microwler/getting-started) now!
-
-> If you're familiar with **Microwler**, you can install the package using PyPI: `pip install microwler`.
+If you're familiar with **Microwler**, you can install the package from PyPI using: `pip install microwler`.
 
 ## Inspiration
 Many concepts were inspired by experience with `Scrapy`, the industry standard for web crawling with Python.
