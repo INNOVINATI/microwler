@@ -17,7 +17,7 @@ import os
 
 from microwler.crawler import Microwler
 
-import logging.config
+import logging
 
 from microwler.utils import PROJECT_FOLDER
 
