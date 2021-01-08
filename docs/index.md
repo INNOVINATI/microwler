@@ -19,6 +19,7 @@ Optionally, you can also:
 - easily define **custom selectors** using XPath & CSS
 - define "transformers" to **manipulate scraped data** after crawling
 - **export data** with pre-built plugins or build your own
+- use the **built-in web service** to run crawlers and fetch data from a remote client
 
 Sounds good? Head over to the [Getting Started guide](https://innovinati.github.io/microwler/getting-started) now!
 
@@ -28,8 +29,6 @@ If you're familiar with **Microwler**, you can install the package directly from
 <hr>
 
 <small>
-MIT License
-
 Copyright (c) 2020-2021 Maximilian Wolf
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
