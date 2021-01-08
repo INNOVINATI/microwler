@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 
 class Microwler:
     """
-    Every crawl will be executed by a single Crawler instance.
+    Each `Microwler` targets exactly one domain/website.
     """
 
     def __init__(self,
@@ -30,12 +30,12 @@ class Microwler:
                  transformer: Callable[[dict], dict] = None,
                  settings: dict = None):
         """
-        Setup a new Crawler instance
+        Setup a new `Microwler` instance
         Arguments:
             start_url: the URL to start crawling
             selectors: A `dict` with *selectors* [(read more)](/microwler/scraping/#selectors)
-            transformer: Function to transform scraped data after crawling (check out [an example](/microwler/examples/#advanced))
-            settings: A `dict` with configuration parameters for the crawler [(read more)](#settings)
+            transformer: Function to transform scraped data after crawling ([read more](/microwler/faq/#what-are-transformers))
+            settings: A `dict` with configuration parameters for the crawler [(read more)](/microwler/configuration/#settings)
         """
         self._start_url = start_url
         parsed = urlparse(start_url)

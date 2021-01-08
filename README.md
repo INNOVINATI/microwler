@@ -18,6 +18,7 @@ Optionally, you can also:
 - **export data** with pre-built plugins or build your own
 
 Sounds good? Head over to the [Getting Started guide](https://innovinati.github.io/microwler/getting-started) now!
+
 If you're familiar with **Microwler**, you can install the package from PyPI using: `pip install microwler`.
 
 ## Inspiration
@@ -30,7 +31,8 @@ With Microwler, you can build crawlers and extract relevant data in a breeze - a
 We're happy about every meaningful contribution to this project via pull requests.
 If needed, we'll setup more precise guidelines on how to contribute at some point.
 
-> Note: you'll need to install `pytest`, `mkdocs-material` and `mkdocstrings` in order to contribute
+> Note: you'll need to install `pip install -r requirements-dev.txt` to include required
+> dependencies for docs and tests.
 
 ## License
 Copyright 2020-2021 Maximilian Wolf
