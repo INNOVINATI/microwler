@@ -1,6 +1,7 @@
 import importlib
 import importlib.util
 import os
+from datetime import datetime
 from urllib.parse import urlparse, urlencode, parse_qsl
 
 from random_user_agent.user_agent import UserAgent
@@ -61,7 +62,6 @@ def remove_multi_whitespace(string_or_list):
     return list(map(lambda x: ' '.join(x.split()), string_or_list))
 
 
-
 def load_project(project_name, project_folder=None):
     dir_path = project_folder or PROJECT_FOLDER
     path = os.path.join(dir_path, project_name + '.py')
@@ -69,3 +69,23 @@ def load_project(project_name, project_folder=None):
     project = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(project)
     return project
+
+
+class ServiceStatus:
+    status = {
+        'version': '0.1.3',
+        'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    }
+    projects = dict()
+
+    def __init__(self):
+        self.load_project_folder()
+
+    def load_project_folder(self):
+        for path in os.listdir(PROJECT_FOLDER):
+            if path.endswith('.py'):
+                if (name := path.split('.')[0]) not in self.projects:
+                    self.projects[name] = {'running': False, 'last_run': None}
+
+    def to_dict(self):
+        return {'app': self.status, 'projects': self.projects}
