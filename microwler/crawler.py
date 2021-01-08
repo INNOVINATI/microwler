@@ -40,10 +40,10 @@ class Microwler:
         self._start_url = start_url
         parsed = urlparse(start_url)
         self._domain = parsed.netloc
-        self._base_url = f'{parsed.scheme}://{self._domain}/'
+        self._base_url = f'{parsed.scheme}://{self._domain}{parsed.path}'
         self._selectors = selectors
         self._transformer = transformer
-        self._settings = Settings(settings)
+        self._settings = Settings(self._base_url, settings)
         self._seen_urls = set()
         self._session = None
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
