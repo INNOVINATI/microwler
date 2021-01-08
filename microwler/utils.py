@@ -84,7 +84,8 @@ class ServiceStatus:
     def load_project_folder(self):
         for path in os.listdir(PROJECT_FOLDER):
             if path.endswith('.py'):
-                if (name := path.split('.')[0]) not in self.projects:
+                name = path.split('.')[0]
+                if name not in self.projects:
                     self.projects[name] = {'running': False, 'last_run': None}
 
     def to_dict(self):
