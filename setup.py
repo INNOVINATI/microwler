@@ -24,7 +24,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
-    packages=['microwler', 'microwler.cli', 'microwler.core'],
+    packages=['microwler', 'microwler.cli'],
     python_requires='>=3.7, <4',
     install_requires=[
         'aiohttp', 'lxml', 'diskcache', 'prettytable', 'quart',
