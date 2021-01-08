@@ -17,8 +17,8 @@ COMMANDS = [
 ]
 
 
-@click.command()
-def microwler():
+@click.command('microwler')
+def show_help():
     """ Show available commands """
     click.echo(
         """

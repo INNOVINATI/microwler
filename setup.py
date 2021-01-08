@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import pathlib
 
 here = pathlib.Path(__file__).parent.resolve()
@@ -24,7 +24,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
-    packages=['microwler'],
+    packages=['microwler', 'microwler.cli', 'microwler.core'],
     python_requires='>=3.7, <4',
     install_requires=[
         'aiohttp', 'lxml', 'diskcache',
@@ -34,10 +34,10 @@ setup(
     ],
     entry_points='''
     [console_scripts]
-    microwler=microwler.cmd:microwler
-    new=microwler.cmd:add_project
-    crawler=microwler.cmd:crawler
-    serve=microwler.cmd:serve
+    microwler=microwler.cli.cmd:show_help
+    new=microwler.cli.cmd:add_project
+    crawler=microwler.cli.cmd:crawler
+    serve=microwler.cli.cmd:serve
     ''',
     project_urls={
         'Bug Reports': 'https://github.com/INNOVINATI/microwler/issues',
