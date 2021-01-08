@@ -1,4 +1,4 @@
-site_name: Microwler
+site_name: Microwler Documentation
 site_url: https://innovinati.github.io/microwler/
 repo_url: https://github.com/INNOVINATI/microwler/
 nav:
@@ -23,9 +23,8 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/INNOVINATI/microwler
+      link: https://github.com/INNOVINATI
     - icon: fontawesome/brands/linkedin
       link: https://linkedin.com/company/innovinati
 
 copyright: powered by <a href="https://innovinati.com/">INNOVINATI</a>
-site_description:
