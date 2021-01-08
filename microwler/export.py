@@ -5,13 +5,13 @@ from datetime import datetime
 
 from microwler.settings import Settings
 
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+LOG = logging.getLogger(__name__)
 
 
 class BaseExporter:
     """
     Use this class to build your custom export functionality, i.e. send data per HTTP or SMTP.
-    The Crawler instance will call `export()` once it's done with everything else.
+    The Microwler instance will call `export()` once it's done with everything else.
     You can plug your Exporter into the crawler by adding the class to `settings['exporters']`
     """
 
@@ -29,21 +29,25 @@ class BaseExporter:
         self.settings = settings
 
     def export(self):
-        """ Will be called by [microwler.crawler.Crawler][] """
+        """
+        Export data to target destination
+        > Will be called by [microwler.crawler.Microwler][]
+        """
         raise NotImplementedError()
 
 
 class FileExporter(BaseExporter):
     """
-    Take a look at [microwler.export](https://github.com/INNOVINATI/microwler/blob/master/microwler/export.py)
-    for examples on how to use this Exporter
+    This exporter will save data to your local filesystem. It currently provides
+    exports to JSON, CSV or HTML tables. Take a look at the following exporters
+    and their implementation to understand its usage.
     """
     extension = ''
 
     def convert(self):
         """
         Converts `self.data` to output format specified by `FileExporter.extension`.
-        > Must return converted data
+        > Must return converted data as `string`
         """
         raise NotImplementedError()
 
@@ -56,12 +60,13 @@ class FileExporter(BaseExporter):
             os.makedirs(self.settings.export_to, exist_ok=True)
             with open(path, 'w') as file:
                 file.write(data)
-            logging.info(f'Exported data as {self.extension.upper()} to: {path}')
+            LOG.info(f'Exported data as {self.extension.upper()} to: {path}')
         except Exception as e:
-            logging.error(f'Error during export: {e}')
+            LOG.error(f'Error during export: {e}')
 
 
 class JSONExporter(FileExporter):
+    """ Exports to JSON files """
     extension = 'json'
 
     def convert(self):
@@ -70,6 +75,7 @@ class JSONExporter(FileExporter):
 
 
 class CSVExporter(FileExporter):
+    """ Exports to CSV files """
     extension = 'csv'
 
     def convert(self):
@@ -80,6 +86,7 @@ class CSVExporter(FileExporter):
 
 
 class HTMLExporter(FileExporter):
+    """ Exports data as <table> to HTML files """
     extension = 'html'
 
     def convert(self):

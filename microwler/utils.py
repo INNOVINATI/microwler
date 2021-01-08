@@ -1,12 +1,18 @@
+import importlib
+import importlib.util
+import os
+from datetime import datetime
 from urllib.parse import urlparse, urlencode, parse_qsl
 
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
 
-software_names = [SoftwareName.CHROME.value]
-operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value]
 
-UAFactory = UserAgent(software_names=software_names, operating_systems=operating_systems, limit=100)
+PROJECT_FOLDER = os.path.join(os.getcwd(), 'projects')
+
+_software_names = [SoftwareName.CHROME.value]
+_operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value]
+UAFactory = UserAgent(software_names=_software_names, operating_systems=_operating_systems, limit=100)
 
 
 def get_headers(language: str):
@@ -41,7 +47,7 @@ def norm_url(url: str):
     # Sort query parameters if there are any
     query = '?' + urlencode(sorted(parse_qsl(parsed.query))) if parsed.query else ''
     # Drop fragments and rebuild URL
-    return f'{parsed.scheme}://{parsed.netloc}{parsed.path}{query}'
+    return f'{parsed.scheme}://{parsed.netloc}{parsed.path if parsed.path.startswith("/") else f"/{parsed.path}"}{query}'
 
 
 def get_first_or_list(from_result):
@@ -54,3 +60,33 @@ def remove_multi_whitespace(string_or_list):
     if type(string_or_list) == str:
         return ' '.join(string_or_list.split())
     return list(map(lambda x: ' '.join(x.split()), string_or_list))
+
+
+def load_project(project_name, project_folder=None):
+    dir_path = project_folder or PROJECT_FOLDER
+    path = os.path.join(dir_path, project_name + '.py')
+    spec = importlib.util.spec_from_file_location(project_name, path)
+    project = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(project)
+    return project
+
+
+class ServiceStatus:
+    status = {
+        'version': '0.1.3',
+        'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    }
+    projects = dict()
+
+    def __init__(self):
+        self.load_project_folder()
+
+    def load_project_folder(self):
+        for path in os.listdir(PROJECT_FOLDER):
+            if path.endswith('.py'):
+                name = path.split('.')[0]
+                if name not in self.projects:
+                    self.projects[name] = {'running': False, 'last_run': None}
+
+    def to_dict(self):
+        return {'app': self.status, 'projects': self.projects}

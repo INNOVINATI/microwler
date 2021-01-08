@@ -7,9 +7,9 @@ nav:
     - Workflow: workflow.md
     - Configuration: configuration.md
     - Scraping: scraping.md
-    - Extensions: extensions.md
+    - Exporting: exporting.md
+    - Web Service: webservice.md
     - FAQs: faq.md
-    - License: license.md
 theme: material
 plugins:
 - mkdocstrings:
@@ -27,5 +27,5 @@ extra:
     - icon: fontawesome/brands/linkedin
       link: https://linkedin.com/company/innovinati
 
-copyright: powered by <a href="https://innovinati.com">INNOVINATI</a>
+copyright: powered by <a href="https://innovinati.com/">INNOVINATI</a>
 site_description:

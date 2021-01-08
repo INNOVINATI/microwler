@@ -6,7 +6,7 @@ __pycache__
 *.egg-info
 *.json
 export/
-site/
 projects/
 .microwler/
 dump-*.json
+.pytest_cache/

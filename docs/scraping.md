@@ -48,4 +48,4 @@ Some examples are:
 - Cleaned text: `scrape.text`
 - `<meta>` tags: `scrape.meta`
 
-You can check them out in the [source file](https://github.com/INNOVINATI/microwler/blob/master/microwler/scrape.py).
+You can check them out in the [source file](https://github.com/INNOVINATI/microwler/blob/master/microwler/core/scrape.py).
