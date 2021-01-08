@@ -10,7 +10,6 @@ nav:
     - Exporting: exporting.md
     - Web Service: webservice.md
     - FAQs: faq.md
-    - License: license.md
 theme: material
 plugins:
 - mkdocstrings:
