@@ -13,13 +13,12 @@ corresponding page until it reaches the depth limit or the whole site has been v
 
 Optionally, you can also:
 
-- cache your results on disk
-- use *incremental crawling mode* (only crawl new pages)
-- use pre-built common selectors to scrape data
-- define custom selectors using XPath & CSS
-- define "transformers" to manipulate scraped data after crawling
-- use pre-built export plugins or build your own
-- crawl dynamic pages (coming soon)
+- **cache your results** on disk
+- **apply incremental crawling** mode (only crawl new pages)
+- use pre-built selectors to easily **scrape common data**, i.e. `<meta>` or `<title>`
+- **define custom selectors** using XPath & CSS
+- define "transformers" to **manipulate scraped data** after crawling
+- **export data** with pre-built plugins or build your own
 
 <hr>
 <p>
