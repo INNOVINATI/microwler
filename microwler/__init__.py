@@ -15,7 +15,7 @@
 """
 import os
 
-from microwler.core.crawler import Microwler
+from microwler.crawler import Microwler
 
 import logging.config
 

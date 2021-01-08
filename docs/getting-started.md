@@ -29,13 +29,13 @@ crawling with:
 new https://quotes.toscrape.com/
 ```
 **Microwler** will create a `projects/` folder in your current working directory and place
-a file called `quotes_toscrape_com.py` within it. This file contains your crawler definition.
+a file called `quotes_toscrape_com.py` within it. This file contains your [crawler configuration][microwler.crawler.Microwler].
 
 To **run this project**, execute the following command:
 ```bash
 crawler quotes_toscrape_com run
 ```
-> Note: this will most likely create a `.microwler` folder in your workspace
+> Note: Depending on your setup, this will create a `.microwler` folder in your workspace
 > where internal stuff like caches will be stored. Mess with it at your own risk!
 
 You can **check available commands** with:
@@ -44,7 +44,7 @@ microwler
 ```
 
 ### Script
-Simply create a [microwler.core.crawler.Crawler][] instance and `run` it:
+Simply create a [microwler.crawler.Microwler][] instance and `run` it:
 
 ```python
 from microwler import Microwler

@@ -1,6 +1,6 @@
 # Web Service
 
-**Microwler** comes with a production-ready JSON API 
+**Microwler** ships with a JSON API 
 built with [Quart](https://pypi.org/project/Quart/). It provides 
 a simple way to run your crawlers and retrieve their scraped data via HTTP.
 
@@ -10,11 +10,11 @@ To start the webservice, activate your workspace and run the following command:
 serve
 ```
 
-> This will start a production-ready ASGI server on `localhost:5000` using `Quart` with `hypercorn`.
+> Per default, this will start a production-ready ASGI server on `localhost:5000` using `Quart` with `hypercorn`.
 
-You can also define a different port:
+You can customize the hostname and port:
 ```bash
-serve [-p|--port] 8080
+serve [-h|--host HOSTNAME] [-p|--port PORT]
 ```
 
 ## Endpoints

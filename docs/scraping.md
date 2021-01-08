@@ -2,7 +2,7 @@
 Before diving into the actual scraping process, let's take a look at how **Microwler** represents
 the data it's working with.
 
-::: microwler.core.scrape.Page
+::: microwler.scrape.Page
     rendering:
         show_root_heading: true
 

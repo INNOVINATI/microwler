@@ -12,8 +12,8 @@ import completely
 from diskcache import Index
 from lxml import html as DOMParser
 
-from microwler.core.scrape import Page
-from microwler.core.settings import Settings
+from microwler.scrape import Page
+from microwler.settings import Settings
 from microwler import utils
 
 LOG = logging.getLogger(__name__)
@@ -154,7 +154,7 @@ class Microwler:
 
     def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False):
         """
-        Starts the crawler instance. You can retrieve the results using the `crawler.data` or `crawler.pages` properties
+        Starts the crawler instance. You can retrieve the results using the `crawler.data` or `crawler.pages` properties.
         Arguments:
             verbose: log progress to `stdout` while crawling
             sort_urls: sort result list by URL

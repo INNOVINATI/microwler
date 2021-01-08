@@ -79,10 +79,10 @@ async def data(project_name: str):
     }
 
 
-def start_app(port=5000):
+def start_app(host='localhost', port=5000):
     from hypercorn.asyncio import serve
     from hypercorn.config import Config
 
     config = Config()
-    config.bind = [f'0.0.0.0:{port}']
+    config.bind = [f'{host}:{port}']
     asyncio.run(serve(app, config))
