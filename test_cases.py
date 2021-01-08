@@ -7,9 +7,8 @@ by integrating tests for the webservice.
 """
 import pytest
 
-from microwler import Microwler
-from microwler.core import scrape
-from microwler.core.export import JSONExporter, HTMLExporter
+from microwler import Microwler, scrape
+from microwler.export import JSONExporter, HTMLExporter
 
 
 @pytest.mark.asyncio
