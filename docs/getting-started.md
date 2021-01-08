@@ -47,9 +47,9 @@ microwler
 Simply create a [microwler.core.crawler.Crawler][] instance and `run` it:
 
 ```python
-from microwler import Crawler
+from microwler import Microwler
 
-crawler = Crawler('https://quotes.toscrape.com/')
+crawler = Microwler('https://quotes.toscrape.com/')
 crawler.run(verbose=True)
 for page in crawler.pages:
     print(page.url, page.html)

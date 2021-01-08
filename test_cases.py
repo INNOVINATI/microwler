@@ -7,14 +7,14 @@ by integrating tests for the webservice.
 """
 import pytest
 
-from microwler import Crawler
+from microwler import Microwler
 from microwler.core import scrape
 from microwler.core.export import JSONExporter, HTMLExporter
 
 
 @pytest.mark.asyncio
 def test_basic():
-    crawler = Crawler('https://quotes.toscrape.com/')
+    crawler = Microwler('https://quotes.toscrape.com/')
     crawler.run(verbose=True)
     for page in crawler.pages:
         print(page.url, page.html)
@@ -32,7 +32,7 @@ def test_intermediate():
         'max_concurrency': 30,
     }
 
-    crawler = Crawler('https://quotes.toscrape.com/', selectors=selectors, settings=settings)
+    crawler = Microwler('https://quotes.toscrape.com/', selectors=selectors, settings=settings)
     crawler.run(verbose=True)
     for page_data in crawler.data:
         print(f'\n{page_data["url"].upper()}')
@@ -62,7 +62,7 @@ def test_advanced():
         data['title'] = data['title'].upper()
         return data
 
-    crawler = Crawler(
+    crawler = Microwler(
         'https://quotes.toscrape.com/',
         selectors=select,
         transformer=transform,

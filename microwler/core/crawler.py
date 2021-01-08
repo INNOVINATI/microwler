@@ -19,7 +19,7 @@ from microwler import utils
 LOG = logging.getLogger(__name__)
 
 
-class Crawler:
+class Microwler:
     """
     Every crawl will be executed by a single Crawler instance.
     """

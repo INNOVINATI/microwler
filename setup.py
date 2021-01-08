@@ -37,7 +37,7 @@ setup(
     microwler=microwler.cli.cmd:show_help
     new=microwler.cli.cmd:add_project
     crawler=microwler.cli.cmd:crawler
-    serve=microwler.cli.cmd:serve
+    serve=microwler.cli.cmd:start_server
     ''',
     project_urls={
         'Bug Reports': 'https://github.com/INNOVINATI/microwler/issues',
