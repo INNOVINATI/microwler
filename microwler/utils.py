@@ -47,7 +47,7 @@ def norm_url(url: str):
     # Sort query parameters if there are any
     query = '?' + urlencode(sorted(parse_qsl(parsed.query))) if parsed.query else ''
     # Drop fragments and rebuild URL
-    return f'{parsed.scheme}://{parsed.netloc}{parsed.path}{query}'
+    return f'{parsed.scheme}://{parsed.netloc}{parsed.path if parsed.path.startswith("/") else f"/{parsed.path}"}{query}'
 
 
 def get_first_or_list(from_result):
