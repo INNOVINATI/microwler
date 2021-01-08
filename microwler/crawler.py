@@ -73,6 +73,7 @@ class Microwler:
             # use set to ignore local duplicates
             link for link in dom.xpath('//a/@href')
             if link.startswith(self._base_url)  # stay on this website
+            if urlparse(link).path.startswith(self._settings.base_path)
             if link not in self._results  # try to filter global duplicates in order to avoid extra loop steps later
             and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore file extensions
         }

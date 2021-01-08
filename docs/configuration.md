@@ -14,6 +14,10 @@ for the crawler itself, but also for any extensions/plugins you might want to us
 
 ### Crawler settings
 
+#### `settings.base_path`
+Crawl exclusively within this path, i.e. visit every URL that starts with `/blog`
+> Default: '/'
+
 #### `settings.max_depth`
 The depth limit at which to stop crawling
 > Default: 10
