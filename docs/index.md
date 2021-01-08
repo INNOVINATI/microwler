@@ -2,6 +2,7 @@
 
 <img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/logo.png" width="200px" alt="Microwler">
 
+![PyPI](https://img.shields.io/pypi/v/microwler)
 ![PyPI - Status](https://img.shields.io/pypi/status/microwler)
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/INNOVINATI/microwler/Run%20Test%20Cases/master)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
