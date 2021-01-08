@@ -27,10 +27,8 @@ setup(
     packages=['microwler', 'microwler.cli', 'microwler.core'],
     python_requires='>=3.7, <4',
     install_requires=[
-        'aiohttp', 'lxml', 'diskcache',
-        'prettytable', 'random-user-agent',
-        'html-text', 'completely', 'click',
-        'quart'
+        'aiohttp', 'lxml', 'diskcache', 'prettytable', 'quart',
+        'random-user-agent', 'html-text', 'completely', 'click'
     ],
     entry_points='''
     [console_scripts]
@@ -40,7 +38,7 @@ setup(
     serve=microwler.cli.cmd:start_server
     ''',
     project_urls={
-        'Bug Reports': 'https://github.com/INNOVINATI/microwler/issues',
+        'Issues': 'https://github.com/INNOVINATI/microwler/issues',
         'Source': 'https://github.com/INNOVINATI/microwler/',
     },
 )
