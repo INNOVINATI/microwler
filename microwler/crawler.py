@@ -12,7 +12,7 @@ import completely
 from diskcache import Index
 from lxml import html as DOMParser
 
-from microwler.scrape import Page
+from microwler.page import Page
 from microwler.settings import Settings
 from microwler import utils
 

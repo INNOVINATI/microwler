@@ -1,3 +1,4 @@
+parsel
 quart==0.14.1
 aiohttp==3.7.3
 async-timeout==3.0.1

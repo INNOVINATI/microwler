@@ -28,7 +28,8 @@ setup(
     python_requires='>=3.7, <4',
     install_requires=[
         'aiohttp', 'lxml', 'diskcache', 'prettytable', 'quart',
-        'random-user-agent', 'html-text', 'completely', 'click'
+        'random-user-agent', 'html-text', 'completely', 'click',
+        'parsel'
     ],
     entry_points='''
     [console_scripts]
