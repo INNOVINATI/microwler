@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import time
-from typing import Callable
+from typing import Callable, List, Dict, Any, Union
 
 import aiohttp
 from urllib.parse import urlparse
@@ -11,6 +11,7 @@ import prettytable
 import completely
 from diskcache import Index
 from lxml import html as DOMParser
+from parsel import Selector
 
 from microwler.page import Page
 from microwler.settings import Settings
@@ -26,7 +27,7 @@ class Microwler:
 
     def __init__(self,
                  start_url: str,
-                 selectors: dict = None,
+                 selectors: Dict[str, Union[str, Callable[[Selector], Any]]] = None,
                  transformer: Callable[[dict], dict] = None,
                  settings: dict = None):
         """
@@ -114,7 +115,7 @@ class Microwler:
                 LOG.warning(f'Exception: {e}')
         return results
 
-    async def _crawl(self) -> [Page]:
+    async def _crawl(self):
         LOG.info(f'Crawler started [{self._domain}]')
         pipeline = [self._start_url]
         try:
@@ -193,7 +194,7 @@ class Microwler:
         return [{'url': page.url, 'data': page.data if self._selectors else page.html} for page in self._results.values()]
 
     @property
-    def pages(self) -> [Page]:
+    def pages(self) -> List[Page]:
         return list(self._results.values())
 
     @property
