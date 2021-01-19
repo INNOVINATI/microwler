@@ -38,8 +38,9 @@ def test_advanced():
     select = {
         'title': scrape.title,
         'headings': scrape.headings,
-        # Define custom selectors as lambdas or functions (Microwler will inject the page as lxml.html.HtmlElement)
-        'p_count': lambda dom: len(dom.xpath('//p'))
+        # Define custom selectors as lambdas or functions using Parsel
+        'p_count': lambda dom: len(dom.xpath('//p')),
+        'images': lambda dom: list(map(lambda x: x.attrib['src'], dom.css('img').getall()))
     }
 
     settings = {

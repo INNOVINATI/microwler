@@ -7,7 +7,7 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='microwler',
-    version='0.1.3',
+    version='0.1.4',
     description='A micro-framework for asynchronous deep crawls and web scraping written in Python',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -28,7 +28,8 @@ setup(
     python_requires='>=3.7, <4',
     install_requires=[
         'aiohttp', 'lxml', 'diskcache', 'prettytable', 'quart',
-        'random-user-agent', 'html-text', 'completely', 'click'
+        'random-user-agent', 'html-text', 'completely', 'click',
+        'parsel'
     ],
     entry_points='''
     [console_scripts]
