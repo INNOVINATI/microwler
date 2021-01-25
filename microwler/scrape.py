@@ -25,7 +25,7 @@ def paragraphs(dom):
 
 def text(dom):
     """ Extract and clean text content """
-    return extract_text(str(dom)).getall()
+    return extract_text(str(dom))
 
 
 def meta(dom):
