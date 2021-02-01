@@ -18,25 +18,27 @@ pip install microwler
 
 ## Usage
 ### CLI (recommended)
-Before you start, create a workspace as suggested in the [setup guide](#installation)
-and activate its virtual environment. Within that folder, **create a new project** providing the URL to start
-crawling with:
+#### Create a project
+Make sure you created a workspace as suggested in the [previous section](#installation). 
+Within that folder, create a new project providing the URL to start crawling with:
 ```bash
 new https://quotes.toscrape.com/
 ```
-**Microwler** will create a `projects/` folder in your current working directory and place
+Microwler will create a `projects/` folder in your current working directory and place
 a file called `quotes_toscrape_com.py` within it. This file contains your [crawler configuration][microwler.crawler.Microwler].
 
-> Note: You can check out the project template in the [source files](https://github.com/INNOVINATI/microwler/blob/devel/microwler/cli/template.py).
+> Note: You can check out the corresponding project template in the [source files](https://github.com/INNOVINATI/microwler/blob/devel/microwler/cli/template.py).
 
-To **run this project**, execute the following command:
+#### Run the project/crawler
+To run this project, execute the following command:
 ```bash
 crawler quotes_toscrape_com run
 ```
 > Note: Depending on your setup, this will create a `.microwler` folder in your workspace
 > where internal stuff like caches will be stored. Mess with it at your own risk!
 
-You can **check available commands** with:
+#### Check available commands
+You can check available commands with:
 ```bash
 microwler
 ```

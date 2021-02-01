@@ -95,3 +95,8 @@ Internally, an HTML document is represented as `Page`. Here's a JSON representat
   }
 }
 ```
+
+To retrieve data after running the crawler (i.e. directly from a script) you can use
+
+- `crawler.data` : will return a list of `dict`s containing the URL and `data` of every page
+- `crawler.pages`: will return a list of `Page` objects (similar to what's shown above)
