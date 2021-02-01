@@ -28,7 +28,7 @@ def paragraphs(dom: parsel.Selector):
 
 def text(dom: parsel.Selector):
     """ Extract and clean text content """
-    return extract_text(str(dom))
+    return extract_text(dom.xpath('//body').get())
 
 
 def meta(dom: parsel.Selector):
@@ -39,7 +39,7 @@ def meta(dom: parsel.Selector):
 
 def canonicals(dom: parsel.Selector):
     """ Extract `<link rel='canonical'>` tags """
-    return dom.xpath('//link[@rel=’canonical’]/@href').getall()
+    return dom.xpath('//link[@rel="canonical"]/@href').getall()
 
 
 def schemas(dom: parsel.Selector):
