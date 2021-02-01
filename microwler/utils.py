@@ -59,7 +59,7 @@ def remove_multi_whitespace(string_or_list):
     """ Cleans redundant whitespace from extracted data """
     if type(string_or_list) == str:
         return ' '.join(string_or_list.split())
-    return list(map(lambda x: ' '.join(x.split()), string_or_list))
+    return [' '.join(string.split()) for string in string_or_list]
 
 
 def load_project(project_name, project_folder=None):

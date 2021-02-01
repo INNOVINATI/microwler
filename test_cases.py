@@ -29,37 +29,39 @@ def test_intermediate():
         'max_concurrency': 30,
     }
 
-    crawler = Microwler('https://quotes.toscrape.com/', selectors=selectors, settings=settings)
+    crawler = Microwler('https://quotes.toscrape.com/', select=selectors, settings=settings)
     crawler.run(verbose=True)
 
 
 @pytest.mark.asyncio
 def test_advanced():
-    select = {
+    selectors = {
         'title': scrape.title,
         'headings': scrape.headings,
-        # Define custom selectors as lambdas or functions using Parsel
-        'p_count': lambda dom: len(dom.xpath('//p')),
-        'images': lambda dom: list(map(lambda x: x.attrib['src'], dom.css('img').getall()))
+        'paragraphs': scrape.paragraphs,
+        # Define custom selectors using Parsel
+        'images': lambda dom: [img.attrib['src'] for img in dom.css('img').getall()]
     }
 
     settings = {
+        'link_filter': "//a[contains(@href, 'inspirational')]/@href",
         'max_depth': 10,
         'max_concurrency': 15,
-        'export_to': './export/project_folder',
+        'export_to': './tests/exports',
         'exporters': [JSONExporter, HTMLExporter],
         'caching': True,
     }
 
-    def transform(data: dict):
+    def transformer(data: dict):
         """ Define a transformer to manipulate your scraped data """
         data['title'] = data['title'].upper()
+        data['paragraphs'] = len(data['paragraphs'])
         return data
 
     crawler = Microwler(
         'https://quotes.toscrape.com/',
-        selectors=select,
-        transformer=transform,
+        select=selectors,
+        transform=transformer,
         settings=settings
     )
     crawler.run(verbose=True, sort_urls=True)

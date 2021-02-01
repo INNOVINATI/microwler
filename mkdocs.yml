@@ -4,7 +4,6 @@ repo_url: https://github.com/INNOVINATI/microwler/
 nav:
     - Home: index.md
     - Getting Started: getting-started.md
-    - Workflow: workflow.md
     - Configuration: configuration.md
     - Scraping: scraping.md
     - Exporting: exporting.md
