@@ -44,7 +44,7 @@ class Microwler:
         self._base_url = f'{parsed.scheme}://{self._domain}{parsed.path}'
         self._selectors = selectors
         self._transformer = transformer
-        self._settings = Settings(self._base_url, settings)
+        self._settings = Settings(settings)
         self._seen_urls = set()
         self._session = None
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
@@ -71,10 +71,8 @@ class Microwler:
         dom = DOMParser.fromstring(html)
         dom.make_links_absolute(self._base_url)
         links = {
-            # use set to ignore local duplicates
-            link for link in dom.xpath('//a/@href')
+            link for link in dom.xpath(self._settings.link_filter)
             if link.startswith(self._base_url)  # stay on this website
-            if urlparse(link).path.startswith(self._settings.base_path)
             if link not in self._results  # try to filter global duplicates in order to avoid extra loop steps later
             and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore file extensions
         }

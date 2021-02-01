@@ -44,6 +44,7 @@ def test_advanced():
     }
 
     settings = {
+        'link_filter': "//a[contains(@href, 'inspirational')]/@href",
         'max_depth': 10,
         'max_concurrency': 15,
         'export_to': './tests/exports',
