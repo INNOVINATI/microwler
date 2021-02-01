@@ -5,6 +5,16 @@ Hard to say. Without having tested it much (yet), the crawler seems to be perfor
 at 10-100 pages per second, depending on its setup, the responding web 
 server and the internet connection between them.
 
+#### How does it work internally?
+**Microwler** tries to keep things simple for you. Thus, most of its features are entirely optional.
+It uses various battle-tested libraries to achieve different things like asynchronous crawling, data
+extraction, caching and so on. Check the [requirements file](https://github.com/INNOVINATI/microwler/blob/master/requirements.txt) 
+to find out more about which libraries are being used internally.
+The following image should give you a brief overview of how/when certain features are used.
+
+<img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/workflow.png" width="600px" alt="Microwler Workflow">
+
+
 #### How can I access scraped data directly, i.e. without running any exporters?
 Currently, there are two ways to do this:
 
@@ -25,8 +35,6 @@ You can enable this feature via the `caching` setting. Per default caches will b
 Optionally, you can activate *incremental crawling* using the `delta_crawl` setting.
 
 Under the hood, **Microwler** uses [diskcache](https://pypi.org/project/diskcache/) to store results on disk.
-
-
 
 #### What's the roadmap for this project?
 Microwler is a very young project (started 12/2020) and currently maintained by only one person.
