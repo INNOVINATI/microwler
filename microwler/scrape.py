@@ -1,31 +1,33 @@
 from html_text import extract_text
 
+from microwler.utils import remove_multi_whitespace
+
 
 def title(dom):
     """ Extract <title> tag """
-    return dom.xpath('//title//text()').getall()
+    return dom.xpath('string(//title[1])').get()
 
 
 def headings(dom):
     """ Extract heading tags, i.e. <h1>, <h2>, ... """
     return {
-        'h1': dom.xpath('//h1//text()').getall(),
-        'h2': dom.xpath('//h2//text()').getall(),
-        'h3': dom.xpath('//h3//text()').getall(),
-        'h4': dom.xpath('//h4//text()').getall(),
-        'h5': dom.xpath('//h5//text()').getall(),
-        'h6': dom.xpath('//h6//text()').getall()
+        'h1': remove_multi_whitespace(dom.xpath('string(//h1[1])').getall()),
+        'h2': remove_multi_whitespace(dom.xpath('string(//h2[1])').getall()),
+        'h3': remove_multi_whitespace(dom.xpath('string(//h3[1])').getall()),
+        'h4': remove_multi_whitespace(dom.xpath('string(//h4[1])').getall()),
+        'h5': remove_multi_whitespace(dom.xpath('string(//h5[1])').getall()),
+        'h6': remove_multi_whitespace(dom.xpath('string(//h6[1])').getall())
     }
 
 
 def paragraphs(dom):
     """ Extract <p> tags """
-    return dom.xpath('//p//text()').getall()
+    return dom.xpath('string(//p[1])').getall()
 
 
 def text(dom):
     """ Extract and clean text content """
-    return extract_text(str(dom)).getall()
+    return extract_text(str(dom))
 
 
 def meta(dom):

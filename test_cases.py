@@ -39,14 +39,14 @@ def test_advanced():
         'title': scrape.title,
         'headings': scrape.headings,
         # Define custom selectors as lambdas or functions using Parsel
-        'p_count': lambda dom: len(dom.xpath('//p')),
-        'images': lambda dom: list(map(lambda x: x.attrib['src'], dom.css('img').getall()))
+        'p_count': lambda dom: len(dom.xpath('//p').getall()),
+        'images': lambda dom: [img.attrib['src'] for img in dom.css('img').getall()]
     }
 
     settings = {
         'max_depth': 10,
         'max_concurrency': 15,
-        'export_to': './export/project_folder',
+        'export_to': './tests/exports',
         'exporters': [JSONExporter, HTMLExporter],
         'caching': True,
     }
