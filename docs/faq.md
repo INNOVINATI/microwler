@@ -15,9 +15,8 @@ Currently, there are two ways to do this:
 #### What are *transformers*?
 It sounds more complex than it really is: a *transformer* is any Python callable
 which works on a data dictionary. **Microwler** will inject every crawled page's `data`
-into a given transformer function in order to manipulate it after scraping, i.e. do some text processing.
-
-An example can be found in the [advanced test case](https://github.com/INNOVINATI/microwler/blob/master/test_cases.py).
+into a given transformer function in order to manipulate it after scraping, 
+i.e. do some text processing. An example can be found [here](https://github.com/INNOVINATI/microwler/blob/master/test_cases.py#L54).
 
 #### Can I persist results, i.e. in a database?
 Yes. In fact, **Microwler** comes with a built-in caching system for storing results on-disk.

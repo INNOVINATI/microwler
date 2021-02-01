@@ -14,9 +14,11 @@ for the crawler itself, but also for any extensions/plugins you might want to us
 
 ### Crawler settings
 
-#### `settings.base_path`
-Crawl exclusively within this path, i.e. visit every URL that starts with `/blog`
-> Default: '/'
+#### `settings.link_filter`
+Exclusively extract and follow (internal) links matching this XPath expression.
+Use this setting to limit which links will be visited. For instance, using `link_filter: "//a[contains(@href, 'blog')]/@href"`
+will only select URLs containing the string `blog` such as `https://example.com/blog/page-1`.
+> Default: '//a/@href'
 
 #### `settings.max_depth`
 The depth limit at which to stop crawling

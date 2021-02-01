@@ -24,10 +24,11 @@ selectors = {
 }
 ```
 
-> Note: **Microwler** will return a single element if only one match was found, or return
-> the whole result list. You can manipulate data after crawling is finished by  using a `transformer` function.
+> Note: You can manipulate data after crawling is finished by  defining a `transformer` function.
 
-Check all available `@selector` functions in the [source file](https://github.com/INNOVINATI/microwler/blob/master/microwler/scrape.py).
+The generic selectors will return a single element whenever it makes sense, i.e. `scrape.title` would
+give you the text content of the `<title>` tag as a string.
+Check all available selectors in the [source file](https://github.com/INNOVINATI/microwler/blob/master/microwler/scrape.py).
 
 
 ### Custom
@@ -48,7 +49,7 @@ selectors = {
 In case you want to do something more complex, you can also choose to *define 
 selectors as callables*, i.e. lambda expressions or regular functions, 
 which is what the crawler does when using generic seletors. 
-In this case, **Microwler** will inject the current HTML document as `Parsel` selector:
+In this case, **Microwler** will inject the current HTML document as [`parsel.Selector`](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.Selector):
 
 ```python
 def headings(dom):
@@ -61,4 +62,7 @@ selectors = {
     'headings': lambda dom: headings(dom)
 }
 ```
+
+These examples are very basic and do not show the full power of `Parsel`. For instance,
+it also allows you to *chain selectors* and/or use regex expressions.
 > For more info read the Parsel docs: https://parsel.readthedocs.io/en/latest/usage.html

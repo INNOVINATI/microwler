@@ -27,6 +27,8 @@ new https://quotes.toscrape.com/
 **Microwler** will create a `projects/` folder in your current working directory and place
 a file called `quotes_toscrape_com.py` within it. This file contains your [crawler configuration][microwler.crawler.Microwler].
 
+> Note: You can check out the project template in the [source files](https://github.com/INNOVINATI/microwler/blob/devel/microwler/cli/template.py).
+
 To **run this project**, execute the following command:
 ```bash
 crawler quotes_toscrape_com run
