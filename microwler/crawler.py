@@ -27,23 +27,23 @@ class Microwler:
 
     def __init__(self,
                  start_url: str,
-                 selectors: Dict[str, Union[str, Callable[[Selector], Any]]] = None,
-                 transformer: Callable[[dict], dict] = None,
+                 select: Dict[str, Union[str, Callable[[Selector], Any]]] = None,
+                 transform: Callable[[dict], dict] = None,
                  settings: dict = None):
         """
         Setup a new `Microwler` instance
         Arguments:
             start_url: the URL to start crawling
-            selectors: A `dict` with *selectors* [(read more)](/microwler/scraping/#selectors)
-            transformer: Function to transform scraped data after crawling ([read more](/microwler/faq/#what-are-transformers))
+            select: A `dict` with *selectors* [(read more)](/microwler/scraping/#selectors)
+            transform: Function to transform scraped data after crawling ([read more](/microwler/faq/#what-are-transformers))
             settings: A `dict` with configuration parameters for the crawler [(read more)](/microwler/configuration/#settings)
         """
         self._start_url = start_url
         parsed = urlparse(start_url)
         self._domain = parsed.netloc
         self._base_url = f'{parsed.scheme}://{self._domain}{parsed.path}'
-        self._selectors = selectors
-        self._transformer = transformer
+        self._selectors = select
+        self._transformer = transform
         self._settings = Settings(settings)
         self._seen_urls = set()
         self._session = None
