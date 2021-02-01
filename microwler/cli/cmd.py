@@ -102,7 +102,6 @@ def clear_cache(ctx):
 
 
 @click.command('serve')
-@click.option('-h', '--host', type=str, default='localhost', help='The host to run the webservice on.')
 @click.option('-p', '--port', type=int, default=5000, help='The port to run the webservice on.')
 def start_server(port):
     """ Start the built-in webservice """
