@@ -8,16 +8,19 @@ from microwler import Microwler, scrape, export
 
 
 select = {
-    # add selectors here
+    # Add selectors here
+    # Docs: https://innovinati.github.io/microwler/scraping/#selectors
 }
 
 settings = {
-    # add settings here
+    # Add settings here
+    # Docs: https://innovinati.github.io/microwler/configuration/#settings
 }
 
 
 def transform(data: dict):
     # Manipulate data here
+    # Example: https://github.com/INNOVINATI/microwler/blob/master/test_cases.py#L54
     return data
 
 
