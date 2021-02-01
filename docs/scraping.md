@@ -1,10 +1,5 @@
 # Scraping Data
-Before diving into the actual scraping process, let's take a look at how **Microwler** represents
-the data it's working with.
-
-::: microwler.page.Page
-    rendering:
-        show_root_heading: true
+**Microwler** provides several ways of extracting data from web pages.
 
 ## Selectors
 In most cases, you'll want to extract or calculate some data based on the HTML documents you crawl.
@@ -25,7 +20,8 @@ selectors = {
 ```
 
 These generic selectors will return a single element whenever it makes sense, i.e. `scrape.title` would
-give you the text content of the `<title>` tag as a string.
+give you the text content of the `<title>` tag as a string. 
+You can find all currently available selectors in the [microwler.scrape][] module.
 
 
 ### Custom
@@ -66,3 +62,36 @@ selectors = {
 These examples are very basic and do not show the full power of `Parsel`. For instance,
 it also allows you to *chain selectors* and/or use regex expressions. For more info 
 read the [Parsel documentation](https://parsel.readthedocs.io/en/latest/usage.html).
+
+
+## Data format
+Internally, an HTML document is represented as `Page`. Here's a JSON representation of what this could look like, which corresponds to the output of 
+[this source code](https://github.com/INNOVINATI/microwler/blob/master/test_cases.py#L37).
+
+```json
+{
+  --- Common Page attributes ---
+  "url": "https://quotes.toscrape.com/",
+  "status_code": 200,
+  "depth": 0,
+  "links": [
+    "https://quotes.toscrape.com/tag/inspirational/",
+    "https://quotes.toscrape.com/tag/inspirational/page/1/"
+  ],
+  --- Custom data fields defined by selectors (and/or transformer function) ---
+  "data": {
+    "title": "QUOTES TO SCRAPE",
+    "headings": {
+      "h1": [
+        "Quotes to Scrape"
+      ],
+      "h2": [
+        "Top Ten tags"
+      ],
+      ...
+    },
+    "paragraphs": 1,
+    "images": []
+  }
+}
+```
