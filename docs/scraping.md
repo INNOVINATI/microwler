@@ -12,7 +12,7 @@ For this scenario, **Microwler** allows you to define *selectors*, which can ext
 `XPath` or `CSS` expressions - or use the ones we already built for you.
 
 ### Generic
-If you're really lazy, use the built-in selectors:
+If you're really lazy, just use the *built-in selectors*. For instance:
 
 ```python
 from microwler import scrape
@@ -24,14 +24,12 @@ selectors = {
 }
 ```
 
-> Note: You can manipulate data after crawling is finished by  defining a `transformer` function.
-
-The generic selectors will return a single element whenever it makes sense, i.e. `scrape.title` would
+These generic selectors will return a single element whenever it makes sense, i.e. `scrape.title` would
 give you the text content of the `<title>` tag as a string.
-Check all available selectors in the [source file](https://github.com/INNOVINATI/microwler/blob/master/microwler/scrape.py).
 
 
 ### Custom
+#### XPath
 If you want more control over the scraping process, you
 can simply provide XPaths. **Microwler** will return a single element if there
 was only one match or return the whole result list.
@@ -46,10 +44,12 @@ selectors = {
 }
 ```
 
+#### Parsel
 In case you want to do something more complex, you can also choose to *define 
 selectors as callables*, i.e. lambda expressions or regular functions, 
-which is what the crawler does when using generic seletors. 
-In this case, **Microwler** will inject the current HTML document as [`parsel.Selector`](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.Selector):
+which is what the crawler does when using generic selectors. 
+In this case, the current HTML document will be injected as only argument 
+in the form of a [parsel.Selector](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.Selector):
 
 ```python
 def headings(dom):
@@ -64,5 +64,5 @@ selectors = {
 ```
 
 These examples are very basic and do not show the full power of `Parsel`. For instance,
-it also allows you to *chain selectors* and/or use regex expressions.
-> For more info read the Parsel docs: https://parsel.readthedocs.io/en/latest/usage.html
+it also allows you to *chain selectors* and/or use regex expressions. For more info 
+read the [Parsel documentation](https://parsel.readthedocs.io/en/latest/usage.html).

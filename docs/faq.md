@@ -9,7 +9,7 @@ server and the internet connection between them.
 Currently, there are two ways to do this:
 
 1. Use `crawler.data` to obtain a list of either data dictionaries if `selectors` are defined or the HTML documents
-2. Use `crawler.pages` to get the results as list of [microwler.scrape.Page][] objects
+2. Use `crawler.pages` to get the results as list of [microwler.page.Page][] objects
 3. Use `crawler.cache` to get the database as list of dictionaries
 
 #### What are *transformers*?
