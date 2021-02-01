@@ -27,8 +27,8 @@ def transform(data: dict):
 # Microwler expects a variable "crawler" when running from CLI
 crawler = Microwler(
     'START_URL',
-    selectors=select,
-    transformer=transform,
+    select=select,
+    transform=transform,
     settings=settings
 )
 """
