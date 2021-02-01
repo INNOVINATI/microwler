@@ -49,9 +49,14 @@ class Microwler:
         self._session = None
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
-        self._cache = Index(f'./.microwler/cache/{self._domain}') if self._settings.caching else None
         self._errors = dict()
         self._results = dict()
+
+        if self._settings.caching:
+            self._init_cache()
+
+    def _init_cache(self):
+        self._cache = Index(f'./.microwler/cache/{self._domain}')
 
     async def _get(self, url):
         async with self._limiter:
