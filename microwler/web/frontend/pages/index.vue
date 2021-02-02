@@ -1,10 +1,13 @@
 <template>
   <v-row justify="center" align="center">
-    <v-col cols="12" sm="8" md="6">
-      <img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/logo.png" width="200">
+    <v-col cols="12" sm="8" md="6" class="text-center">
+      <img src="logo.png" width="200">
       <v-card>
         <v-card-title class="headline">
-          Welcome to Microwler UI
+                    <v-spacer />
+Welcome to Microwler UI
+                    <v-spacer />
+
         </v-card-title>
         <v-card-text>
           <p>
@@ -48,6 +51,8 @@
           >
             Start app
           </v-btn>
+                    <v-spacer />
+
         </v-card-actions>
       </v-card>
     </v-col>
@@ -55,13 +60,6 @@
 </template>
 
 <script>
-import Logo from '~/components/Logo.vue'
-import VuetifyLogo from '~/components/VuetifyLogo.vue'
-
 export default {
-  components: {
-    Logo,
-    VuetifyLogo
-  }
 }
 </script>
