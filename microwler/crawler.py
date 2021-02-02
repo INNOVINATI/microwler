@@ -155,7 +155,8 @@ class Microwler:
         if self._settings.caching:
             LOG.info('Caching results ...')
             for page in self.pages:
-                self._cache[page.url] = page
+                if page.url not in self._errors:
+                    self._cache[page.url] = page
 
     def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False):
         """
@@ -221,9 +222,3 @@ class Microwler:
         path = path or f'./dump-{self._domain}.json'
         with open(path, 'w') as file:
             file.write(json.dumps([page.__dict__ for page in self._cache.values()]))
-
-if __name__ == '__main__':
-    c = Microwler(
-        'https://cispa.de/'
-    )
-    c.run(verbose=True)

@@ -1,4 +1,3 @@
-import logging
 import os
 from urllib.parse import urlparse
 
@@ -6,14 +5,14 @@ import click
 
 from microwler.cli.template import TEMPLATE
 from microwler.utils import load_project, PROJECT_FOLDER
-from microwler.webservice import start_app
+from microwler.web.server import start_app
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 COMMANDS = [
     ('new START_URL', 'Create a new project'),
     ('crawler PROJECT_NAME run', 'Run a project\'s crawler'),
-    ('crawler PROJECT_NAME dumpcache', 'Dump project cache to JSON file'),
-    ('crawler PROJECT_NAME clearcache', 'Clear project cache'),
+    ('crawler PROJECT_NAME dumpcache', 'Dump project getCache to JSON file'),
+    ('crawler PROJECT_NAME clearcache', 'Clear project getCache'),
     ('serve [-p|--port]', 'Start the built-in webservice'),
 ]
 
@@ -82,7 +81,7 @@ def run_crawler(ctx, verbose, sort, keep_html):
 @click.option('-p', '--path')
 @click.pass_context
 def dump_cache(ctx, path):
-    """ Dump the project cache to a JSON file """
+    """ Dump the project getCache to a JSON file """
     project = load_project(ctx.obj['project'])
     if project.crawler._cache is not None:
         project.crawler.dump_cache(path)
@@ -93,7 +92,7 @@ def dump_cache(ctx, path):
 @crawler.command('clearcache')
 @click.pass_context
 def clear_cache(ctx):
-    """ Clear the project cache """
+    """ Clear the project getCache """
     project = load_project(ctx['project'])
     if project.crawler._cache is not None:
         project.crawler.clear_cache()

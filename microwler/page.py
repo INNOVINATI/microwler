@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from lxml.etree import ParserError
@@ -21,12 +22,13 @@ class Page(object):
         """
         Arguments:
             url: the URL of this page
-            status_code: the request's status code
+            status_code: the request's getStatus code
             depth: the depth at which this page was crawled
             links: list of internal links found on this page
             html: HTML body
         """
         self.url = url
+        self.discovered = datetime.date.today().strftime('%Y-%m-%d')
         self.status_code = status_code
         self.depth = depth
         self.links = links
