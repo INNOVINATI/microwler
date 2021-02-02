@@ -3,19 +3,23 @@ import logging
 import os
 import time
 from datetime import datetime
+
 import aiohttp
-from quart import Quart, render_template
+from quart import Quart, render_template, websocket
 from quart_cors import cors
 
 from microwler.utils import load_project, PROJECT_FOLDER
 
 LOG = logging.getLogger(__name__)
 
-app = Quart('Microwler', template_folder=os.path.dirname(__file__))
+app = Quart('Microwler', template_folder=os.path.join(os.path.dirname(__file__), 'frontend/dist'))
 app = cors(app, allow_origin='*')
 
+STATUS = {
+    'version': '0.1.7',
+    'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+}
 PROJECTS = dict()
-
 for path in os.listdir(PROJECT_FOLDER):
     if path.endswith('.py'):
         name = path.split('.')[0]
@@ -35,12 +39,7 @@ async def status():
     - Route: `/status`
     - Method: `GET`
     """
-    status = {
-        'version': '0.1.7',
-        'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-    }
-    
-    return {'app': status, 'projects': list(PROJECTS.keys())}
+    return {'app': STATUS, 'projects': list(PROJECTS.keys())}
 
 
 @app.route('/status/<project_name>')
@@ -51,10 +50,7 @@ async def project(project_name):
     - Route: `/status/<str:project_name>`
     - Method: `GET`
     """
-    project = load_project(project_name, project_folder=PROJECT_FOLDER)
-    project.crawler._init_cache()
-
-    return {**PROJECTS[project_name], 'cache_size': len(project.crawler._cache)}
+    return PROJECTS[project_name]
 
 
 @app.route('/crawl/<project_name>')
@@ -106,11 +102,10 @@ async def data(project_name: str):
     - Method: `GET`
     """
     project = load_project(project_name, project_folder=PROJECT_FOLDER)
-    return {
-        'project': project_name,
-        'last_run': PROJECTS[project_name]['last_run'],
-        'results': [page.__dict__ for page in project.crawler.cache]
-    }
+    project.crawler._settings.caching = True
+    project.crawler._init_cache()
+    data = {key: value.__dict__ for key, value in project.crawler._cache.items()}
+    return data
 
 
 def start_app(host='localhost', port=5000):
