@@ -141,7 +141,7 @@ class Microwler:
             self._results = {url: self._results[url] for url in sorted(self._results)}
 
         if self._selectors:
-            LOG.info('Processing data ...')
+            LOG.info('Extracting data ...')
             for url, page in self._results.items():
                 self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
 
@@ -153,7 +153,7 @@ class Microwler:
                 instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
                 instance.export()
 
-        if self._cache:
+        if self._cache is not None:
             LOG.info('Caching results ...')
             for page in self.pages:
                 if page.url not in self._errors:
@@ -194,7 +194,6 @@ class Microwler:
 
     async def run_async(self, sort_urls: bool = False, keep_source: bool = False, event_loop=None):
         await event_loop.create_task(self._crawl(event_loop))
-        LOG.info(self._results)
         if len(self._results):
             self._process(sort_urls=sort_urls, keep_source=keep_source)
 
@@ -213,7 +212,7 @@ class Microwler:
     @property
     def cache(self):
         if self._cache is not None:
-            return list(self._cache.values())
+            return [page.__dict__ for page in self._cache.values()]
         raise ValueError('Cache is disabled')
 
     def clear_cache(self):
