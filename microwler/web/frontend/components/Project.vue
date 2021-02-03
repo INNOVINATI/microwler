@@ -1,5 +1,4 @@
 <template>
-
   <v-card
     class="mx-auto"
     max-width="344"
@@ -23,7 +22,7 @@
       <v-spacer></v-spacer>
       <v-btn text @click="crawl()" v-if="!loading">Run crawler</v-btn>
       <v-btn text disabled v-else>Running...</v-btn>
-      <v-btn color="secondary" text @click="download(cache, 'cache')" :disabled="cache.length === 0">Download cache</v-btn>
+      <v-btn v-if="!!cache" color="secondary" text @click="download(cache, 'cache')" :disabled="cache.length === 0">Download cache</v-btn>
       <v-spacer></v-spacer>
     </v-card-actions>
     <ResultDialog
