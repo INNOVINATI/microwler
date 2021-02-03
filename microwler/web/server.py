@@ -64,13 +64,7 @@ async def crawl(project_name: str):
             'successful': True
         }
         CACHE[project_name]['jobs'] -= 1
-        return {
-            'meta': {
-                'project': project_name,
-                'duration': f'{round(time.time() - start, 3)}s',
-            },
-            'data': [page.__dict__ for page in project.crawler.pages]
-        }
+        return {'data': project.crawler.data}
     except Exception as e:
         LOG.error(e)
         CACHE[project_name]['jobs'] -= 1
@@ -92,13 +86,7 @@ async def data(project_name: str):
     project = load_project(project_name, project_folder=PROJECT_FOLDER)
     project.crawler.set_cache(force=True)
     cache = project.crawler.cache
-    response = {
-        'meta': {
-            'project': project_name,
-            'size': len(cache),
-        },
-        'data': cache
-    }
+    response = {'data': cache}
     return response
 
 

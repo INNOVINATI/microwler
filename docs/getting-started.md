@@ -51,11 +51,11 @@ from microwler import Microwler
 
 crawler = Microwler('https://quotes.toscrape.com/')
 crawler.run(verbose=True)
-for page in crawler.pages:
-    print(page.url, page.html)
+for page in crawler.results:
+    print(page)
 ```
 Without any further configuration, the crawler will try to visit every qualified link it can find and download
 every page's content. For more advanced scenarios, check out the rest of this documentation.
 
 > Note: If you're planning on using the webservice or the "project" system in general, you should use the CLI
-as recommended above.
+as recommended above. It will create a workspace (incl. caching dbs and such) for you to develop and run crawlers in.

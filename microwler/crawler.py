@@ -188,7 +188,7 @@ class Microwler:
             if len(self._results):
                 table.add_column('Processing Time', [f'{round(total_time - crawl_time, 2)}s'])
                 if self._selectors:
-                    table.add_column('Data Completeness', [f'{int(completely.measure(self.data)*100)}%'])
+                    table.add_column('Data Completeness', [f'{int(completely.measure(self.results) * 100)}%'])
             table.add_column('Total Time', [f'{round(total_time, 2)}s'])
             print(table)
 
@@ -198,12 +198,8 @@ class Microwler:
             self._process(sort_urls=sort_urls, keep_source=keep_source)
 
     @property
-    def data(self) -> [dict]:
-        return [{'url': page.url, 'data': page.data if self._selectors else page.html} for page in self._results.values()]
-
-    @property
-    def pages(self) -> List[Page]:
-        return list(self._results.values())
+    def results(self) -> [dict]:
+        return [page.__dict__ for page in self._results.values()]
 
     @property
     def errors(self) -> dict:
