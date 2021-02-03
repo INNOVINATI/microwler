@@ -29,7 +29,8 @@ async def status():
     - Route: `/status`
     - Method: `GET`
     """
-    return {'app': STATUS, 'projects': list(CACHE.keys())}
+
+    return {'app': STATUS, 'projects': list(CACHE.keys()), 'jobs': history}
 
 
 @app.route('/status/<project_name>')
@@ -40,11 +41,7 @@ async def project(project_name):
     - Route: `/status/<str:project_name>`
     - Method: `GET`
     """
-    project = load_project(project_name, project_folder=PROJECT_FOLDER)
-    project.crawler.set_cache(force=True)
-    history = dict()
-    for page in project.crawler.cache:
-        history[page['discovered']] = page['discovered'] + 1 if page['discovered'] in history else 1
+
     return {'data': CACHE[project_name], 'jobs': {'dates': list(history.keys()), 'counts': list(history.values())}}
 
 

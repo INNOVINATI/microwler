@@ -20,3 +20,13 @@ def load_cache():
             if name not in CACHE:
                 project = load_project(name, PROJECT_FOLDER)
                 CACHE[name] = {'name': name, 'start_url': project.crawler.start_url, 'last_run': dict()}
+
+
+def job_stats():
+    history = dict()
+    for project_name in CACHE:
+        project = load_project(project_name, project_folder=PROJECT_FOLDER)
+        project.crawler.set_cache(force=True)
+        for page in project.crawler.cache:
+            history[page['discovered']] = page['discovered'] + 1 if page['discovered'] in history else 1
+    return history
