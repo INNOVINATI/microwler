@@ -10,7 +10,7 @@
           <v-col cols="12" lg="4" sm="12">
             <v-btn primary @click="connect()" :disabled="!input || connecting">Connect</v-btn>
           </v-col>
-          <v-col cols="12">
+          <v-col cols="12" lg="12">
             <Host v-if="domain" :domain="domain" :status="status" :job-count="jobCount"></Host>
           </v-col>
         </v-row>

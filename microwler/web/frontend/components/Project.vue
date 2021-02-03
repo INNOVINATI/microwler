@@ -1,24 +1,37 @@
 <template>
-  <v-card class="mx-auto" :loading="running" elevation="10" max-width="300">
-    <v-card-title>{{name}}</v-card-title>
+    <v-card
+      :loading="loading"
+    class="mx-auto elevation-10"
+    max-width="344"
+  >
+      <v-card-title>{{ name.replace(/_/g, '.') }}</v-card-title>
     <v-card-text>
-      <div v-if="last_run">
-        <p>Last run:<br>
-        {{ last_run.timestamp }}
-        ({{ last_run.successful ? 'success' : 'error'}})
-        </p>
-        <p>Jobs: {{ jobs }}</p>
-        Cache: <v-btn text x-small @click="download(cache)">Download</v-btn> <small>({{ Object.keys(cache).length}} items)</small>
+      <v-row>
+        <v-col cols="12" lg="4">
+          <p>Last run: {{ last_run ? last_run.timestamp : 'never'}}</p>
+      <div class="text--primary">
+        Jobs: {{ jobs }}<br>
+        Cache: {{ cache ? cache.meta.size : 'empty'}}
       </div>
-      <div v-else>
-        <p>Last run: never</p>
-        <p>Jobs: 0</p>
-        <p>No cached pages.</p>
-      </div>
+        </v-col>
+        <v-col cols="12" lg="8">
+          <div>
+            <iframe src="https://startups.saarland/" width="300" height="200" id="scaled-frame"></iframe>
+          </div>
+
+        </v-col>
+      </v-row>
+
     </v-card-text>
     <v-card-actions>
-      <v-btn @click="crawl()" v-if="!running">Crawl</v-btn>
+      <v-btn @click="crawl()" v-if="!loading">Run crawler</v-btn>
       <v-btn disabled v-else>Running...</v-btn>
+      <v-btn
+        text
+        color="primary accent-2"
+      >
+        Download cache
+      </v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -34,42 +47,53 @@
       return {
         healthy: false,
         cache: null,
-        running: false,
+        loading: false,
         jobs: 0,
         last_run: null,
       }
     },
     methods: {
       crawl() {
-        this.running = true
+        this.loading = true
         this.jobs++
         fetch(`http://${this.host}/crawl/${this.name}`)
           .then(res => res.json())
           .then(data => {
-            this.running = false
+            this.loading = false
             this.download(data)
             return this.getStatus()
           })
           .catch(err => {
-            this.running = false
+            this.loading = false
             alert(err)
           })
       },
       getStatus() {
+        this.loading = true
         fetch(`http://${this.host}/status/${this.name}`)
         .then(res => res.json())
         .then(data => {
           this.healthy = true
           this.jobs = data.jobs
           this.last_run = data.last_run
-          return this.getCache()
+          this.getCache()
+        })
+        .catch(err => {
+          this.loading = false
+          alert(err)
         })
       },
       getCache() {
         fetch(`http://${this.host}/data/${this.name}`)
           .then(res => res.json())
-          .then(data => this.cache = data)
-          .catch(err => alert(err))
+          .then(data => {
+            this.loading = false
+            this.cache = data
+          })
+          .catch(err => {
+            this.loading = false
+            alert(err)
+          })
       },
       download(data) {
         var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
@@ -88,5 +112,13 @@
 </script>
 
 <style scoped>
-
+#scaled-frame {
+  zoom: 0.75;
+  -moz-transform: scale(0.75);
+  -moz-transform-origin: 0 0;
+  -o-transform: scale(0.75);
+  -o-transform-origin: 0 0;
+  -webkit-transform: scale(0.75);
+  -webkit-transform-origin: 0 0;
+}
 </style>
