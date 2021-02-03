@@ -208,7 +208,7 @@ class Microwler:
     @property
     def cache(self):
         if self._cache is not None:
-            return [page.__dict__ for page in self._cache.values()]
+            return list(self._cache.values())
         raise ValueError('Cache is disabled')
 
     def clear_cache(self):

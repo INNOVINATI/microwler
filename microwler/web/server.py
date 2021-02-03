@@ -64,7 +64,7 @@ async def crawl(project_name: str):
             'successful': True
         }
         CACHE[project_name]['jobs'] -= 1
-        return {'data': project.crawler.data}
+        return {'data': project.crawler.results}
     except Exception as e:
         LOG.error(e)
         CACHE[project_name]['jobs'] -= 1
