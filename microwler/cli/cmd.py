@@ -5,7 +5,7 @@ import click
 
 from microwler.cli.template import TEMPLATE
 from microwler.utils import load_project, PROJECT_FOLDER
-from microwler.web.server import start_app
+from microwler.web.backend import start_app
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 COMMANDS = [
