@@ -5,25 +5,16 @@ import time
 from datetime import datetime
 
 import aiohttp
-from quart import Quart, render_template, websocket
+from quart import Quart, render_template
 from quart_cors import cors
 
 from microwler.utils import load_project, PROJECT_FOLDER
+from microwler.web import STATUS, CACHE
 
 LOG = logging.getLogger(__name__)
 
 app = Quart('Microwler', template_folder=os.path.join(os.path.dirname(__file__), 'frontend/dist'))
 app = cors(app, allow_origin='*')
-
-STATUS = {
-    'version': '0.1.7',
-    'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-}
-PROJECTS = dict()
-for path in os.listdir(PROJECT_FOLDER):
-    if path.endswith('.py'):
-        name = path.split('.')[0]
-        PROJECTS[name] = {'name': name, 'jobs': 0, 'last_run': None}
 
 
 @app.route('/')
@@ -39,7 +30,7 @@ async def status():
     - Route: `/status`
     - Method: `GET`
     """
-    return {'app': STATUS, 'projects': list(PROJECTS.keys())}
+    return {'app': STATUS, 'projects': list(CACHE.keys())}
 
 
 @app.route('/status/<project_name>')
@@ -50,7 +41,7 @@ async def project(project_name):
     - Route: `/status/<str:project_name>`
     - Method: `GET`
     """
-    return PROJECTS[project_name]
+    return CACHE[project_name]
 
 
 @app.route('/crawl/<project_name>')
@@ -64,29 +55,26 @@ async def crawl(project_name: str):
     try:
         start = time.time()
         project = load_project(project_name, project_folder=PROJECT_FOLDER)
-        PROJECTS[project_name]['jobs'] += 1
+        CACHE[project_name]['jobs'] += 1
         loop = asyncio.get_event_loop()
-        project.crawler._session = aiohttp.ClientSession(loop=loop)
-        # Force disk caching
-        project.crawler._settings.caching = True
-        project.crawler._init_cache()
-        # Note: instead of using crawler.run() we use crawler._crawl directly to gain control over the whole workflow
-        await loop.create_task(project.crawler._crawl())
-        project.crawler._process()
-        PROJECTS[project_name]['last_run'] = {
+        project.crawler.set_cache(force=True)
+        await project.crawler.run_async(event_loop=loop)
+        CACHE[project_name]['last_run'] = {
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'successful': True
         }
-        PROJECTS[project_name]['jobs'] -= 1
+        CACHE[project_name]['jobs'] -= 1
         return {
-            'project': project_name,
-            'duration': f'{round(time.time() - start, 3)}s',
-            'results': [page.__dict__ for page in project.crawler.pages]
+            'meta': {
+                'project': project_name,
+                'duration': f'{round(time.time() - start, 3)}s',
+            },
+            'data': [page.__dict__ for page in project.crawler.pages]
         }
     except Exception as e:
         LOG.error(e)
-        PROJECTS[project_name]['jobs'] -= 1
-        PROJECTS[project_name]['last_run'] = {
+        CACHE[project_name]['jobs'] -= 1
+        CACHE[project_name]['last_run'] = {
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'successful': False
         }
@@ -102,10 +90,16 @@ async def data(project_name: str):
     - Method: `GET`
     """
     project = load_project(project_name, project_folder=PROJECT_FOLDER)
-    project.crawler._settings.caching = True
-    project.crawler._init_cache()
-    data = {key: value.__dict__ for key, value in project.crawler._cache.items()}
-    return data
+    project.crawler.set_cache(force=True)
+    cache = project.crawler.cache
+    response = {
+        'meta': {
+            'project': project_name,
+            'size': len(cache),
+        },
+        'data': cache
+    }
+    return response
 
 
 def start_app(host='localhost', port=5000):
