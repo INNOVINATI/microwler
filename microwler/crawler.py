@@ -155,9 +155,9 @@ class Microwler:
 
         if self._cache is not None:
             LOG.info('Caching results ...')
-            for page in self.pages:
+            for page in self._results.values():
                 if page.url not in self._errors:
-                    self._cache[page.url] = page
+                    self._cache[page.url] = page.__dict__
 
     def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False):
         """
