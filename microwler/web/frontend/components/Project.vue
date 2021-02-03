@@ -1,44 +1,46 @@
 <template>
-    <v-card
-      :loading="loading"
-    class="mx-auto elevation-10"
+
+  <v-card
+    class="mx-auto"
     max-width="344"
+    :loading="loading"
   >
-      <v-card-title>{{ name.replace(/_/g, '.') }}</v-card-title>
-    <v-card-text>
-      <v-row>
-        <v-col cols="12" lg="4">
-          <p>Last run: {{ last_run ? last_run.timestamp : 'never'}}</p>
-      <div class="text--primary">
-        Jobs: {{ jobs }}<br>
-        Cache: {{ cache ? cache.meta.size : 'empty'}}
-      </div>
-        </v-col>
-        <v-col cols="12" lg="8">
-          <div>
-            <iframe src="https://startups.saarland/" width="300" height="200" id="scaled-frame"></iframe>
-          </div>
+    <iframe v-bind:src="startUrl" width="344" height="200"></iframe>
 
-        </v-col>
-      </v-row>
+    <v-card-title>
+      {{ name.replace(/_/g, '.') }}
+    </v-card-title>
 
-    </v-card-text>
+    <v-card-subtitle v-if="healthy">
+        <p v-if="!!lastRun">
+          <span v-if="lastRun.hasOwnProperty('timestamp')">Last crawl at {{ lastRun.timestamp }}<br>{{ lastRun.state }}.</span>
+          <span v-else>No crawls recorded.<br><br></span>
+        </p>
+        <p>Cache: {{ cacheInfo }}</p>
+    </v-card-subtitle>
+
     <v-card-actions>
-      <v-btn @click="crawl()" v-if="!loading">Run crawler</v-btn>
-      <v-btn disabled v-else>Running...</v-btn>
-      <v-btn
-        text
-        color="primary accent-2"
-      >
-        Download cache
-      </v-btn>
+      <v-spacer></v-spacer>
+      <v-btn text @click="crawl()" v-if="!loading">Run crawler</v-btn>
+      <v-btn text disabled v-else>Running...</v-btn>
+      <v-btn color="secondary" text @click="download(cache, 'cache')" :disabled="cache.length === 0">Download cache</v-btn>
+      <v-spacer></v-spacer>
     </v-card-actions>
+    <ResultDialog
+      v-if="showDialog"
+      :project-name="name"
+      :show="showDialog"
+      :results="newData"
+      v-on:close="closeDialog()"
+    ></ResultDialog>
   </v-card>
 </template>
 
 <script>
+  import ResultDialog from "./ResultDialog";
   export default {
     name: "Project",
+    components: {ResultDialog},
     props: {
       host: String,
       name: String
@@ -48,19 +50,29 @@
         healthy: false,
         cache: null,
         loading: false,
-        jobs: 0,
-        last_run: null,
+        startUrl: null,
+        lastRun: null,
+        showDialog: false,
+        newData: null
       }
+    },
+    computed: {
+      cacheInfo() {
+        if (!!this.cache)
+          return this.cache.length > 0 ? this.cache.length + ' pages' : 'empty'
+        else
+          return 'connection error'
+      },
     },
     methods: {
       crawl() {
         this.loading = true
-        this.jobs++
         fetch(`http://${this.host}/crawl/${this.name}`)
           .then(res => res.json())
           .then(data => {
             this.loading = false
-            this.download(data)
+            this.newData = data
+            this.showDialog = true
             return this.getStatus()
           })
           .catch(err => {
@@ -74,8 +86,8 @@
         .then(res => res.json())
         .then(data => {
           this.healthy = true
-          this.jobs = data.jobs
-          this.last_run = data.last_run
+          this.startUrl = data.start_url
+          this.lastRun = data.last_run
           this.getCache()
         })
         .catch(err => {
@@ -88,21 +100,25 @@
           .then(res => res.json())
           .then(data => {
             this.loading = false
-            this.cache = data
+            this.cache = data.data
           })
           .catch(err => {
             this.loading = false
             alert(err)
           })
       },
-      download(data) {
+      download(data, title) {
         var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
         var dummy = document.createElement('a');
         dummy.setAttribute("href", dataStr);
-        dummy.setAttribute("download", `${this.name}-${new Date().toISOString()}.json`);
+        dummy.setAttribute("download", `${this.name}-${title}-${new Date().toISOString()}.json`);
         document.body.appendChild(dummy);
         dummy.click();
         dummy.remove();
+      },
+      closeDialog() {
+        this.newData = null
+        this.showDialog = false
       }
     },
     created() {
