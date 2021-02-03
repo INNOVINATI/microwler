@@ -38,7 +38,7 @@ class Microwler:
             transform: Function to transform scraped data after crawling ([read more](/microwler/faq/#what-are-transformers))
             settings: A `dict` with configuration parameters for the crawler [(read more)](/microwler/configuration/#settings)
         """
-        self._start_url = start_url
+        self.start_url = start_url
         parsed = urlparse(start_url)
         self._domain = parsed.netloc
         self._base_url = f'{parsed.scheme}://{self._domain}{parsed.path}'
@@ -122,7 +122,7 @@ class Microwler:
         resolver = AsyncResolver(nameservers=["1.1.1.1", "8.8.8.8"])
         tcpc = TCPConnector(resolver=resolver)
         self._session = ClientSession(loop=loop, connector=tcpc)
-        pipeline = [self._start_url]
+        pipeline = [self.start_url]
         try:
             for depth in range(self._settings.max_depth + 1):
                 batch = await self._get_batch(pipeline)
