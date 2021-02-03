@@ -1,25 +1,24 @@
 import asyncio
 import logging
 import os
-import time
 from datetime import datetime
 
-import aiohttp
 from quart import Quart, render_template
 from quart_cors import cors
 
 from microwler.utils import load_project, PROJECT_FOLDER
-from microwler.web import STATUS, CACHE
+from microwler.web import STATUS, CACHE, load_cache
 
 LOG = logging.getLogger(__name__)
 
 app = Quart('Microwler', template_folder=os.path.join(os.path.dirname(__file__), 'frontend/dist'))
 app = cors(app, allow_origin='*')
+load_cache()    # TODO: Use something like schedule to run this every couple of minutes
 
 
 @app.route('/')
 async def frontend():
-    return await render_template('frontend.html')
+    pass
 
 
 @app.route('/status')
@@ -52,26 +51,17 @@ async def crawl(project_name: str):
     - Route: `/crawl/<str:project_name>`
     - Method: `GET`
     """
+    CACHE[project_name]['last_run']['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M')
     try:
-        start = time.time()
         project = load_project(project_name, project_folder=PROJECT_FOLDER)
-        CACHE[project_name]['jobs'] += 1
         loop = asyncio.get_event_loop()
         project.crawler.set_cache(force=True)
         await project.crawler.run_async(event_loop=loop)
-        CACHE[project_name]['last_run'] = {
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'successful': True
-        }
-        CACHE[project_name]['jobs'] -= 1
+        CACHE[project_name]['last_run']['state'] = 'finished successfully'
         return {'data': project.crawler.results}
     except Exception as e:
         LOG.error(e)
-        CACHE[project_name]['jobs'] -= 1
-        CACHE[project_name]['last_run'] = {
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'successful': False
-        }
+        CACHE[project_name]['last_run']['state'] = 'failed'
         return {'error': str(e)}
 
 
