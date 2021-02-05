@@ -3,16 +3,17 @@ import logging
 import os
 from datetime import datetime
 
-from quart import Quart, render_template, Response
+from quart import Quart, Response, send_from_directory
 from quart_cors import cors
 
 from microwler.utils import load_project, PROJECT_FOLDER
 
 LOG = logging.getLogger(__name__)
 
-app = Quart('Microwler', template_folder=os.path.join(os.path.dirname(__file__), 'frontend/dist'))
+app = Quart('Microwler')
 app = cors(app, allow_origin='*')
 
+STATIC = os.path.join(os.path.dirname(__file__), 'frontend/dist')
 PROJECTS = dict()
 STATUS = {
     'version': '0.1.7',
@@ -39,11 +40,6 @@ async def load_projects():
 @app.before_serving
 async def init():
     await load_projects()
-
-
-@app.route('/')
-async def frontend():
-    pass
 
 
 @app.route('/status')
@@ -111,6 +107,16 @@ async def data(project_name: str):
     cache = project.crawler.cache
     response = {'data': cache}
     return response
+
+
+@app.route('/<path>', methods=['GET'])
+async def serve_folder(path):
+    return await send_from_directory(STATIC, path)
+
+
+@app.route('/', methods=['GET'])
+async def serve_index():
+    return await send_from_directory(STATIC, 'index.html')
 
 
 def start_app(port: int = 5000):
