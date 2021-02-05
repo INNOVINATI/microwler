@@ -10,7 +10,7 @@ def title(dom: parsel.Selector):
 
 
 def headings(dom: parsel.Selector):
-    """ Extract first 3 levels of heading tags:. `<h1>`, `<h2>`, <h3> """
+    """ Extract first 3 levels of heading tags: `<h1>`, `<h2>`, `<h3>` """
     return {
         'h1': remove_multi_whitespace(dom.xpath('string(//h1[1])').getall()),
         'h2': remove_multi_whitespace(dom.xpath('string(//h2[1])').getall()),

@@ -17,7 +17,7 @@ You can customize the hostname and port:
 serve [-p|--port PORT]
 ```
 
-## Endpoints
+## API
 
 ::: microwler.web.backend
     selection:

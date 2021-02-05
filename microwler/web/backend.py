@@ -49,6 +49,18 @@ async def status():
 
     - Route: `/status`
     - Method: `GET`
+    - Response example:
+    ```json
+    {
+        app: {
+            up_since: "2021-02-05 17:42:13",
+            version: "0.1.7"
+        },
+        projects: [
+            "quotes"
+        ]
+    }
+    ```
     """
     files = [file for file in os.listdir(PROJECT_FOLDER) if file.endswith('.py')]
     if len(files) != len(PROJECTS):
@@ -67,6 +79,17 @@ async def project(project_name):
 
     - Route: `/status/<str:project_name>`
     - Method: `GET`
+    - Response example:
+    ```json
+    {
+        name: "quotes",
+        start_url: "https://quotes.toscrape.com/"
+        last_run: {
+            state: "finished successfully",
+            timestamp: "2021-02-05 17:47"
+        },
+    }
+    ```
     """
 
     return PROJECTS[project_name]
@@ -79,6 +102,36 @@ async def crawl(project_name: str):
 
     - Route: `/crawl/<str:project_name>`
     - Method: `GET`
+    - Response example:
+    ```
+    {
+        data: [
+            {
+                url: "https://quotes.toscrape.com/"
+                status_code: 200,
+                depth: 0,
+                discovered: "2021-02-05",
+                links: [
+                    "https://quotes.toscrape.com/tag/inspirational/",
+                    "https://quotes.toscrape.com/author/Jane-Austen",
+                    "https://quotes.toscrape.com/tag/obvious/page/1/",
+                    "https://quotes.toscrape.com/tag/friends/",
+                    "https://quotes.toscrape.com/tag/misattributed-eleanor-roosevelt/page/1/",
+                    ...
+                ],
+                data: {
+                    title: "Quotes to Scrape"
+                    headings: {
+                        h1: ["Quotes to Scrape"],
+                        h2: ["Top Ten tags"],
+                        h3: [""]
+                    },
+                },
+            },
+            ...
+        ]
+    }
+    ```
     """
     PROJECTS[project_name]['last_run']['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M')
     try:
@@ -101,6 +154,7 @@ async def data(project_name: str):
 
     - Route: `/data/<str:project_name>`
     - Method: `GET`
+    - Response is in the same format as for /crawl
     """
     project = load_project(project_name, project_folder=PROJECT_FOLDER)
     project.crawler.set_cache(force=True)
