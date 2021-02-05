@@ -109,9 +109,14 @@ async def data(project_name: str):
     return response
 
 
-@app.route('/<path>', methods=['GET'])
-async def serve_folder(path):
-    return await send_from_directory(STATIC, path)
+@app.route('/<folder>/<file>', methods=['GET'])
+async def serve_folder(folder, file):
+    return await send_from_directory(os.path.join(STATIC, folder), file)
+
+
+@app.route('/<file>', methods=['GET'])
+async def serve_file(file):
+    return await send_from_directory(STATIC, file)
 
 
 @app.route('/', methods=['GET'])
