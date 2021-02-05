@@ -1,24 +1,37 @@
 import asyncio
 import logging
 import os
-from asyncio import Task
 from datetime import datetime
 
-from diskcache import Index
 from quart import Quart, render_template, Response
 from quart_cors import cors
 
 from microwler.utils import load_project, PROJECT_FOLDER
-from microwler.web.tasks import JOB_CACHE, PROJECT_CACHE, run_background_tasks
 
 LOG = logging.getLogger(__name__)
 
 app = Quart('Microwler', template_folder=os.path.join(os.path.dirname(__file__), 'frontend/dist'))
 app = cors(app, allow_origin='*')
+
+PROJECTS = dict()
 STATUS = {
     'version': '0.1.7',
     'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
 }
+
+
+async def load_projects():
+    for path in os.listdir(PROJECT_FOLDER):
+        if path.endswith('.py'):
+            name = path.split('.')[0]
+            project = load_project(name, PROJECT_FOLDER)
+            PROJECTS[name] = {'name': name, 'start_url': project.crawler.start_url, 'last_run': dict()}
+    LOG.info(f'Imported {len(PROJECTS)} projects')
+
+
+@app.before_serving
+async def init():
+    await load_projects()
 
 
 @app.route('/')
@@ -34,10 +47,13 @@ async def status():
     - Route: `/status`
     - Method: `GET`
     """
+    files = [file for file in os.listdir(PROJECT_FOLDER) if file.endswith('.py')]
+    if len(files) != len(PROJECTS):
+        await load_projects()
 
     return {
         'app': STATUS,
-        'projects': list(PROJECT_CACHE.keys()),
+        'projects': list(PROJECTS.keys()),
     }
 
 
@@ -50,7 +66,7 @@ async def project(project_name):
     - Method: `GET`
     """
 
-    return PROJECT_CACHE[project_name]
+    return PROJECTS[project_name]
 
 
 @app.route('/crawl/<project_name>')
@@ -61,17 +77,17 @@ async def crawl(project_name: str):
     - Route: `/crawl/<str:project_name>`
     - Method: `GET`
     """
-    PROJECT_CACHE[project_name]['last_run']['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M')
+    PROJECTS[project_name]['last_run']['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M')
     try:
         project = load_project(project_name, project_folder=PROJECT_FOLDER)
         loop = asyncio.get_event_loop()
         project.crawler.set_cache(force=True)
         await project.crawler.run_async(event_loop=loop)
-        PROJECT_CACHE[project_name]['last_run']['state'] = 'finished successfully'
+        PROJECTS[project_name]['last_run']['state'] = 'finished successfully'
         return {'data': project.crawler.results}
     except Exception as e:
         LOG.error(e)
-        PROJECT_CACHE[project_name]['last_run']['state'] = f'failed because: {e}'
+        PROJECTS[project_name]['last_run']['state'] = f'failed because: {e}'
         return Response(str(e), status=500)
 
 
@@ -97,17 +113,13 @@ def start_app(host='localhost', port=5000):
     LOG.info('Starting webservice...')
     config = Config()
     config.bind = [f'{host}:{port}']
-    loop = asyncio.get_event_loop()
-    scheduler = run_background_tasks(loop=loop)
+    config.loglevel = 'WARNING'
     try:
-        loop.run_until_complete(serve(app, config))
-    finally:
-        db = Index(os.path.join(os.getcwd(), '.microwler', 'cache', '__stats__'))
-        for date, result_count in JOB_CACHE.items():
-            if date not in db:
-                db[date] = result_count
-        scheduler.cancel()
-        loop.close()
+        LOG.info(f'Running on http://{host}:{port} (CTRL + C to quit)')
+        asyncio.run(serve(app, config))
+    except Exception as e:
+        LOG.error(e)
+        exit(1)
 
 
 if __name__ == '__main__':
