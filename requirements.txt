@@ -58,3 +58,5 @@ wcwidth==0.2.5
 Werkzeug==1.0.1
 wsproto==1.0.0
 yarl==1.6.3
+
+setuptools~=51.1.1
