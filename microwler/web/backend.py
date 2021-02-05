@@ -21,12 +21,19 @@ STATUS = {
 
 
 async def load_projects():
+    global PROJECTS
+    copy = dict()
     for path in os.listdir(PROJECT_FOLDER):
         if path.endswith('.py'):
             name = path.split('.')[0]
             project = load_project(name, PROJECT_FOLDER)
-            PROJECTS[name] = {'name': name, 'start_url': project.crawler.start_url, 'last_run': dict()}
-    LOG.info(f'Imported {len(PROJECTS)} projects')
+            if name in PROJECTS:
+                PROJECTS[name]['start_url'] = project.crawler.start_url
+                copy[name] = PROJECTS[name]
+            else:
+                copy[name] = {'name': name, 'start_url': project.crawler.start_url, 'last_run': dict()}
+    PROJECTS = copy
+    LOG.info(f'Imported {len(PROJECTS)} projects from filesystem')
 
 
 @app.before_serving
@@ -119,7 +126,6 @@ def start_app(host='localhost', port=5000):
         asyncio.run(serve(app, config))
     except Exception as e:
         LOG.error(e)
-        exit(1)
 
 
 if __name__ == '__main__':
