@@ -1,10 +1,12 @@
 # Scraping Data
-**Microwler** provides several ways of extracting data from web pages.
+**Microwler** provides several ways of extracting data from web pages by defining *selectors*. 
+If you're familiar with Scrapy selectors, you will notice a strong similarity - 
+because both use the excellent `Parsel` library. This allows you to [build
+complex selectors](#parsel) with XPath, CSS and RegEx, even offering the possibility to chain selectors. 
+Alternatively, you can use the [generic selectors](#generic) that are built-in or use simple [XPath strings](#xpath). 
+Let's check it out!
 
 ## Selectors
-In most cases, you'll want to extract or calculate some data based on the HTML documents you crawl.
-For this scenario, **Microwler** allows you to define *selectors*, which can extract data using
-`XPath` or `CSS` expressions - or use the ones we already built for you.
 
 ### Generic
 If you're really lazy, just use the *built-in selectors*. For instance:
@@ -73,6 +75,7 @@ Internally, an HTML document is represented as `Page`. Here's a JSON representat
   --- Common Page attributes ---
   "url": "https://quotes.toscrape.com/",
   "status_code": 200,
+  "discovered": "2021-01-13",
   "depth": 0,
   "links": [
     "https://quotes.toscrape.com/tag/inspirational/",
@@ -96,7 +99,6 @@ Internally, an HTML document is represented as `Page`. Here's a JSON representat
 }
 ```
 
-To retrieve data after running the crawler (i.e. directly from a script) you can use
+Retrieve data after running the crawler (i.e. directly from a script) with `crawler.results`
 
-- `crawler.data` : will return a list of `dict`s containing the URL and `data` of every page
-- `crawler.pages`: will return a list of `Page` objects (similar to what's shown above)
+If you want to retrieve a list of cached pages you can use `crawler.cache`
