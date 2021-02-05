@@ -12,10 +12,11 @@
       <iframe v-bind:src="project.startUrl" width="360" height="200"></iframe>
 
     <v-card-title>
-      {{ name.replace(/_/g, '.') }}
+      {{ name }}
     </v-card-title>
 
     <v-card-subtitle>
+        <p v-if="!!project">{{ project.startUrl }}</p>
         <p v-if="!!project.lastRun">
           <span v-if="project.lastRun.hasOwnProperty('timestamp')">
             Last crawl at {{ project.lastRun.timestamp }}<br>{{ project.lastRun.state }}.
