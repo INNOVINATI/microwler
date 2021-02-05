@@ -1,7 +1,9 @@
 import os
+import sys
 from urllib.parse import urlparse
 
 import click
+from click.testing import CliRunner
 
 from microwler.cli.template import TEMPLATE
 from microwler.utils import load_project, PROJECT_FOLDER
@@ -9,7 +11,7 @@ from microwler.web.backend import start_app
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 COMMANDS = [
-    ('new START_URL', 'Create a new project'),
+    ('new PROJECT_NAME START_URL', 'Create a new project'),
     ('crawler PROJECT_NAME run', 'Run a project\'s crawler'),
     ('crawler PROJECT_NAME dumpcache', 'Dump project getCache to JSON file'),
     ('crawler PROJECT_NAME clearcache', 'Clear project getCache'),
@@ -34,16 +36,17 @@ def show_help():
 
 
 @click.command()
+@click.argument('project_name', type=str)
 @click.argument('start_url', type=str)
-def add_project(start_url):
+def add_project(project_name, start_url):
     """ Create a new project """
     try:
-        project = urlparse(start_url).netloc.replace('.', '_')
         os.makedirs(PROJECT_FOLDER, exist_ok=True)
         template = TEMPLATE.replace('START_URL', start_url)
-        path = os.path.join(PROJECT_FOLDER, project + '.py')
+        name = project_name.replace(' ', '_').replace('.', '_').replace('-', '_').lower()
+        path = os.path.join(PROJECT_FOLDER, name + '.py')
         if os.path.exists(path):
-            question = click.style('A project with this URL already exists. Do you want to overwrite it?', fg='yellow')
+            question = click.style('A project with this name already exists. Do you want to overwrite it?', fg='yellow')
             if not click.confirm(question):
                 exit(0)
         with open(path, 'w') as output:
