@@ -32,7 +32,7 @@ setup(
     install_requires=[
         'aiohttp', 'lxml', 'diskcache', 'prettytable', 'quart',
         'random-user-agent', 'html-text', 'completely', 'click',
-        'parsel', 'chardet'
+        'parsel', 'chardet', 'quart-cors', 'aiodns'
     ],
     entry_points='''
     [console_scripts]
