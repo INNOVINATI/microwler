@@ -26,7 +26,7 @@ setup(
     ],
     packages=['microwler', 'microwler.cli', 'microwler.web'],
     package_data={
-        'microwler': ['web/frontend/dist/*', 'web/frontend/dist/*']
+        'microwler': ['web/frontend/dist/*', 'web/frontend/dist/_nuxt/*']
     },
     python_requires='>=3.7, <4',
     install_requires=[
