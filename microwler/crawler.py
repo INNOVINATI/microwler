@@ -56,6 +56,8 @@ class Microwler:
     def set_cache(self, force=False):
         if self._settings.caching or force:
             self._cache = Index(f'./.microwler/cache/{self._domain}')
+        else:
+            self._cache = None
 
     async def _get(self, url):
         async with self._limiter:
