@@ -113,16 +113,21 @@ async def data(project_name: str):
     return response
 
 
-def start_app(host='localhost', port=5000):
+def start_app(port: int = 5000):
+    """
+    Starts the production-ready ASGI application using Hypercorn
+    Arguments:
+         port: the port to run on
+    """
     from hypercorn.asyncio import serve
     from hypercorn.config import Config
 
     LOG.info('Starting webservice...')
     config = Config()
-    config.bind = [f'{host}:{port}']
+    config.bind = [f'localhost:{port}']
     config.loglevel = 'WARNING'
     try:
-        LOG.info(f'Running on http://{host}:{port} (CTRL + C to quit)')
+        LOG.info(f'Running on http://localhost:{port} (CTRL + C to quit)')
         asyncio.run(serve(app, config))
     except Exception as e:
         LOG.error(e)
