@@ -7,17 +7,18 @@
 
 **Microwler** is a micro-framework for asynchronous web crawling and scraping implemented in Python.
 It is designed for *deep* crawls, i.e. retrieving every page of a specific website.
-Per default, the crawler will attempt to visit each qualified link it can find and download the 
-corresponding page until it reaches the depth limit or the whole site has been visited.
 
-Optionally, you can also:
+Core features:
+
+- define crawlers in a **single file** using a **declarative approach**
+- control your crawlers via **CLI**, **Python scripts** or **HTTP**
 - **cache your results** on disk
 - use **incremental crawling** mode (only crawl new pages)
 - use **pre-built selectors** to scrape common data, i.e. `<meta>` or `<title>`
 - easily define **custom selectors** using XPath & CSS
 - define "transformers" to **manipulate scraped data** after crawling
 - **export data** with pre-built plugins or build your own
-- use the built-in **web service** to run crawlers and fetch data from a remote client
+- use the **built-in web service** (API + Frontend)
 
 Sounds good? Head over to the [Getting Started guide](https://innovinati.github.io/microwler/getting-started) now!
 
