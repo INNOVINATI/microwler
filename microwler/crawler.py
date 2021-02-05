@@ -199,8 +199,14 @@ class Microwler:
             table.add_column('Total Time', [f'{round(total_time, 2)}s'])
             print(table)
 
-    async def run_async(self, sort_urls: bool = False, keep_source: bool = False, event_loop=None):
-        """ For running the crawler from another app, which has an existing event loop, i.e. Quart. """
+    async def run_async(self, event_loop, sort_urls: bool = False, keep_source: bool = False):
+        """
+        For running the crawler from another `asyncio` app, which has an existing event loop, i.e. Quart.
+        Arguments:
+             event_loop: existing event loop, i.e. as a result of asyncio.get_event_loop()
+             sort_urls: sort results alphabetically by URL
+             keep_source: per default, if selectors are defined, the HTML source will be discarded
+        """
         await event_loop.create_task(self._crawl(event_loop))
         if len(self._results):
             self._process(sort_urls=sort_urls, keep_source=keep_source)
