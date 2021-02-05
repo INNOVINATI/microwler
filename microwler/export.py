@@ -60,9 +60,9 @@ class FileExporter(BaseExporter):
             os.makedirs(self.settings.export_to, exist_ok=True)
             with open(path, 'w') as file:
                 file.write(data)
-            LOG.info(f'Exported data as {self.extension.upper()} to: {path}')
+            LOG.info(f'Exported data as {self.extension.upper()} to: {path} [{self.domain}]')
         except Exception as e:
-            LOG.error(f'Error during export: {e}')
+            LOG.error(f'Error during export: {e} [{self.domain}]')
 
 
 class JSONExporter(FileExporter):

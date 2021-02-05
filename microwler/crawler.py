@@ -67,7 +67,8 @@ class Microwler:
                         LOG.info(f'Processed: {url} [{response.status}]')
                     return text, response.status
             except TimeoutError:
-                LOG.warning(f'Timeout error: {url}')
+                if self._verbose:
+                    LOG.warning(f'Timeout error: {url}')
                 return None, None
 
     def _find_links(self, html):
@@ -91,9 +92,10 @@ class Microwler:
                 links = self._find_links(text)
                 return url, status, text, links
         except Exception as e:
-            LOG.error(f'Download error: {e} [{url}]')
+            if self._verbose:
+                LOG.error(f'Download error: {e} [{url}]')
             self._errors[url] = str(e)
-        return None
+            return None
 
     async def _get_batch(self, to_fetch):
         futures, results = [], []
@@ -103,7 +105,8 @@ class Microwler:
                 continue
             if self._settings.delta_crawl:
                 if normalized_url in self._cache:
-                    LOG.info(f'Dropped pre-cached URL [{normalized_url}]')
+                    if self._verbose:
+                        LOG.info(f'Dropped pre-cached URL [{normalized_url}]')
                     continue
             self._results[normalized_url] = None
             futures.append(self._get_one(normalized_url))
@@ -114,12 +117,13 @@ class Microwler:
                 if result is not None:
                     results.append(result)
             except Exception as e:
-                LOG.warning(f'Exception: {e}')
+                LOG.error(f'Error while crawling: {e}')
+                exit(1)
         return results
 
     async def _crawl(self, loop):
         LOG.info(f'Crawler started [{self._domain}]')
-        resolver = AsyncResolver(nameservers=["1.1.1.1", "8.8.8.8"])
+        resolver = AsyncResolver(nameservers=self._settings.dns_providers)
         tcpc = TCPConnector(resolver=resolver)
         self._session = ClientSession(loop=loop, connector=tcpc)
         pipeline = [self.start_url]
@@ -137,24 +141,25 @@ class Microwler:
 
     def _process(self, sort_urls=False, keep_source=False):
         if sort_urls:
-            LOG.info(f'Sorting results ...')
+            LOG.info(f'Sorting results ... [{self._domain}]')
             self._results = {url: self._results[url] for url in sorted(self._results)}
 
         if self._selectors:
-            LOG.info('Extracting data ...')
+            LOG.info(f'Extracting data ... [{self._domain}]')
             for url, page in self._results.items():
                 self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
 
                 if self._transformer is not None:
                     self._results[url] = page.transform(self._transformer)
 
-        if len(self._settings.exporters):
+        if count := len(self._settings.exporters):
+            LOG.info(f'Exporting to {count} destinations... [{self._domain}]')
             for exporter_cls in self._settings.exporters:
                 instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
                 instance.export()
 
         if self._cache is not None:
-            LOG.info('Caching results ...')
+            LOG.info(f'Caching results ... [{self._domain}]')
             for page in self._results.values():
                 if page.url not in self._errors:
                     self._cache[page.url] = page.__dict__
@@ -193,6 +198,7 @@ class Microwler:
             print(table)
 
     async def run_async(self, sort_urls: bool = False, keep_source: bool = False, event_loop=None):
+        """ For running the crawler from another app, which has an existing event loop, i.e. Quart. """
         await event_loop.create_task(self._crawl(event_loop))
         if len(self._results):
             self._process(sort_urls=sort_urls, keep_source=keep_source)

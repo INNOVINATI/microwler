@@ -49,6 +49,7 @@ for the crawler itself but also for handling exports and such.
 | link_filter | `//a/@href` | Exclusively extract and follow (internal) links matching this XPath expression. Use this setting to limit which links will be visited. For instance, using `link_filter: "//a[contains(@href, 'blog')]/@href"` will only select URLs containing the string `blog` such as `https://example.com/blog/page-1`. |
 | max_depth | 10 | The depth limit at which to stop crawling |
 | max_concurrency | 20 | Maximum number of concurrent requests |
+| dns_providers | `['1.1.1.1', '8.8.8.8']` | DNS server addresses, i.e. Cloudflare or Google |
 | language | 'en-us' | Will be used to in the `Accept-Language` header |
 | caching | `False` | Persist results using `diskcache` |
 | delta_crawl | `False` | Incremental crawling mode: drop URLs which have been seen in earlier runs |
