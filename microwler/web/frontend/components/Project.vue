@@ -1,37 +1,67 @@
 <template>
   <v-card
-    class="mx-auto"
-    max-width="344"
+    class="mx-auto elevation-8"
+    max-width="360"
     :loading="loading"
+    @click="$store.dispatch('updateChart', name)"
   >
-    <iframe v-bind:src="startUrl" width="344" height="200"></iframe>
+    <v-skeleton-loader v-if="!project" type="card-avatar, article, actions" max-width="344">
+
+    </v-skeleton-loader>
+    <div v-else>
+      <iframe v-bind:src="project.startUrl" width="360" height="200"></iframe>
 
     <v-card-title>
       {{ name.replace(/_/g, '.') }}
     </v-card-title>
 
-    <v-card-subtitle v-if="healthy">
-        <p v-if="!!lastRun">
-          <span v-if="lastRun.hasOwnProperty('timestamp')">Last crawl at {{ lastRun.timestamp }}<br>{{ lastRun.state }}.</span>
+    <v-card-subtitle>
+        <p v-if="!!project.lastRun">
+          <span v-if="project.lastRun.hasOwnProperty('timestamp')">
+            Last crawl at {{ project.lastRun.timestamp }}<br>{{ project.lastRun.state }}.
+          </span>
           <span v-else>No crawls recorded.<br><br></span>
         </p>
-        <p>Cache: {{ cacheInfo }}</p>
+        <v-chip color="grey" dark small>
+          Cache: {{ cacheInfo }}
+        </v-chip>
     </v-card-subtitle>
 
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn text @click="crawl()" v-if="!loading">Run crawler</v-btn>
-      <v-btn text disabled v-else>Running...</v-btn>
-      <v-btn v-if="!!cache" color="secondary" text @click="download(cache, 'cache')" :disabled="cache.length === 0">Download cache</v-btn>
+      <v-btn
+        text
+        @click="crawl()"
+        v-if="!loading"
+      >
+        Run crawler
+      </v-btn>
+      <v-btn
+        text
+        disabled
+        v-else
+      >
+        Running...
+      </v-btn>
+      <v-btn
+        v-if="!!project"
+        color="secondary"
+        text
+        @click="download(project.cache, 'snapshot')"
+        :disabled="!project.cache || project.cache.length === 0"
+      >
+        Download snapshot
+      </v-btn>
       <v-spacer></v-spacer>
     </v-card-actions>
     <ResultDialog
       v-if="showDialog"
       :project-name="name"
       :show="showDialog"
-      :results="newData"
+      :results="results"
       v-on:close="closeDialog()"
     ></ResultDialog>
+    </div>
   </v-card>
 </template>
 
@@ -41,24 +71,22 @@
     name: "Project",
     components: {ResultDialog},
     props: {
-      host: String,
       name: String
     },
     data() {
       return {
-        healthy: false,
-        cache: null,
         loading: false,
-        startUrl: null,
-        lastRun: null,
         showDialog: false,
-        newData: null
+        results: null
       }
     },
     computed: {
+      project() {
+        return this.$store.getters.getProjectByName(this.name)
+      },
       cacheInfo() {
-        if (!!this.cache)
-          return this.cache.length > 0 ? this.cache.length + ' pages' : 'empty'
+        if (!!this.project.cache)
+          return this.project.cache.length > 0 ? this.project.cache.length + ' pages' : 'empty'
         else
           return 'connection error'
       },
@@ -66,41 +94,22 @@
     methods: {
       crawl() {
         this.loading = true
-        fetch(`http://${this.host}/crawl/${this.name}`)
-          .then(res => res.json())
-          .then(data => {
+        this.$store.dispatch('runProject', this.name)
+          .then(() => {
             this.loading = false
-            this.newData = data
+            this.results = this.project.latestResults
             this.showDialog = true
-            return this.getStatus()
+            this.loadProject()
           })
           .catch(err => {
             this.loading = false
             alert(err)
           })
       },
-      getStatus() {
+      loadProject() {
         this.loading = true
-        fetch(`http://${this.host}/status/${this.name}`)
-        .then(res => res.json())
-        .then(data => {
-          this.healthy = true
-          this.startUrl = data.start_url
-          this.lastRun = data.last_run
-          this.getCache()
-        })
-        .catch(err => {
-          this.loading = false
-          alert(err)
-        })
-      },
-      getCache() {
-        fetch(`http://${this.host}/data/${this.name}`)
-          .then(res => res.json())
-          .then(data => {
-            this.loading = false
-            this.cache = data.data
-          })
+        this.$store.dispatch('getProject', this.name)
+          .then(() => this.loading = false)
           .catch(err => {
             this.loading = false
             alert(err)
@@ -116,24 +125,19 @@
         dummy.remove();
       },
       closeDialog() {
-        this.newData = null
+        this.results = null
         this.showDialog = false
       }
     },
     created() {
-      this.getStatus()
+      this.loadProject()
     }
   }
 </script>
 
 <style scoped>
-#scaled-frame {
-  zoom: 0.75;
-  -moz-transform: scale(0.75);
-  -moz-transform-origin: 0 0;
-  -o-transform: scale(0.75);
-  -o-transform-origin: 0 0;
-  -webkit-transform: scale(0.75);
-  -webkit-transform-origin: 0 0;
+iframe {
+  border: none;
+  border-bottom: 1px solid lightgrey;
 }
 </style>

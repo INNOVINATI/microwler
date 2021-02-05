@@ -1,18 +1,18 @@
 <template>
   <v-row justify="center">
     <v-dialog v-model="show" fullscreen hide-overlay transition="dialog-bottom-transition">
-      <v-card color="white">
-        <v-toolbar dark color="primary">
-          <v-btn icon dark @click="$emit('close')">
+      <v-card>
+        <v-toolbar outlined>
+          <v-btn icon @click="$emit('close')">
             <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Results</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn dark text @click="download(results, 'crawl')">Download</v-btn>
+            <v-btn text @click="download(results, 'crawl')">Download</v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <vue-json-viewer :value="results" copyable></vue-json-viewer>
+        <vue-json-viewer :value="results" :expand-depth=2 copyable></vue-json-viewer>
       </v-card>
     </v-dialog>
   </v-row>
