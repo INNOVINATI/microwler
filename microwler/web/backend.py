@@ -154,7 +154,7 @@ async def data(project_name: str):
 
     - Route: `/data/<str:project_name>`
     - Method: `GET`
-    - Response is in the same format as for /crawl
+    - Response is in the same format as [above][microwler.web.backend.crawl]
     """
     project = load_project(project_name, project_folder=PROJECT_FOLDER)
     project.crawler.set_cache(force=True)
