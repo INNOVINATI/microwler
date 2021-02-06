@@ -16,17 +16,23 @@ The following image should give you a brief overview of how/when certain feature
 
 
 #### How can I access scraped data directly, i.e. without running any exporters?
-Currently, there are two ways to do this:
+Currently, there are two different ways to do this directly:
 
-1. Use `crawler.data` to obtain a list of either data dictionaries if `selectors` are defined or the HTML documents
-2. Use `crawler.pages` to get the results as list of [microwler.page.Page][] objects
-3. Use `crawler.cache` to get the database as list of dictionaries
+1. Use `crawler.results` to obtain a list of result `dict`s (obviously *after* crawling)
+3. Use `crawler.cache` to obtain a list of cached pages (after initializing the crawler)
+
+Alternatively, you can pull data via CLI & HTTP and it's advised to do so:
+
+- CLI: `crawler <project_name> dumpcache`
+    - Exports the cache to your local filesystem as JSON
+- API: `/data/<project_name>`
+    - Returns the cache as JSON
 
 #### What are *transformers*?
 It sounds more complex than it really is: a *transformer* is any Python callable
 which works on a data dictionary. Microwler will inject every crawled page's `data`
 into a given transformer function in order to manipulate it after scraping, 
-i.e. do some text processing. An example can be found [here](https://github.com/INNOVINATI/microwler/blob/master/test_cases.py#L54).
+i.e. do some text processing. [Example](https://github.com/INNOVINATI/microwler/blob/master/test_cases.py#L54)
 
 #### Can I persist results, i.e. in a database?
 Yes. In fact, Microwler comes with a built-in caching system for storing results on-disk.

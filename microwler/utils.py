@@ -70,23 +70,3 @@ def load_project(project_name, project_folder=None):
     spec.loader.exec_module(project)
     return project
 
-
-class ServiceStatus:
-    status = {
-        'version': '0.1.3',
-        'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-    }
-    projects = dict()
-
-    def __init__(self):
-        self.load_project_folder()
-
-    def load_project_folder(self):
-        for path in os.listdir(PROJECT_FOLDER):
-            if path.endswith('.py'):
-                name = path.split('.')[0]
-                if name not in self.projects:
-                    self.projects[name] = {'running': False, 'last_run': None}
-
-    def to_dict(self):
-        return {'app': self.status, 'projects': self.projects}

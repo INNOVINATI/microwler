@@ -20,19 +20,17 @@ pip install microwler
 ### CLI (recommended)
 #### Create a project
 Make sure you created a workspace as suggested in the [previous section](#installation). 
-Within that folder, create a new project providing the URL to start crawling with:
+Within that folder, create a new project providing a name and the URL to start crawling with:
 ```bash
-new https://quotes.toscrape.com/
+new quotes https://quotes.toscrape.com/
 ```
 Microwler will create a `projects/` folder in your current working directory and place
-a file called `quotes_toscrape_com.py` within it. This file contains your [crawler configuration][microwler.crawler.Microwler].
-
-> Note: You can check out the corresponding project template in the [source files](https://github.com/INNOVINATI/microwler/blob/devel/microwler/cli/template.py).
+a file called `quotes.py` within it. This file contains your [crawler configuration](/microwler/configuration).
 
 #### Run the project/crawler
 To run this project, execute the following command:
 ```bash
-crawler quotes_toscrape_com run
+crawler quotes run
 ```
 > Note: Depending on your setup, this will create a `.microwler` folder in your workspace
 > where internal stuff like caches will be stored. Mess with it at your own risk!
@@ -44,18 +42,31 @@ microwler
 ```
 
 ### Script
-Simply create a [microwler.crawler.Microwler][] instance and `run` it:
+> **Important**: If you're planning on using the webservice or the "project" system in general, you should use the CLI
+as recommended above. It will create an optimized workspace in which you can develop and run your projects.
+
+#### Run directly
+
+Simply create a crawler instance and `run` it:
 
 ```python
 from microwler import Microwler
 
 crawler = Microwler('https://quotes.toscrape.com/')
 crawler.run(verbose=True)
-for page in crawler.pages:
-    print(page.url, page.html)
+for page in crawler.results:
+    print(page)
 ```
-Without any further configuration, the crawler will try to visit every qualified link it can find and download
-every page's content. For more advanced scenarios, check out the rest of this documentation.
 
-> Note: If you're planning on using the webservice or the "project" system in general, you should use the CLI
-as recommended above.
+#### Run from asyncio app
+
+If you want to start your crawler from an application that is already running an `asyncio` event loop,
+you should use `Microwler.run_async(loop)`. Here's a simple example:
+
+```python
+...
+crawler = Microwler(...)
+loop = asyncio.get_event_loop()
+await crawler.run_async(event_loop=loop)
+print(crawler.results)
+```

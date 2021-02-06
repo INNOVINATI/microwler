@@ -11,8 +11,8 @@ LOG = logging.getLogger(__name__)
 class BaseExporter:
     """
     Use this class to build your custom export functionality, i.e. send data per HTTP or SMTP.
-    The Microwler instance will call `export()` once it's done with everything else.
-    You can plug your Exporter into the crawler by adding the class to `settings['exporters']`
+    The crawler instance will call `export()` once it's done with everything else.
+    You can pass your plugin into the crawler by adding the class to `settings['exporters']`
     """
 
     def __init__(self, domain: str, data: list, settings: Settings):
@@ -31,7 +31,6 @@ class BaseExporter:
     def export(self):
         """
         Export data to target destination
-        > Will be called by [microwler.crawler.Microwler][]
         """
         raise NotImplementedError()
 
@@ -60,9 +59,9 @@ class FileExporter(BaseExporter):
             os.makedirs(self.settings.export_to, exist_ok=True)
             with open(path, 'w') as file:
                 file.write(data)
-            LOG.info(f'Exported data as {self.extension.upper()} to: {path}')
+            LOG.info(f'Exported data as {self.extension.upper()} to: {path} [{self.domain}]')
         except Exception as e:
-            LOG.error(f'Error during export: {e}')
+            LOG.error(f'Error during export: {e} [{self.domain}]')
 
 
 class JSONExporter(FileExporter):

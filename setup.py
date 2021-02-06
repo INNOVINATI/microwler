@@ -7,7 +7,7 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='microwler',
-    version='0.1.6',
+    version='0.1.7',
     description='A micro-framework for asynchronous deep crawls and web scraping written in Python',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -15,7 +15,7 @@ setup(
     author='Maximilian Wolf',
     author_email='maximilian.wolf@innovinati.com',
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Framework :: AsyncIO',
         'License :: OSI Approved :: MIT License',
@@ -24,12 +24,15 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
-    packages=['microwler', 'microwler.cli'],
+    packages=['microwler', 'microwler.cli', 'microwler.web'],
+    package_data={
+        'microwler': ['web/frontend/dist/*', 'web/frontend/dist/_nuxt/*.js']
+    },
     python_requires='>=3.7, <4',
     install_requires=[
         'aiohttp', 'lxml', 'diskcache', 'prettytable', 'quart',
         'random-user-agent', 'html-text', 'completely', 'click',
-        'parsel'
+        'parsel', 'chardet', 'quart-cors', 'aiodns'
     ],
     entry_points='''
     [console_scripts]

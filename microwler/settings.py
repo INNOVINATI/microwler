@@ -1,6 +1,5 @@
 import logging
 import os
-from urllib.parse import urlparse
 
 LOG = logging.getLogger(__name__)
 
@@ -9,6 +8,7 @@ class Settings(object):
     link_filter: str = '//a/@href'
     max_depth: int = 10
     max_concurrency: int = 20
+    dns_providers: list = ['1.1.1.1', '8.8.8.8']
     language: str = 'en-us'
     caching: bool = False
     delta_crawl: bool = False

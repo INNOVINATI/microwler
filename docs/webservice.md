@@ -10,23 +10,31 @@ To start the webservice, activate your workspace and run the following command:
 serve
 ```
 
-> Per default, this will start a production-ready ASGI server on `localhost:5000` using `Quart` with `hypercorn`.
+> Per default, this will start a production-ready ASGI application on `localhost:5000` using `Quart` with `hypercorn`.
 
 You can customize the hostname and port:
 ```bash
-serve [-h|--host HOSTNAME] [-p|--port PORT]
+serve [-p|--port PORT]
 ```
 
-## Endpoints
+## API
 
-::: microwler.webservice.status
+::: microwler.web.backend
+    selection:
+      members:
+        - status
+        - project
+        - crawl
+        - data
     rendering:
-          show_root_heading: true
-          
-::: microwler.webservice.crawl
-    rendering:
-          show_root_heading: true
-          
-::: microwler.webservice.data
-    rendering:
-          show_root_heading: true
+        heading_level: 3
+        
+## Microwler UI
+Once the webservice is started, it will serve a NuxtJS application at `localhost:<PORT>/`
+
+The application can be used as a convenient way to run crawlers and retrieve/monitor their data.
+It consumes the API provided by the same Quart application.
+
+Here are some screenshots:
+
+*TODO: ADD IMAGES*
