@@ -33,8 +33,6 @@ serve [-p|--port PORT]
 Once the webservice is started, it will serve a NuxtJS application at `localhost:<PORT>/`
 
 The application can be used as a convenient way to run crawlers and retrieve/monitor their data.
-It consumes the API provided by the same Quart application.
+It consumes the API [described above](#api).
 
-Here are some screenshots:
-
-*TODO: ADD IMAGES*
+<img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/demo.gif" alt="Microwler UI">
