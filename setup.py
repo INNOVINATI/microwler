@@ -25,9 +25,7 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
     ],
     packages=['microwler', 'microwler.cli', 'microwler.web'],
-    package_data={
-        'microwler': ['web/frontend/dist/*', 'web/frontend/dist/_nuxt/*.js']
-    },
+    include_package_data=True,
     python_requires='>=3.7, <4',
     install_requires=[
         'aiohttp', 'lxml', 'diskcache', 'prettytable', 'quart',
