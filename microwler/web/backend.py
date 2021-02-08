@@ -16,7 +16,7 @@ app = cors(app, allow_origin='*')
 STATIC = os.path.join(os.path.dirname(__file__), 'frontend/dist')
 PROJECTS = dict()
 STATUS = {
-    'version': '0.1.7',
+    'version': '0.1.8',
     'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
 }
 
