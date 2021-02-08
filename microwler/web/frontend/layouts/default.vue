@@ -34,7 +34,7 @@
 
       }
     },
-    created() {
+    mounted() {
       this.$vuetify.theme.dark = window.matchMedia('(prefers-color-scheme: dark)').matches
     }
   }

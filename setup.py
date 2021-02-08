@@ -7,7 +7,7 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='microwler',
-    version='0.1.7',
+    version='0.1.8',
     description='A micro-framework for asynchronous deep crawls and web scraping written in Python',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -25,9 +25,7 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
     ],
     packages=['microwler', 'microwler.cli', 'microwler.web'],
-    package_data={
-        'microwler': ['web/frontend/dist/*', 'web/frontend/dist/_nuxt/*.js']
-    },
+    include_package_data=True,
     python_requires='>=3.7, <4',
     install_requires=[
         'aiohttp', 'lxml', 'diskcache', 'prettytable', 'quart',

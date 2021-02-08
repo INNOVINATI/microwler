@@ -153,8 +153,8 @@ class Microwler:
 
                 if self._transformer is not None:
                     self._results[url] = page.transform(self._transformer)
-
-        if count := len(self._settings.exporters):
+        count = len(self._settings.exporters)
+        if count:
             LOG.info(f'Exporting to {count} destinations... [{self._domain}]')
             for exporter_cls in self._settings.exporters:
                 instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
