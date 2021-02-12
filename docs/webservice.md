@@ -5,10 +5,12 @@ built with [Quart](https://pypi.org/project/Quart/). It provides
 a simple way to run your crawlers and retrieve their scraped data via HTTP.
 
 ## Usage
-To start the webservice, activate your workspace and run the following command:
-```bash
-serve
-```
+<div id="termynal" data-termynal>
+    <span data-ty="input">serve</span>
+    <span data-ty>[INFO] Starting webservice...</span>
+    <span data-ty>[INFO] Running on http://localhost:5000 (CTRL + C to quit)</span>
+    <span data-ty>[INFO] Imported 1 projects from filesystem</span>
+</div>
 
 > Per default, this will start a production-ready ASGI application on `localhost:5000` using `Quart` with `hypercorn`.
 
@@ -36,3 +38,4 @@ The application can be used as a convenient way to run crawlers and retrieve/mon
 It consumes the API [described above](#api).
 
 <img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/demo.gif" alt="Microwler UI">
+<script src="/js/termynal.js" data-termynal-container="#termynal"></script>

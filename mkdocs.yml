@@ -19,6 +19,8 @@ plugins:
           show_source: false
     watch:
       - ./microwler
+extra_css:
+    - css/termynal.css
 extra:
   social:
     - icon: fontawesome/brands/github
@@ -27,3 +29,6 @@ extra:
       link: https://linkedin.com/company/innovinati
 
 copyright: powered by <a href="https://innovinati.com/">INNOVINATI</a>
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences

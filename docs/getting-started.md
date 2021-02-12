@@ -1,39 +1,35 @@
 # Getting Started
 
 ## Installation
-Before you start, create a workspace/folder for **Microwler** projects and enter it:
-```bash
-mkdir microwler && cd $_
-```
-
-Now, create a virtual environment using Python 3.7 or higher and activate it:
-```bash
-virtualenv venv -p python3.x && source venv/bin/activate
-```
-
-Install `microwler` from PyPI:
-```bash
-pip install microwler
-```
+<div id="termynal1" data-termynal>
+    <span data-ty="input">mkdir microwler && cd $_</span>
+    <span data-ty="input">virtualenv venv -p python3</span>
+    <span data-ty="input">source venv/bin/activate</span>
+    <span data-ty="input">pip install microwler</span>
+    <span data-ty="progress"></span>
+    <span data-ty>Successfully installed Microwler</span>
+</div>
 
 ## Usage
 ### CLI (recommended)
-#### Create a project
-Make sure you created a workspace as suggested in the [previous section](#installation). 
-Within that folder, create a new project providing a name and the URL to start crawling with:
-```bash
-new quotes https://quotes.toscrape.com/
-```
+#### Create a project and run it
+> Make sure you created a workspace as suggested above [previous section](#installation). 
+
+<div id="termynal2" data-termynal>
+    <span data-ty="input">new quotes https://quotes.toscrape.com/</span>
+    <span data-ty data-ty-delay="250" style="color: green">Created new project: /Users/max/microwler/projects/quotes.py</span>
+    <span data-ty="input">crawler quotes run</span>
+    <span data-ty data-ty-delay="50">[INFO] Starting engine ...</span>
+    <span data-ty data-ty-delay="50">[INFO] Crawler started [quotes.toscrape.com]</span>
+    <span data-ty="progress"></span>
+    <span data-ty>[INFO] Crawler stopped [quotes.toscrape.com]</span>
+</div>
+
 Microwler will create a `projects/` folder in your current working directory and place
 a file called `quotes.py` within it. This file contains your [crawler configuration](/microwler/configuration).
 
-#### Run the project/crawler
-To run this project, execute the following command:
-```bash
-crawler quotes run
-```
-> Note: Depending on your setup, this will create a `.microwler` folder in your workspace
-> where internal stuff like caches will be stored. Mess with it at your own risk!
+Depending on your setup, this will also create a `.microwler` folder in your workspace
+where internal stuff like caches will be stored. Mess with it at your own risk!
 
 #### Check available commands
 You can check available commands with:
@@ -70,3 +66,6 @@ loop = asyncio.get_event_loop()
 await crawler.run_async(event_loop=loop)
 print(crawler.results)
 ```
+
+
+<script src="/js/termynal.js" data-termynal-container="#termynal1|#termynal2"></script>

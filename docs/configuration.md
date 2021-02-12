@@ -1,4 +1,5 @@
 # Configuration
+## File template
 **Microwler** projects can be written in a single Python module using a declarative approach. 
 Per default, the crawler will visit every qualified link it can find and retrieve the corresponding page content.
 Of course, you can customize and extend this behaviour. Here's an example:
@@ -32,7 +33,7 @@ crawler = Microwler(
 )
 ````
 
-> **Create a new project with this template:** 
+> **Create a new project with an empty template:** 
 > `new <PROJECT_NAME> <START_URL>`
 
 You'll find out more about *selectors* and *transformers* in the next chapter(s). For now, let's focus
