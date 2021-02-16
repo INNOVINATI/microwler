@@ -68,13 +68,12 @@ def crawler(ctx, project_name):
 
 @crawler.command('run')
 @click.option('-v', '--verbose', default=False, is_flag=True)
-@click.option('-s', '--sort', default=False, is_flag=True)
 @click.option('--keep-html', default=False, is_flag=True)
 @click.pass_context
-def run_crawler(ctx, verbose, sort, keep_html):
+def run_crawler(ctx, verbose, keep_html):
     """ Run a project's crawler"""
     project = load_project(ctx.obj['project'])
-    project.crawler.run(verbose=verbose, sort_urls=sort, keep_source=keep_html)
+    project.crawler.run(verbose=verbose, keep_source=keep_html)
 
 
 @crawler.command('dumpcache')
@@ -104,6 +103,4 @@ def clear_cache(ctx):
 @click.option('-p', '--port', type=int, default=5000, help='The port to run the webservice on.')
 def start_server(port):
     """ Start the built-in webservice """
-    if not len(os.listdir(PROJECT_FOLDER)):
-        click.secho('Running webservice with empty project folder', fg='yellow')
     start_app(port)
