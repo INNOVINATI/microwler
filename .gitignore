@@ -4,7 +4,6 @@ build/
 dist/
 __pycache__
 *.egg-info
-*.json
 export/
 projects/
 .microwler/

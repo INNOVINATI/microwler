@@ -1,1 +1,1 @@
-recursive-include microwler/web/frontend/dist *
+recursive-include microwler/web/frontend/dist/ *
