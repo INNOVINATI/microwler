@@ -1,9 +1,6 @@
 import os
-import sys
-from urllib.parse import urlparse
 
 import click
-from click.testing import CliRunner
 
 from microwler.cli.template import TEMPLATE
 from microwler.utils import load_project, PROJECT_FOLDER
@@ -11,10 +8,10 @@ from microwler.web.backend import start_app
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 COMMANDS = [
-    ('new PROJECT_NAME START_URL', 'Create a new project'),
+    ('create PROJECT_NAME START_URL', 'Create a new project'),
     ('crawler PROJECT_NAME run', 'Run a project\'s crawler'),
-    ('crawler PROJECT_NAME dumpcache', 'Dump project getCache to JSON file'),
-    ('crawler PROJECT_NAME clearcache', 'Clear project getCache'),
+    ('crawler PROJECT_NAME dumpcache', 'Dump project cache to JSON file'),
+    ('crawler PROJECT_NAME clearcache', 'Clear project cache'),
     ('serve [-p|--port]', 'Start the built-in webservice'),
 ]
 

@@ -16,7 +16,7 @@
 > Make sure you created a workspace as suggested above [previous section](#installation). 
 
 <div id="termynal2" data-termynal>
-    <span data-ty="input">new quotes https://quotes.toscrape.com/</span>
+    <span data-ty="input">create quotes https://quotes.toscrape.com/</span>
     <span data-ty data-ty-delay="250" style="color: green">Created new project: /Users/max/microwler/projects/quotes.py</span>
     <span data-ty="input">crawler quotes run</span>
     <span data-ty data-ty-delay="50">[INFO] Starting engine ...</span>
@@ -38,8 +38,9 @@ microwler
 ```
 
 ### Script
-> **Important**: If you're planning on using the webservice or the "project" system in general, you should use the CLI
-as recommended above. It will create an optimized workspace in which you can develop and run your projects.
+> **Important**: If you're planning on using the webservice or the "project" system in general, it's safest to use the CLI
+> as recommended above. It will create an optimized workspace in which you can develop and run your projects. If you just
+> want to scrape a site without stuff like caching/storing results, feel free to use Microwler as described below.
 
 #### Run directly
 
