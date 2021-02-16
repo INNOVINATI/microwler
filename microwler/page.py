@@ -41,15 +41,13 @@ class Page(object):
         If a callable is given, it will receive the parsed DOM as only argument,
         which is a [Parsel selector](https://parsel.readthedocs.io/en/latest/usage.html#using-selectors) instance.
         This means you can apply `dom.xpath(...)` or `dom.css(...)` and return any native Python datatype you want.
-
-        > Note: The selected data items will be stored in `Page.data`, which is a Python `dict`
         """
 
         try:
             dom = Selector(text=self.html)
             for field, selector in selectors.items():
                 if type(selector) == str:
-                    self.data[field] = get_first_or_list(dom.xpath(selector))
+                    self.data[field] = dom.xpath(selector).getall()
                 else:
                     self.data[field] = selector(dom)
         except ParserError as e:
