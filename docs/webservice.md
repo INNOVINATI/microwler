@@ -1,8 +1,8 @@
 # Web Service
 
-**Microwler** ships with a JSON API 
+**Microwler** provides a simple JSON API 
 built with [Quart](https://pypi.org/project/Quart/). It provides 
-a simple way to run your crawlers and retrieve their scraped data via HTTP.
+another way to run your crawlers and retrieve their scraped data via HTTP.
 
 ## Usage
 <div id="termynal" data-termynal>
@@ -14,7 +14,7 @@ a simple way to run your crawlers and retrieve their scraped data via HTTP.
 
 > Per default, this will start a production-ready ASGI application on `localhost:5000` using `Quart` with `hypercorn`.
 
-You can customize the hostname and port:
+You may change the port:
 ```bash
 serve [-p|--port PORT]
 ```

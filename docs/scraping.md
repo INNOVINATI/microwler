@@ -29,8 +29,8 @@ You can find all currently available selectors in the [microwler.scrape][] modul
 ### Custom
 #### XPath
 If you want more control over the scraping process, you
-can simply provide XPaths. **Microwler** will return a single element if there
-was only one match or return the whole result list.
+can simply provide XPaths. Microwler will always return a list in this case,
+which you can handle by using the *transformer* feature.
 
 ```python
 from microwler import scrape

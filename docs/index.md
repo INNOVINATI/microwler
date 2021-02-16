@@ -20,7 +20,7 @@ Core features:
 - easily define **custom selectors** using XPath & CSS
 - define "transformers" to **manipulate scraped data** after crawling
 - **export data** with pre-built plugins or build your own
-- use the **built-in web service** (API + Frontend)
+- use the **built-in web service** (JSON API + VueJS Frontend)
 
 Sounds good? Head over to the [Getting Started guide](https://innovinati.github.io/microwler/getting-started) now!
 

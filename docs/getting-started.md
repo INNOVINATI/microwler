@@ -56,16 +56,7 @@ for page in crawler.results:
 
 #### Run from asyncio app
 
-If you want to start your crawler from an application that is already running an `asyncio` event loop,
-you should use `Microwler.run_async(loop)`. Here's a simple example:
-
-```python
-...
-crawler = Microwler(...)
-loop = asyncio.get_event_loop()
-await crawler.run_async(event_loop=loop)
-print(crawler.results)
-```
+[Read this](/microwler/faq/#how-can-i-run-the-crawler-within-an-existing-event-loop)
 
 
 <script src="/js/termynal.js" data-termynal-container="#termynal1|#termynal2"></script>
