@@ -2,7 +2,6 @@ import asyncio
 import logging
 import os
 from datetime import datetime
-from threading import Thread
 
 from quart import Quart, Response, send_from_directory
 from quart_cors import cors
@@ -46,7 +45,7 @@ async def init():
 @app.route('/status')
 async def status():
     """
-    Return the service status
+    Return the service status, including available projects and running tasks
 
     - Route: `/status`
     - Method: `GET`
@@ -55,10 +54,14 @@ async def status():
     {
         app: {
             up_since: "2021-02-05 17:42:13",
-            version: "0.1.7"
+            version: "0.1.8"
         },
         projects: [
             "quotes"
+        ],
+        tasks: [
+            "[2021-02-16 13:26:49.994597] https://quotes.toscrape.com",
+            "[2021-02-16 13:27:11.341582] https://example.com",
         ]
     }
     ```
@@ -97,8 +100,10 @@ async def project(project_name):
     }
     ```
     """
+    if project_name in PROJECTS:
+        return PROJECTS[project_name]
+    return Response('Project does not exist', status=400)
 
-    return PROJECTS[project_name]
 
 
 @app.route('/crawl/<project_name>')
@@ -139,17 +144,20 @@ async def crawl(project_name: str):
     }
     ```
     """
-    PROJECTS[project_name]['last_run']['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M')
-    try:
-        project = load_project(project_name, PROJECT_FOLDER)
-        project.crawler.set_cache(force=True)
-        await project.crawler.run()
-        PROJECTS[project_name]['last_run']['state'] = 'finished successfully'
-        return {'data': project.crawler.results}
-    except Exception as e:
-        LOG.error(e)
-        PROJECTS[project_name]['last_run']['state'] = f'failed because: {e}'
-        return Response(f'Crawling failed: {str(e)}', status=500)
+    if project_name in PROJECTS:
+        PROJECTS[project_name]['last_run']['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M')
+        try:
+            project = load_project(project_name, PROJECT_FOLDER)
+            project.crawler.set_cache(force=True)
+            await project.crawler.run()
+            PROJECTS[project_name]['last_run']['state'] = 'finished successfully'
+            return {'data': project.crawler.results}
+        except Exception as e:
+            LOG.error(e)
+            PROJECTS[project_name]['last_run']['state'] = f'failed because: {e}'
+            return Response(f'Crawling failed: {str(e)}', status=500)
+    else:
+        return Response('Project does not exist', status=400)
 
 
 @app.route('/data/<project_name>')
@@ -161,11 +169,13 @@ async def data(project_name: str):
     - Method: `GET`
     - Response is in the same format as [above][microwler.web.backend.crawl]
     """
-    project = load_project(project_name, project_folder=PROJECT_FOLDER)
-    project.crawler.set_cache(force=True)
-    cache = project.crawler.cache
-    response = {'data': cache}
-    return response
+    if project_name in PROJECTS:
+        project = load_project(project_name, project_folder=PROJECT_FOLDER)
+        project.crawler.set_cache(force=True)
+        cache = project.crawler.cache
+        response = {'data': cache}
+        return response
+    return Response('Project does not exist', status=400)
 
 
 @app.route('/<folder>/<file>', methods=['GET'])
