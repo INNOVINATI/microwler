@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from datetime import datetime
+from threading import Thread
 
 from quart import Quart, Response, send_from_directory
 from quart_cors import cors
@@ -16,7 +17,7 @@ app = cors(app, allow_origin='*')
 STATIC = os.path.join(os.path.dirname(__file__), 'frontend/dist')
 PROJECTS = dict()
 STATUS = {
-    'version': '0.1.7',
+    'version': '0.2.0',
     'up_since': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
 }
 
@@ -69,6 +70,11 @@ async def status():
     return {
         'app': STATUS,
         'projects': list(PROJECTS.keys()),
+        'tasks': [
+            task.get_name()
+            for task in asyncio.all_tasks()
+            if not task.done() and task.get_name().startswith('[')
+         ]
     }
 
 
@@ -135,16 +141,15 @@ async def crawl(project_name: str):
     """
     PROJECTS[project_name]['last_run']['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M')
     try:
-        project = load_project(project_name, project_folder=PROJECT_FOLDER)
-        loop = asyncio.get_event_loop()
+        project = load_project(project_name, PROJECT_FOLDER)
         project.crawler.set_cache(force=True)
-        await project.crawler.run_async(event_loop=loop)
+        await project.crawler.run()
         PROJECTS[project_name]['last_run']['state'] = 'finished successfully'
         return {'data': project.crawler.results}
     except Exception as e:
         LOG.error(e)
         PROJECTS[project_name]['last_run']['state'] = f'failed because: {e}'
-        return Response(str(e), status=500)
+        return Response(f'Crawling failed: {str(e)}', status=500)
 
 
 @app.route('/data/<project_name>')

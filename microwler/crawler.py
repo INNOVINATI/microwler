@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import time
+from datetime import datetime
 from typing import Callable, List, Dict, Any, Union
 
 from urllib.parse import urlparse
@@ -123,11 +124,11 @@ class Microwler:
                 exit(1)
         return results
 
-    async def _crawl(self, loop):
+    async def _crawl(self, keep_source=False):
         LOG.info(f'Crawler started [{self._domain}]')
         resolver = AsyncResolver(nameservers=self._settings.dns_providers)
         tcpc = TCPConnector(resolver=resolver)
-        self._session = ClientSession(loop=loop, connector=tcpc)
+        self._session = ClientSession(loop=asyncio.get_event_loop(), connector=tcpc)
         pipeline = [self.start_url]
         try:
             for depth in range(self._settings.max_depth + 1):
@@ -137,15 +138,15 @@ class Microwler:
                     pipeline.extend(links)
                     page = Page(url, status, depth, links, text)
                     self._results[url] = page
+            if len(self._results):
+                self._process(keep_source=keep_source)
         finally:
             await self._session.close()
             LOG.info(f'Crawler stopped [{self._domain}]')
 
-    def _process(self, sort_urls=False, keep_source=False):
-        if sort_urls:
-            LOG.info(f'Sorting results ... [{self._domain}]')
-            self._results = {url: self._results[url] for url in sorted(self._results)}
+    def _process(self, keep_source=False):
 
+        # Extraction
         if self._selectors:
             LOG.info(f'Extracting data ... [{self._domain}]')
             for url, page in self._results.items():
@@ -153,25 +154,24 @@ class Microwler:
 
                 if self._transformer is not None:
                     self._results[url] = page.transform(self._transformer)
-
+        # Exports
         if count := len(self._settings.exporters):
             LOG.info(f'Exporting to {count} destinations... [{self._domain}]')
             for exporter_cls in self._settings.exporters:
                 instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
                 instance.export()
-
+        # Caching
         if self._cache is not None:
             LOG.info(f'Caching results ... [{self._domain}]')
             for page in self._results.values():
                 if page.url not in self._errors:
                     self._cache[page.url] = page.__dict__
 
-    def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False):
+    def run(self, verbose: bool = False, keep_source: bool = False):
         """
-        Starts the crawler instance. You can retrieve the results using the `crawler.data` or `crawler.pages` properties.
+        Starts the crawler instance. You can retrieve the results using the `crawler.results` property.
         Arguments:
             verbose: log progress to `stdout` while crawling
-            sort_urls: sort result list by URL
             keep_source: per default, the page content will be after scraping
         """
 
@@ -179,37 +179,20 @@ class Microwler:
         start = time.time()
         LOG.info('Starting engine ...')
         loop = asyncio.get_event_loop()
-        future = asyncio.Task(self._crawl(loop=loop))
-        loop.run_until_complete(future)
+        if loop.is_running():
+            task_name = f'[{datetime.now()}] {self.start_url}'
+            return loop.create_task(self._crawl(keep_source=keep_source), name=task_name)
+        loop.run_until_complete(self._crawl(keep_source=keep_source))
         loop.close()
-        crawl_time = time.time() - start
+        duration = time.time() - start
 
         if len(self._results):
-            self._process(sort_urls=sort_urls, keep_source=keep_source)
-            total_time = time.time() - start
             table = prettytable.PrettyTable()
             table.add_column('Pages', [len(self._results)])
-            table.add_column('Crawl Time', [f'{round(crawl_time, 2)}s'])
-            table.add_column('Crawl Speed', [f'{round(len(self._results) / crawl_time, 2)} p/s'])
+            table.add_column('Duration', [f'{round(duration, 2)}s'])
+            table.add_column('Performance', [f'{round(len(self._results) / duration, 2)} p/s'])
             table.add_column('Errors', [len(self._errors)])
-            if len(self._results):
-                table.add_column('Processing Time', [f'{round(total_time - crawl_time, 2)}s'])
-                if self._selectors:
-                    table.add_column('Data Completeness', [f'{int(completely.measure(self.results) * 100)}%'])
-            table.add_column('Total Time', [f'{round(total_time, 2)}s'])
             print(table)
-
-    async def run_async(self, event_loop, sort_urls: bool = False, keep_source: bool = False):
-        """
-        For running the crawler from another `asyncio` app, which has an existing event loop, i.e. Quart.
-        Arguments:
-             event_loop: existing event loop, i.e. as a result of asyncio.get_event_loop()
-             sort_urls: sort results alphabetically by URL
-             keep_source: per default, if selectors are defined, the HTML source will be discarded
-        """
-        await event_loop.create_task(self._crawl(event_loop))
-        if len(self._results):
-            self._process(sort_urls=sort_urls, keep_source=keep_source)
 
     @property
     def results(self) -> [dict]:

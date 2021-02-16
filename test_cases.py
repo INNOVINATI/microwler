@@ -64,5 +64,5 @@ def test_advanced():
         transform=transformer,
         settings=settings
     )
-    crawler.run(verbose=True, sort_urls=True)
+    crawler.run(verbose=True)
 
