@@ -3,12 +3,11 @@ import json
 import logging
 import time
 from datetime import datetime
-from typing import Callable, List, Dict, Any, Union
+from typing import Callable, Dict, Any, Union
 
 from urllib.parse import urlparse
 
 import prettytable
-import completely
 from aiohttp import AsyncResolver, TCPConnector, ClientSession
 from diskcache import Index
 from lxml import html as DOMParser
@@ -22,9 +21,6 @@ LOG = logging.getLogger(__name__)
 
 
 class Microwler:
-    """
-    Each `Microwler` targets exactly one domain/website.
-    """
 
     def __init__(self,
                  start_url: str,
@@ -42,7 +38,6 @@ class Microwler:
         self.start_url = start_url
         parsed = urlparse(start_url)
         self._domain = parsed.netloc
-        self._base_url = f'{parsed.scheme}://{self._domain}{parsed.path}'
         self._selectors = select
         self._transformer = transform
         self._settings = Settings(settings)
@@ -60,7 +55,7 @@ class Microwler:
         else:
             self._cache = None
 
-    async def _get(self, url):
+    async def _http_get(self, url):
         async with self._limiter:
             try:
                 heads = utils.get_headers(self._settings.language)
@@ -74,25 +69,29 @@ class Microwler:
                     LOG.warning(f'Timeout error: {url}')
                 return None, None
 
-    def _find_links(self, html):
+    def _extract_links(self, html):
         """ Extract relevant links from an HTML document """
-        dom = DOMParser.fromstring(html)
-        dom.make_links_absolute(self._base_url)
-        links = {
-            link for link in dom.xpath(self._settings.link_filter)
-            if link.startswith(self._base_url)  # stay on this website
-            if link not in self._results  # try to filter global duplicates in order to avoid extra loop steps later
+        f = self._settings.link_filter
+        if type(f == str):
+            dom = DOMParser.fromstring(html)
+            dom.make_links_absolute(self.start_url)
+            ls = dom.xpath(f)
+        else:
+            ls = f(html)
+        return list({
+            link for link in ls
+            if self._domain in link or link.startswith(self.start_url)
+            if link not in self._results  # filter duplicates in order to avoid extra loop steps later
             and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore file extensions
-        }
-        return list(links)
+        })
 
-    async def _get_one(self, url):
+    async def _handle_response(self, url):
         try:
-            text, status = await self._get(url)
+            text, status = await self._http_get(url)
             if text is None and status is None:
                 self._errors[url] = 'Timeout Error'
             else:
-                links = self._find_links(text)
+                links = self._extract_links(text)
                 return url, status, text, links
         except Exception as e:
             if self._verbose:
@@ -111,8 +110,9 @@ class Microwler:
                     if self._verbose:
                         LOG.info(f'Dropped pre-cached URL [{normalized_url}]')
                     continue
+            # Set a dummy for each result, so filter_links() can detect the duplicates via dict keys
             self._results[normalized_url] = None
-            futures.append(self._get_one(normalized_url))
+            futures.append(self._handle_response(normalized_url))
 
         for future in asyncio.as_completed(futures):
             try:
@@ -136,8 +136,7 @@ class Microwler:
                 pipeline = []
                 for url, status, text, links in batch:
                     pipeline.extend(links)
-                    page = Page(url, status, depth, links, text)
-                    self._results[url] = page
+                    self._results[url] = Page(url, status, depth, links, text)
             if len(self._results):
                 self._process(keep_source=keep_source)
         finally:
