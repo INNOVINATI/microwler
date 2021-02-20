@@ -9,3 +9,4 @@ projects/
 .microwler/
 dump-*.json
 .pytest_cache/
+tests/exports/
