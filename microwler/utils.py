@@ -1,7 +1,6 @@
 import importlib
 import importlib.util
 import os
-from datetime import datetime
 from urllib.parse import urlparse, urlencode, parse_qsl
 
 from random_user_agent.user_agent import UserAgent
