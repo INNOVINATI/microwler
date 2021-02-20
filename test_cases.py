@@ -14,7 +14,7 @@ from microwler.export import JSONExporter, HTMLExporter
 @pytest.mark.asyncio
 def test_basic():
     crawler = Microwler('https://quotes.toscrape.com/')
-    crawler.run(verbose=True)
+    crawler.run()
 
 
 @pytest.mark.asyncio
@@ -30,7 +30,7 @@ def test_intermediate():
     }
 
     crawler = Microwler('https://quotes.toscrape.com/', select=selectors, settings=settings)
-    crawler.run(verbose=True)
+    crawler.run()
 
 
 @pytest.mark.asyncio
@@ -64,5 +64,19 @@ def test_advanced():
         transform=transformer,
         settings=settings
     )
-    crawler.run(verbose=True)
+    crawler.run()
+
+    # Test components
+    for page in crawler.results:
+        if page['url'] != crawler.start_url:
+            # Test link_filter
+            assert('inspirational' in page['url'])
+
+        # Test selectors
+        assert(all([key in page['data'] and page['data'][key] is not None for key in selectors.keys()]))
+        # Test transformer
+        assert(type(page['data']['title']) == str and page['data']['title'].isupper())
+        # Test cache
+        assert(len(crawler._cache) > 0)
+
 

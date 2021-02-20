@@ -45,7 +45,7 @@ for the crawler itself but also for handling exports and such.
 
 | Setting | Default | Description |
 | :------------- | :-------------: | -----------: |
-| link_filter | `//a/@href` | XPath for link extraction, i.e. <br> `//a[contains(@href, 'blog')]/@href`
+| [link_filter](#link_filter) | `//a/@href` | XPath for link extraction, i.e. <br> `//a[contains(@href, 'blog')]/@href`
 | max_depth | 10 | The depth limit at which to stop crawling |
 | max_concurrency | 20 | Maximum number of concurrent requests |
 | dns_providers | `['1.1.1.1', '8.8.8.8']` | DNS server addresses, i.e. Cloudflare or Google |
@@ -54,3 +54,14 @@ for the crawler itself but also for handling exports and such.
 | delta_crawl | `False` | Drop URLs which have been seen in earlier runs |
 | export_to | `${CWD}/projects` | The folder in which you want to save exported data files |
 | exporters | `[]` | A list of export plugins inheriting from [microwler.export.BaseExporter][] |
+
+
+### link_filter
+Instead of entering an XPath/string as shown above, you may also provide a
+callable similar to `selectors`. In this case, the callable will receive the
+full HTML **string**, so you can extract links however you want, i.e. using Parsel
+or RegEx. But:
+
+- you must return a list of valid URL strings (including scheme etc.)
+- you must handle relative links and such
+- the links will still be filtered afterwards (to avoid duplicates and external sites)
