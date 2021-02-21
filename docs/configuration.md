@@ -13,7 +13,7 @@ selectors = {
     # Using built-in selectors:
     'title': scrape.title,
     # Using Parsel selectors:
-    'complex': lambda dom: dom.css('img').xpath('/@src').getall()
+    'complex': scrape.parsel(lambda dom: dom.css('img').xpath('/@src').getall())
 }
 
 settings = {

@@ -56,8 +56,8 @@ def headings(dom):
 
 
 selectors = {
-    'title': lambda dom: ' '.join(dom.xpath('//title//text()').getall()),
-    'headings': lambda dom: headings(dom)
+    'title': scrape.parsel(lambda dom: ' '.join(dom.xpath('//title//text()').getall())),
+    'headings': scrape.parsel(lambda dom: headings(dom))
 }
 ```
 
