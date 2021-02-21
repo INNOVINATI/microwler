@@ -67,7 +67,7 @@ class Microwler:
             except TimeoutError:
                 if self._verbose:
                     LOG.warning(f'Timeout error: {url}')
-                return None, None
+                return
 
     def _extract_links(self, html):
         """ Extract relevant links from an HTML document """
@@ -87,66 +87,62 @@ class Microwler:
 
     async def _handle_response(self, url):
         try:
-            text, status = await self._http_get(url)
-            if text is None and status is None:
+            result = await self._http_get(url)
+            if not result:
                 self._errors[url] = 'Timeout Error'
-            else:
-                links = self._extract_links(text)
-                return url, status, text, links
+                return
+
+            text, status = result
+            links = self._extract_links(text)
+            return url, status, text, links
+
         except Exception as e:
             if self._verbose:
                 LOG.error(f'Download error: {e} [{url}]')
             self._errors[url] = str(e)
-            return None
+            return
 
-    async def _get_batch(self, to_fetch):
-        futures, results = [], []
-        for url in to_fetch:
-            normalized_url = utils.norm_url(url)
-            if normalized_url in self._results:
-                continue
-            if self._settings.delta_crawl:
-                if normalized_url in self._cache:
-                    if self._verbose:
-                        LOG.info(f'Dropped pre-cached URL [{normalized_url}]')
-                    continue
-            # Set a dummy for each result, so filter_links() can detect the duplicates via dict keys
-            self._results[normalized_url] = None
-            futures.append(self._handle_response(normalized_url))
+    async def _deep_crawl(self, url: str, depth: int = 0, keep_source=False):
+        if depth > self._settings.max_depth:
+            return
 
-        for future in asyncio.as_completed(futures):
-            try:
-                result = (await future)
-                if result is not None:
-                    results.append(result)
-            except Exception as e:
-                LOG.error(f'Error while crawling: {e}')
-                exit(1)
-        return results
+        normalized_url = utils.norm_url(url)
+        if normalized_url in self._results:
+            return
+        if self._settings.delta_crawl:
+            if normalized_url in self._cache:
+                if self._verbose:
+                    LOG.info(f'Dropped pre-cached URL [{normalized_url}]')
+                return
+
+        # Set a dummy for each result, so filter_links() can detect the duplicates via dict keys
+        self._results[normalized_url] = None
+
+        result = await self._handle_response(normalized_url)
+        if not result:
+            return
+
+        url, status, text, links = result
+        self._results[url] = Page(url, status, depth, links, text)
+
+        if depth+1 > self._settings.max_depth:
+            return
+        await asyncio.gather(*(self._deep_crawl(link, depth+1, keep_source=keep_source) for link in links))
 
     async def _crawl(self, keep_source=False):
         LOG.info(f'Crawler started [{self._domain}]')
         resolver = AsyncResolver(nameservers=self._settings.dns_providers)
         tcpc = TCPConnector(resolver=resolver)
         self._session = ClientSession(loop=asyncio.get_event_loop(), connector=tcpc)
-        pipeline = [self.start_url]
-        depth = 0
         try:
-            while pipeline and depth <= self._settings.max_depth:
-                batch = await self._get_batch(pipeline)
-                pipeline.clear()
-                for url, status, text, links in batch:
-                    pipeline.extend(links)
-                    self._results[url] = Page(url, status, depth, links, text)
-                depth += 1
-            if len(self._results):
-                self._process(keep_source=keep_source)
+            await self._deep_crawl(self.start_url, depth=0, keep_source=keep_source)
         finally:
             await self._session.close()
             LOG.info(f'Crawler stopped [{self._domain}]')
 
-    def _process(self, keep_source=False):
+        self._process(keep_source=keep_source)
 
+    def _process(self, keep_source=False):
         # Extraction
         if self._selectors:
             LOG.info(f'Extracting data ... [{self._domain}]')
