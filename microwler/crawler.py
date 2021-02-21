@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.tasks import create_task
 import json
 import logging
 import time
@@ -123,11 +124,26 @@ class Microwler:
             return
 
         url, status, text, links = result
-        self._results[url] = Page(url, status, depth, links, text)
+        page = Page(url, status, depth, links, text)
+        self._results[url] = page
 
-        if depth+1 > self._settings.max_depth:
-            return
-        await asyncio.gather(*(self._deep_crawl(link, depth+1, keep_source=keep_source) for link in links))
+        tasks = None
+        if depth+1 <= self._settings.max_depth:
+            tasks = [asyncio.create_task(self._deep_crawl(link, depth+1, keep_source=keep_source)) for link in links]
+
+        # Extraction
+        if self._selectors:
+            #LOG.info(f'Extracting data ... [{self._domain}]')
+
+            page = page.scrape(self._selectors, keep_source=keep_source)
+
+            if self._transformer is not None:
+                page = page.transform(self._transformer)
+
+            self._results[url] = page
+
+        if tasks:
+            await asyncio.wait(tasks)
 
     async def _crawl(self, keep_source=False):
         LOG.info(f'Crawler started [{self._domain}]')
@@ -143,17 +159,6 @@ class Microwler:
         self._process(keep_source=keep_source)
 
     def _process(self, keep_source=False):
-        # Extraction
-        if self._selectors:
-            LOG.info(f'Extracting data ... [{self._domain}]')
-            for url, page in self._results.items():
-                if page is None:
-                    continue
-
-                self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
-
-                if self._transformer is not None:
-                    self._results[url] = page.transform(self._transformer)
         # Exports
         if count := len(self._settings.exporters):
             LOG.info(f'Exporting to {count} destinations... [{self._domain}]')
