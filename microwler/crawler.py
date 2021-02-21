@@ -168,6 +168,8 @@ class Microwler:
         if self._cache is not None:
             LOG.info(f'Caching results ... [{self._domain}]')
             for page in self._results.values():
+                if page is None:
+                    continue
                 if page.url not in self._errors:
                     self._cache[page.url] = page.__dict__
 
