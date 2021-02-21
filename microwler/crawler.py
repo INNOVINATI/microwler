@@ -151,6 +151,9 @@ class Microwler:
         if self._selectors:
             LOG.info(f'Extracting data ... [{self._domain}]')
             for url, page in self._results.items():
+                if page is None:
+                    continue
+
                 self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
 
                 if self._transformer is not None:
