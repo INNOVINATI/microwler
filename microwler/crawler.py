@@ -130,13 +130,15 @@ class Microwler:
         tcpc = TCPConnector(resolver=resolver)
         self._session = ClientSession(loop=asyncio.get_event_loop(), connector=tcpc)
         pipeline = [self.start_url]
+        depth = 0
         try:
-            for depth in range(self._settings.max_depth + 1):
+            while pipeline and depth <= self._settings.max_depth:
                 batch = await self._get_batch(pipeline)
-                pipeline = []
+                pipeline.clear()
                 for url, status, text, links in batch:
                     pipeline.extend(links)
                     self._results[url] = Page(url, status, depth, links, text)
+                depth += 1
             if len(self._results):
                 self._process(keep_source=keep_source)
         finally:
