@@ -43,10 +43,21 @@ IGNORED_EXTENSIONS = [
 
 def norm_url(url: str):
     parsed = urlparse(url)
-    # Sort query parameters if there are any
-    query = '?' + urlencode(sorted(parse_qsl(parsed.query))) if parsed.query else ''
+
     # Drop fragments and rebuild URL
-    return f'{parsed.scheme}://{parsed.netloc}{parsed.path if parsed.path.startswith("/") else f"/{parsed.path}"}{query}'
+
+    url = f'{parsed.scheme}://{parsed.netloc}'
+
+    path = parsed.path
+    if not path.startswith('/'):
+        path = '/'+path
+    url += path
+
+    if parsed.query:
+        # Sort query parameters if there are any
+        url += '?' + urlencode(sorted(parse_qsl(parsed.query)))
+
+    return url
 
 
 def get_first_or_list(from_result):
