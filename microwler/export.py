@@ -28,6 +28,9 @@ class BaseExporter:
         self.data = [page.__dict__ for page in data]
         self.settings = settings
 
+    def data_keys(self):
+        return list(set.union(set(), *(set(d.keys()) for d in self.data)))
+
     def export(self):
         """
         Export data to target destination
@@ -78,9 +81,10 @@ class CSVExporter(FileExporter):
     extension = 'csv'
 
     def convert(self):
-        headers = ';'.join([key.upper() for key in self.data[0].keys()])
-        rows = '\n'.join([';'.join([str(val) for val in obj.values()]) for obj in self.data])
-        table = '\n'.join([headers, rows])
+        keys = self.data_keys()
+        header = ';'.join([key.upper() for key in keys])
+        rows = [';'.join([str(obj.get(key)) for key in keys]) for obj in self.data]
+        table = '\n'.join([header] + rows)
         return table
 
 
@@ -90,10 +94,8 @@ class HTMLExporter(FileExporter):
 
     def convert(self):
         styles = 'width: 100%; border: 1px solid grey; text-align: center'
-        headers = ''.join([f'<th>{key.upper()}</th>' for key in self.data[0].keys()])
-        rows = ''.join([f"<tr>{''.join([f'<td>{val}</td>' for val in obj.values()])}</tr>" for obj in self.data])
-        table = f'<!DOCTYPE html><html><body><table style="{styles}"><tr>{headers}</tr><tbody>{rows}</tbody></table><body></html>'
+        keys = self.data_keys()
+        header = ''.join([f'<th>{key.upper()}</th>' for key in keys])
+        rows = ''.join([f"<tr>{''.join([f'<td>{obj.get(key)}</td>' for key in keys])}</tr>" for obj in self.data])
+        table = f'<!DOCTYPE html><html><body><table style="{styles}"><tr>{header}</tr><tbody>{rows}</tbody></table><body></html>'
         return table
-
-
-
