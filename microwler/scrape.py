@@ -1,15 +1,16 @@
 from html_text import extract_text
-import parsel
+from parsel import Selector
+from typing import Callable
 
 from microwler.utils import remove_multi_whitespace
 
 
-def title(dom: parsel.Selector):
+def title(dom: Selector):
     """ Extract `<title>` tag """
     return dom.xpath('string(//title[1])').get()
 
 
-def headings(dom: parsel.Selector):
+def headings(dom: Selector):
     """ Extract first 3 levels of heading tags: `<h1>`, `<h2>`, `<h3>` """
     return {
         'h1': remove_multi_whitespace(dom.xpath('string(//h1[1])').getall()),
@@ -18,39 +19,48 @@ def headings(dom: parsel.Selector):
     }
 
 
-def paragraphs(dom: parsel.Selector):
+def paragraphs(dom: Selector):
     """ Extract `<p>` tags """
     return dom.xpath('string(//p[1])').getall()
 
 
-def text(dom: parsel.Selector):
+def text(dom: Selector):
     """ Extract and clean text content """
     return extract_text(dom.xpath('//body').get())
 
 
-def meta(dom: parsel.Selector):
+def meta(dom: Selector):
     """ Extract `<meta>` tags """
     tags = dom.xpath('//meta')
     return {tag.get('name'): tag.attrib['content'] for tag in tags}
 
 
-def canonicals(dom: parsel.Selector):
+def canonicals(dom: Selector):
     """ Extract `<link rel='canonical'>` tags """
     return dom.xpath('//link[@rel="canonical"]/@href').getall()
 
 
-def schemas(dom: parsel.Selector):
+def schemas(dom: Selector):
     """ Extract itemtype schemas """
     schema_links = dom.xpath('//*[@itemtype]/@itemtype').getall()
     return [link.split('/')[-1] for link in schema_links]
 
 
-def emails(dom: parsel.Selector):
+def emails(dom: Selector):
     """ Extract email addresses from `<a>` tags """
     hrefs = dom.xpath('//a[starts-with(@href, "mailto")]/@href').getall()
     return [href.strip('mailto:') for href in hrefs]
 
 
-def images(dom: parsel.Selector):
+def images(dom: Selector):
     """ Extract URLs from `<img>` tags """
     return dom.xpath('//img/@src').getall()
+
+
+def parsel(user_func: Callable[[Selector], object]):
+    """ Execute user function on parsel.Selector """
+
+    def parsel_(dom: Selector):
+        return user_func(dom)
+
+    return parsel_
