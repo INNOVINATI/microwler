@@ -1,9 +1,5 @@
 """
-As of v0.1.3, this file holds some more or less naive test cases,
-which can also be viewed as examples for using the framework.
-
-Some future version will have a more sophisticated test suite, i.e.
-by integrating tests for the webservice.
+This file will be discarded in v0.2.0 in favor of a fully implemented test suite located in tests/
 """
 import pytest
 
