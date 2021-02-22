@@ -6,37 +6,24 @@ from microwler.cli.template import TEMPLATE
 from microwler.utils import load_project, PROJECT_FOLDER
 from microwler.web.backend import start_app
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-COMMANDS = [
-    ('create PROJECT_NAME START_URL', 'Create a new project'),
-    ('crawler PROJECT_NAME run', 'Run a project\'s crawler'),
-    ('crawler PROJECT_NAME dumpcache', 'Dump project cache to JSON file'),
-    ('crawler PROJECT_NAME clearcache', 'Clear project cache'),
-    ('serve [-p|--port]', 'Start the built-in webservice'),
-]
 
-
-@click.command('microwler')
-def show_help():
-    """ Show available commands """
-    click.echo(
-        """
+@click.group()
+def cli():
+    """
+    \b
 ╔╦╗┬┌─┐┬─┐┌─┐┬ ┬┬  ┌─┐┬─┐
 ║║║││  ├┬┘│ │││││  ├┤ ├┬┘
-╩ ╩┴└─┘┴└─└─┘└┴┘┴─┘└─┘┴└─            
-- powered by INNOVINATI -                                                                              
-        """
-    )
-    print('USAGE:')
-    for cmd, description in COMMANDS:
-        print(f'> {description}:\n  {cmd}\n')
+╩ ╩┴└─┘┴└─└─┘└┴┘┴─┘└─┘┴└─
+- powered by INNOVINATI -
+    """
+    pass
 
 
-@click.command()
+@cli.command('create')
 @click.argument('project_name', type=str)
 @click.argument('start_url', type=str)
 def add_project(project_name, start_url):
-    """ Create a new project """
+    """ Create a new project. """
     try:
         os.makedirs(PROJECT_FOLDER, exist_ok=True)
         template = TEMPLATE.replace('START_URL', start_url)
@@ -54,53 +41,52 @@ def add_project(project_name, start_url):
         exit(1)
 
 
-@click.group()
-@click.argument('project_name')
-@click.pass_context
-def crawler(ctx, project_name):
-    ctx.ensure_object(dict)
-    project = project_name.split('.')[0] if project_name.endswith('.py') else project_name
+def retrive_project(ctx, param, project_name):
+    project = project_name[:-
+                           3] if project_name.endswith('.py') else project_name
     if project + '.py' not in os.listdir(PROJECT_FOLDER):
-        click.secho(f'Project "{project}" does not exist', fg='red')
-        exit(1)
-    ctx.obj['project'] = project
+        raise click.BadArgumentUsage(f'Project "{project}" does not exist')
+    return load_project(project)
 
 
-@crawler.command('run')
+@cli.command('run')
+@click.argument('project', callback=retrive_project)
 @click.option('-v', '--verbose', default=False, is_flag=True)
 @click.option('--keep-html', default=False, is_flag=True)
-@click.pass_context
-def run_crawler(ctx, verbose, keep_html):
-    """ Run a project's crawler"""
-    project = load_project(ctx.obj['project'])
+def run_crawler(project, verbose, keep_html):
+    """ Run a project's crawler. """
     project.crawler.run(verbose=verbose, keep_source=keep_html)
 
 
-@crawler.command('dumpcache')
+@cli.group()
+def cache():
+    """ Subcommand to handle project cache. """
+    pass
+
+
+@cache.command('dump')
+@click.argument('project', callback=retrive_project)
 @click.option('-p', '--path')
-@click.pass_context
-def dump_cache(ctx, path):
-    """ Dump the project getCache to a JSON file """
-    project = load_project(ctx.obj['project'])
+def dump_cache(project, path):
+    """ Dump the project cache to a JSON file. """
     if project.crawler._cache is not None:
         project.crawler.dump_cache(path)
     else:
         click.secho('Cache is disabled for this project', fg='yellow')
 
 
-@crawler.command('clearcache')
-@click.pass_context
-def clear_cache(ctx):
-    """ Clear the project getCache """
-    project = load_project(ctx['project'])
+@cache.command('clear')
+@click.argument('project', callback=retrive_project)
+def clear_cache(project):
+    """ Clear the project cache. """
     if project.crawler._cache is not None:
         project.crawler.clear_cache()
     else:
         click.secho('Cache is disabled for this project', fg='yellow')
 
 
-@click.command('serve')
-@click.option('-p', '--port', type=int, default=5000, help='The port to run the webservice on.')
+@cli.command('serve')
+@click.option('-p', '--port', type=int, default=5000, metavar='PORT', help='The port to run the webservice on.')
 def start_server(port):
-    """ Start the built-in webservice """
+    """ Start the built-in webservice. """
     start_app(port)

@@ -34,10 +34,7 @@ setup(
     ],
     entry_points='''
     [console_scripts]
-    microwler=microwler.cli.cmd:show_help
-    create=microwler.cli.cmd:add_project
-    crawler=microwler.cli.cmd:crawler
-    serve=microwler.cli.cmd:start_server
+    microwler=microwler.cli.cmd:cli
     ''',
     project_urls={
         'Issues': 'https://github.com/INNOVINATI/microwler/issues',
