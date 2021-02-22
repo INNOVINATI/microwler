@@ -1,57 +1,59 @@
-# TODO
 import os
 
-from diskcache import Cache
+import pytest
 
-from microwler import Microwler
-from microwler.export import JSONExporter, HTMLExporter, CSVExporter
-
-
-class TestHTTP:
-    pass
+from microwler import Microwler, scrape
+from microwler.export import JSONExporter, HTMLExporter
 
 
-class TestLinkFilter:
-    pass
+class TestCrawler:
 
+    @classmethod
+    @pytest.mark.asyncio
+    def setup_class(cls):
+        cls.selectors = {
+            'title': scrape.title,
+            'headings': scrape.headings,
+            'paragraphs': scrape.paragraphs,
+            # Define custom selectors using Parsel
+            'images': lambda dom: [img.attrib['src'] for img in dom.css('img').getall()]
+        }
 
-class TestScraping:
-    pass
+        cls.settings = {
+            'max_depth': 5,
+            'max_concurrency': 15,
+            'exporters': [JSONExporter, HTMLExporter],
+            'caching': True,
+        }
 
+        def transformer(data: dict):
+            """ Define a transformer to manipulate your scraped data """
+            data['title'] = data['title'].upper()
+            data['paragraphs'] = len(data['paragraphs'])
+            return data
 
-class TestSettings:
-    pass
+        cls.crawler = Microwler(
+            'https://quotes.toscrape.com/',
+            select=cls.selectors,
+            transform=transformer,
+            settings=cls.settings
+        )
 
-
-class TestCache:
-    crawler = Microwler('http://example.com/')
-    path = os.path.join(os.getcwd(), '.microwler', 'cache')
-
-    def test_set_cache(self):
-        if os.path.isdir(self.path):
-            os.remove(self.path)
-        assert self.crawler._cache is None
-        self.crawler.set_cache()
-        assert self.crawler._cache is None
-        self.crawler.set_cache(force=True)
-        assert isinstance(self.crawler._cache, Cache)
-        assert os.path.isdir(os.path.join(self.path, 'example.com'))
-
-    def test_to_cache(self):
+    @pytest.mark.asyncio
+    def test_run(self):
         self.crawler.run()
-        assert len(self.crawler.cache) == 1
+        assert len(self.crawler.results) > 0
 
-    def test_from_cache(self):
-        self.crawler = Microwler('http://example.com/')
-        assert len(self.crawler.cache) == 1
-        os.remove(self.path)
+    def test_cache(self):
+        assert len(self.crawler.cache) > 0
 
+    def test_selectors(self):
+        assert all([all([key in page['data'].keys() for key in self.selectors.keys()]) for page in self.crawler.results])
 
-class TestExport:
-    crawler = Microwler('http://example.com/', settings={'exporters:' [JSONExporter, HTMLExporter, CSVExporter]})
-    path = os.path.join(os.getcwd(), 'export')
+    def test_transformer(self):
+        assert all([page['data']['title'].isupper() for page in self.crawler.results])
 
-
-
-
-
+    def test_exporters(self):
+        path = os.path.join(os.getcwd(), 'exports')
+        assert os.path.exists(path)
+        assert len(os.listdir(path)) == 2
