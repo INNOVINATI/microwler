@@ -198,12 +198,19 @@ class Microwler:
         duration = time.time() - start
 
         if len(self._results):
+            if self._verbose:
+                table = prettytable.PrettyTable()
+                table.add_column('Pages', [len(self._results)])
+                table.add_column('Duration', [f'{round(duration, 2)}s'])
+                table.add_column('Performance', [f'{round(len(self._results) / duration, 2)} p/s'])
+                table.add_column('Errors', [len(self._errors)])
+                print(table)
+            else:
+                LOG.info(f'Processed {len(self._results)} pages in {duration} seconds [{self._domain}]')
+        if len(self._errors):
             table = prettytable.PrettyTable()
-            table.add_column('Pages', [len(self._results)])
-            table.add_column('Duration', [f'{round(duration, 2)}s'])
-            table.add_column('Performance', [f'{round(len(self._results) / duration, 2)} p/s'])
-            table.add_column('Errors', [len(self._errors)])
-            print(table)
+            table.add_column('URL', list(self._errors.keys()))
+            table.add_column('Error', list(self._errors.values()))
 
     @property
     def results(self) -> [dict]:
