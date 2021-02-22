@@ -82,7 +82,7 @@ class Microwler:
         return list({
             link for link in ls
             if self._domain in link or link.startswith(self.start_url)
-            if link not in self._results  # filter duplicates in order to avoid extra loop steps later
+            if link not in self._results and link not in self._errors  # filter duplicates in order to avoid extra loop steps later
             and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore file extensions
         })
 
@@ -121,6 +121,8 @@ class Microwler:
 
         result = await self._handle_response(normalized_url)
         if not result:
+            # self._errors has an entry for normalized_url
+            del self._results[normalized_url]
             return
 
         url, status, text, links = result
