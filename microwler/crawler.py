@@ -40,7 +40,7 @@ class Microwler:
         parsed = urlparse(start_url)
         if not parsed.scheme:
             raise ValueError('Invalid start_url: missing scheme')
-        if parsed.path.split('/') > 1 and 'link_filter' not in settings:
+        if len(parsed.path.split('/')) > 1 and 'link_filter' not in settings:
             LOG.warning('Starting crawler on sub-page without custom link filter')
 
         self.start_url = f'{parsed.scheme}://{parsed.netloc}{parsed.path if parsed.path else "/"}'
