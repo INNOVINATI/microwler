@@ -118,7 +118,7 @@ class Microwler:
         if normalized_url in self._results:
             return
         if self._settings.delta_crawl:
-            if normalized_url in self._cache:
+            if normalized_url in self._cache and normalized_url != self.start_url:
                 if self._verbose:
                     LOG.info(f'Dropped pre-cached URL [{normalized_url}]')
                 return
@@ -165,10 +165,10 @@ class Microwler:
 
         # Exports
         if count := len(self._settings.exporters):
-        LOG.info(f'Exporting to {count} destinations... [{self._domain}]')
-        for exporter_cls in self._settings.exporters:
-            instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
-            instance.export()
+            LOG.info(f'Exporting to {count} destinations... [{self._domain}]')
+            for exporter_cls in self._settings.exporters:
+                instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
+                instance.export()
 
         # Caching
         if self._cache is not None:
