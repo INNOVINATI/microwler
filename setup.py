@@ -15,7 +15,7 @@ setup(
     author='Maximilian Wolf',
     author_email='maximilian.wolf@innovinati.com',
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Framework :: AsyncIO',
         'License :: OSI Approved :: MIT License',
