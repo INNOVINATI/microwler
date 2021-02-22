@@ -41,7 +41,7 @@ def add_project(project_name, start_url):
         exit(1)
 
 
-def retrive_project(ctx, param, project_name):
+def retrieve_project(ctx, param, project_name):
     project = project_name[:-
                            3] if project_name.endswith('.py') else project_name
     if project + '.py' not in os.listdir(PROJECT_FOLDER):
@@ -50,7 +50,7 @@ def retrive_project(ctx, param, project_name):
 
 
 @cli.command('run')
-@click.argument('project', callback=retrive_project)
+@click.argument('project', callback=retrieve_project)
 @click.option('-v', '--verbose', default=False, is_flag=True)
 @click.option('--keep-html', default=False, is_flag=True)
 def run_crawler(project, verbose, keep_html):
@@ -65,7 +65,7 @@ def cache():
 
 
 @cache.command('dump')
-@click.argument('project', callback=retrive_project)
+@click.argument('project', callback=retrieve_project)
 @click.option('-p', '--path')
 def dump_cache(project, path):
     """ Dump the project cache to a JSON file. """
@@ -76,7 +76,7 @@ def dump_cache(project, path):
 
 
 @cache.command('clear')
-@click.argument('project', callback=retrive_project)
+@click.argument('project', callback=retrieve_project)
 def clear_cache(project):
     """ Clear the project cache. """
     if project.crawler._cache is not None:
