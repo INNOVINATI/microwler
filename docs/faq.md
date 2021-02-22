@@ -41,7 +41,7 @@ Currently, there are two different ways to do this directly:
 
 Alternatively, you can pull data via CLI & HTTP and it's advised to do so:
 
-- CLI: `crawler <project_name> dumpcache`
+- CLI: `microwler cache dump <project_name>`
     - Exports the cache to your local filesystem as JSON
 - API: `/data/<project_name>`
     - Returns the cache as JSON
