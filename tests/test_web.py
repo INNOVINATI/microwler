@@ -1,7 +1,13 @@
 # TODO: https://pgjones.gitlab.io/quart/how_to_guides/testing.html
+import os
+import sys
+
 import pytest
 
+sys.path.append(os.getcwd())
+
 from microwler.web.backend import app
+
 
 
 class TestWebservice:

@@ -1,6 +1,9 @@
 import os
+import sys
 
 import pytest
+
+sys.path.append(os.getcwd())
 
 from microwler import Microwler, scrape
 from microwler.export import JSONExporter, HTMLExporter

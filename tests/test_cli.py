@@ -1,10 +1,12 @@
 import os
+import sys
 
 from click.testing import CliRunner
 
+sys.path.append(os.getcwd())
 
-# TODO: https://click.palletsprojects.com/en/7.x/testing/
 from microwler.cli.cmd import add_project, run_crawler
+
 
 
 class TestCLI:
