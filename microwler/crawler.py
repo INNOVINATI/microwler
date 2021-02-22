@@ -70,19 +70,21 @@ class Microwler:
                     LOG.warning(f'Timeout error: {url}')
                 return
 
-    def _extract_links(self, html):
+    def _extract_links(self, url, html):
         """ Extract relevant links from an HTML document """
         f = self._settings.link_filter
+        dom = DOMParser.fromstring(html)
         if type(f == str):
-            dom = DOMParser.fromstring(html)
-            dom.make_links_absolute(self.start_url)
+            # Extract all links matching the given XPath
+            dom.make_links_absolute(url)
             ls = dom.xpath(f)
         else:
-            ls = f(html)
+            # Invoke user-defined function with a list of all links
+            ls = f(dom.xpath('//a/href()'))
         return list({
             link for link in ls
-            if self._domain in link or link.startswith(self.start_url)
-            if link not in self._results and link not in self._errors  # filter duplicates in order to avoid extra loop steps later
+            if self._domain in link or link.startswith(self.start_url)  # deep crawling
+            if link not in self._results  # filter duplicates in order to avoid extra loop steps later
             and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore file extensions
         })
 
@@ -94,7 +96,7 @@ class Microwler:
                 return
 
             text, status = result
-            links = self._extract_links(text)
+            links = self._extract_links(url, text)
             return url, status, text, links
 
         except Exception as e:
