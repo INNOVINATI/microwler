@@ -36,13 +36,18 @@ class Microwler:
             transform: Function to transform scraped data after crawling ([read more](/microwler/faq/#what-are-transformers))
             settings: A `dict` with configuration parameters for the crawler [(read more)](/microwler/configuration/#settings)
         """
-        self.start_url = start_url
+
         parsed = urlparse(start_url)
+        if not parsed.scheme:
+            raise ValueError('Invalid start_url: missing scheme')
+        if parsed.path.split('/') > 1 and 'link_filter' not in settings:
+            LOG.warning('Starting crawler on sub-page without custom link filter')
+
+        self.start_url = f'{parsed.scheme}://{parsed.netloc}{parsed.path if parsed.path else "/"}'
         self._domain = parsed.netloc
         self._selectors = select
         self._transformer = transform
         self._settings = Settings(settings)
-        self._seen_urls = set()
         self._session: Union[ClientSession, None] = None
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
@@ -118,7 +123,7 @@ class Microwler:
                     LOG.info(f'Dropped pre-cached URL [{normalized_url}]')
                 return
 
-        # Set a dummy for each result, so filter_links() can detect the duplicates via dict keys
+        # Set a dummy for each result, so duplicate links can be detected via dict keys
         self._results[normalized_url] = None
 
         result = await self._handle_response(normalized_url)
@@ -137,8 +142,6 @@ class Microwler:
 
         # Extraction
         if self._selectors:
-            #LOG.info(f'Extracting data ... [{self._domain}]')
-
             page = page.scrape(self._selectors, keep_source=keep_source)
 
             if self._transformer is not None:
@@ -160,15 +163,13 @@ class Microwler:
             await self._session.close()
             LOG.info(f'Crawler stopped [{self._domain}]')
 
-        self._process(keep_source=keep_source)
-
-    def _process(self, keep_source=False):
         # Exports
         if count := len(self._settings.exporters):
-            LOG.info(f'Exporting to {count} destinations... [{self._domain}]')
-            for exporter_cls in self._settings.exporters:
-                instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
-                instance.export()
+        LOG.info(f'Exporting to {count} destinations... [{self._domain}]')
+        for exporter_cls in self._settings.exporters:
+            instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
+            instance.export()
+
         # Caching
         if self._cache is not None:
             LOG.info(f'Caching results ... [{self._domain}]')
@@ -206,7 +207,7 @@ class Microwler:
                 table.add_column('Errors', [len(self._errors)])
                 print(table)
             else:
-                LOG.info(f'Processed {len(self._results)} pages in {duration} seconds [{self._domain}]')
+                LOG.info(f'Processed {len(self._results)} pages in {round(duration, 2)} seconds [{self._domain}]')
         if len(self._errors):
             table = prettytable.PrettyTable()
             table.add_column('URL', list(self._errors.keys()))
@@ -237,8 +238,3 @@ class Microwler:
         path = path or f'./dump-{self._domain}.json'
         with open(path, 'w') as file:
             file.write(json.dumps([page.__dict__ for page in self._cache.values()]))
-
-
-if __name__ == '__main__':
-    c = Microwler('https://quotes.toscrape.com/')
-    c.run(verbose=True)

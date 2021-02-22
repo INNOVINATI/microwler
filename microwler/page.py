@@ -4,8 +4,6 @@ import logging
 from lxml.etree import ParserError
 from parsel import Selector
 
-from microwler.utils import get_first_or_list
-
 
 LOG = logging.getLogger(__name__)
 

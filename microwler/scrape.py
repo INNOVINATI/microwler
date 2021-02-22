@@ -57,10 +57,10 @@ def images(dom: Selector):
     return dom.xpath('//img/@src').getall()
 
 
-def parsel(user_func: Callable[[Selector], object]):
-    """ Execute user function on parsel.Selector """
+def selector(user_func: Callable[[Selector], object]):
+    """ Execute user-defined function on parsel.Selector """
 
-    def parsel_(dom: Selector):
+    def selector_(dom: Selector):
         return user_func(dom)
 
-    return parsel_
+    return selector_
