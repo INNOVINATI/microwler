@@ -32,3 +32,4 @@ copyright: powered by <a href="https://innovinati.com/">INNOVINATI</a>
 markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
+  - footnotes

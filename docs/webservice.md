@@ -6,9 +6,9 @@ another way to run your crawlers and retrieve their scraped data via HTTP.
 
 ## Usage
 <div id="termynal" data-termynal>
-    <span data-ty="input">serve</span>
+    <span data-ty="input">microwler serve</span>
     <span data-ty>[INFO] Starting webservice...</span>
-    <span data-ty>[INFO] Running on http://localhost:5000 (CTRL + C to quit)</span>
+    <span data-ty>[INFO] Running on http://localhost:5000</span>
     <span data-ty>[INFO] Imported 1 projects from filesystem</span>
 </div>
 
@@ -16,7 +16,7 @@ another way to run your crawlers and retrieve their scraped data via HTTP.
 
 You may change the port:
 ```bash
-serve [-p|--port PORT]
+microwler serve [-p|--port] PORT
 ```
 
 ## API

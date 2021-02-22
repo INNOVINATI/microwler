@@ -1,10 +1,5 @@
 # Scraping Data
-**Microwler** provides several ways of extracting data from web pages by defining *selectors*. 
-If you're familiar with Scrapy selectors, you will notice a strong similarity - 
-because both use the excellent `Parsel` library. This allows you to [build
-complex selectors](#parsel) with XPath, CSS and RegEx, even offering the possibility to chain selectors. 
-Alternatively, you can use the [generic selectors](#generic) that are built-in or use simple [XPath strings](#xpath). 
-Let's check it out!
+**Microwler** provides several ways of extracting data from web pages by defining *selectors*.
 
 ## Selectors
 
@@ -45,19 +40,23 @@ selectors = {
 #### Parsel
 In case you want to do something more complex, you can also choose to *define 
 selectors as callables*, i.e. lambda expressions or regular functions, 
-which is what the crawler does when using generic selectors. 
-In this case, the current HTML document will be injected as only argument 
-in the form of a [parsel.Selector](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.Selector):
+which is what the crawler does when using generic selectors. To do so, use
+the `@scrape.selector` decorator as shown below. In this case, the current HTML document will be auto-injected
+in the form of a [parsel.Selector](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.Selector)
+after the page has been downloaded:
 
 ```python
+from microwler import scrape
+
+@scrape.selector
 def headings(dom):
     hs = ['h1', 'h2', 'h3', 'h4']
     return {h: dom.css(h).getall() for h in hs}
 
 
 selectors = {
-    'title': scrape.parsel(lambda dom: ' '.join(dom.xpath('//title//text()').getall())),
-    'headings': scrape.parsel(lambda dom: headings(dom))
+    'title': scrape.selector(lambda dom: ' '.join(dom.xpath('//title//text()').getall())),
+    'headings': headings
 }
 ```
 

@@ -5,7 +5,7 @@
     <span data-ty="input">mkdir microwler && cd $_</span>
     <span data-ty="input">virtualenv venv -p python3</span>
     <span data-ty="input">source venv/bin/activate</span>
-    <span data-ty="input">pip install microwler</span>
+    <span data-ty="input" data-ty-prompt="(venv) $">pip install microwler</span>
     <span data-ty="progress"></span>
     <span data-ty>Successfully installed Microwler</span>
 </div>
@@ -13,16 +13,17 @@
 ## Usage
 ### CLI (recommended)
 #### Create a project and run it
-> Make sure you created a workspace as suggested above [previous section](#installation). 
+> Make sure you created and entered a workspace as suggested [above](#installation). 
 
 <div id="termynal2" data-termynal>
-    <span data-ty="input">create quotes https://quotes.toscrape.com/</span>
-    <span data-ty data-ty-delay="250" style="color: green">Created new project: /Users/max/microwler/projects/quotes.py</span>
-    <span data-ty="input">crawler quotes run</span>
+    <span data-ty="input">microwler create quotes https://quotes.toscrape.com/</span>
+    <span data-ty data-ty-delay="250" style="color: green">Created new project: /microwler/projects/quotes.py</span>
+    <span data-ty="input">microwler run quotes</span>
     <span data-ty data-ty-delay="50">[INFO] Starting engine ...</span>
     <span data-ty data-ty-delay="50">[INFO] Crawler started [quotes.toscrape.com]</span>
     <span data-ty="progress"></span>
     <span data-ty>[INFO] Crawler stopped [quotes.toscrape.com]</span>
+    <span data-ty>[INFO] Processed 214 pages in 5.21 seconds</span>
 </div>
 
 Microwler will create a `projects/` folder in your current working directory and place

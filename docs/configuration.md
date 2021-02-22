@@ -8,12 +8,10 @@ Of course, you can customize and extend this behaviour. Here's an example:
 from microwler import Microwler, scrape, export
 
 selectors = {
-    # Using custom XPath expressions:
-    'field': '//some/xpath',
     # Using built-in selectors:
     'title': scrape.title,
-    # Using Parsel selectors:
-    'complex': scrape.parsel(lambda dom: dom.css('img').xpath('/@src').getall())
+    # Using custom XPath expressions:
+    'field': '//some/xpath'
 }
 
 settings = {
@@ -33,8 +31,8 @@ crawler = Microwler(
 )
 ````
 
-> **Create a new project with an empty template:** 
-> `new <PROJECT_NAME> <START_URL>`
+> **Create a new project with this template:** 
+> `microwler create <PROJECT_NAME> <START_URL>`
 
 You'll find out more about *selectors* and *transformers* in the next chapter(s). For now, let's focus
 on the various settings of the crawler itself.
@@ -45,8 +43,8 @@ for the crawler itself but also for handling exports and such.
 
 | Setting | Default | Description |
 | :------------- | :-------------: | -----------: |
-| [link_filter](#link_filter) | `//a/@href` | XPath for link extraction, i.e. <br> `//a[contains(@href, 'blog')]/@href`
-| max_depth | 10 | The depth limit at which to stop crawling |
+| link_filter[^1] | `//a/@href` | XPath for link extraction, i.e. <br> `//a[contains(@href, 'blog')]/@href`
+| max_depth[^2] | 10 | The depth limit at which to stop crawling |
 | max_concurrency | 20 | Maximum number of concurrent requests |
 | dns_providers | `['1.1.1.1', '8.8.8.8']` | DNS server addresses, i.e. Cloudflare or Google |
 | language | 'en-us' | Will be used to in the `Accept-Language` header |
@@ -56,12 +54,16 @@ for the crawler itself but also for handling exports and such.
 | exporters | `[]` | A list of export plugins inheriting from [microwler.export.BaseExporter][] |
 
 
-### link_filter
-Instead of entering an XPath/string as shown above, you may also provide a
-callable similar to `selectors`. In this case, the callable will receive the
-full HTML **string**, so you can extract links however you want, i.e. using Parsel
-or RegEx. But:
-
-- you must return a list of valid URL strings (including scheme etc.)
-- you must handle relative links and such
-- the links will still be filtered afterwards (to avoid duplicates and external sites)
+[^1]:
+    Instead of entering an XPath/string as shown above, you may provide a
+    callable to filter links manually. In this case, your callable will 
+    receive **a `list` of all links/hrefs** in the document. **But**:
+    
+    - you must return a `list` of valid URL strings (including scheme etc.)
+    - you must handle relative links and such yourself
+    - the links will still be filtered afterwards (to avoid duplicates and external sites)
+    
+[^2]:
+    Each link is found at a certain *depth*, where links on the first page
+    are found at `depth == 0`. If crawling a link would exceed `settings.max_depth`
+    it will be ignored.
