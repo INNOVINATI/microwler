@@ -1,9 +1,11 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 import pathlib
 
 here = pathlib.Path(__file__).parent.resolve()
 
 long_description = (here / 'README.md').read_text(encoding='utf-8')
+
+print('[WARNING]: Version 0.2.0 introduced breaking changes! Please read the documentation if you encounter any errors.')
 
 setup(
     name='microwler',
