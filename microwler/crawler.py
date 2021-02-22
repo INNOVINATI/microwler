@@ -77,15 +77,16 @@ class Microwler:
 
     def _extract_links(self, url, html):
         """ Extract relevant links from an HTML document """
-        f = self._settings.link_filter
+        lfilter = self._settings.link_filter
         dom = DOMParser.fromstring(html)
-        if type(f == str):
-            # Extract all links matching the given XPath
-            dom.make_links_absolute(url)
-            ls = dom.xpath(f)
-        else:
+        dom.make_links_absolute(url)
+        if callable(lfilter):
             # Invoke user-defined function with a list of all links
-            ls = f(dom.xpath('//a/href()'))
+            links = dom.xpath('//a/@href')
+            ls = lfilter(links)
+        else:
+            # Extract all links matching the given XPath
+            ls = dom.xpath(lfilter)
         return list({
             link for link in ls
             if self._domain in link or link.startswith(self.start_url)  # deep crawling
@@ -93,7 +94,7 @@ class Microwler:
             and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore file extensions
         })
 
-    async def _handle_response(self, url):
+    async def _handle_response(self, url: str):
         try:
             result = await self._http_get(url)
             if not result:
