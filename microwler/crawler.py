@@ -40,8 +40,6 @@ class Microwler:
         parsed = urlparse(start_url)
         if not parsed.scheme:
             raise ValueError('Invalid start_url: missing scheme')
-        if len(parsed.path.split('/')) > 1 and 'link_filter' not in settings:
-            LOG.warning('Starting crawler on sub-page without custom link filter')
 
         self.start_url = f'{parsed.scheme}://{parsed.netloc}{parsed.path if parsed.path else "/"}'
         self._domain = parsed.netloc
@@ -239,3 +237,8 @@ class Microwler:
         path = path or f'./dump-{self._domain}.json'
         with open(path, 'w') as file:
             file.write(json.dumps([page.__dict__ for page in self._cache.values()]))
+
+
+if __name__ == '__main__':
+    c = Microwler('https://quotes.toscrape.com/')
+    c.run(verbose=True)
