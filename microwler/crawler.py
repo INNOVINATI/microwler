@@ -101,7 +101,7 @@ class Microwler:
 
             text, status = result
             links = self._extract_links(url, text)
-            return url, status, text, links
+            return status, text, links
 
         except Exception as e:
             if self._verbose:
@@ -113,31 +113,34 @@ class Microwler:
         if depth > self._settings.max_depth:
             return
 
-        normalized_url = utils.norm_url(url)
-        if normalized_url in self._results:
+        url = utils.norm_url(url)
+        # Filter previously seen URLs
+        if url in self._results or url in self._errors:
             return
+
         if self._settings.delta_crawl:
-            if normalized_url in self._cache and normalized_url != self.start_url:
+            if url in self._cache and url != self.start_url:
                 if self._verbose:
-                    LOG.info(f'Dropped pre-cached URL [{normalized_url}]')
+                    LOG.info(f'Dropped pre-cached URL [{url}]')
                 return
 
         # Set a dummy for each result, so duplicate links can be detected via dict keys
-        self._results[normalized_url] = None
+        self._results[url] = None
 
-        result = await self._handle_response(normalized_url)
+        result = await self._handle_response(url)
         if not result:
             # self._errors has an entry for normalized_url
-            del self._results[normalized_url]
+            del self._results[url]
             return
 
-        url, status, text, links = result
-        page = Page(url, status, depth, links, text)
-        self._results[url] = page
+        status, text, links = result
 
         tasks = None
         if depth+1 <= self._settings.max_depth:
             tasks = [asyncio.create_task(self._deep_crawl(link, depth+1, keep_source=keep_source)) for link in links]
+
+        # Initialize Page object for this url
+        page = Page(url, status, depth, links, text)
 
         # Extraction
         if self._selectors:
