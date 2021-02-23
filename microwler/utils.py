@@ -62,9 +62,11 @@ def norm_url(url: str):
 
 def remove_multi_whitespace(string_or_list):
     """ Cleans redundant whitespace from extracted data """
+    def helper(str):
+        return ' '.join(str.split())
     if type(string_or_list) == str:
-        return ' '.join(string_or_list.split())
-    return [' '.join(string.split()) for string in string_or_list]
+        return helper(str)
+    return [helper(s) for s in string_or_list]
 
 
 def load_project(project_name, project_folder=None):
