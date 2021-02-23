@@ -90,8 +90,8 @@ class Microwler:
         return list({
             link for link in ls
             if self._domain in link or link.startswith(self.start_url)  # deep crawling
-            if link not in self._results  # filter duplicates in order to avoid extra loop steps later
-            and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore file extensions
+            if not (link in self._results or link in self._errors)  # filter previously seen URLs
+            and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore certain file extensions
         })
 
     async def _handle_response(self, url: str):
