@@ -25,7 +25,7 @@ def get_headers(language: str):
 
 
 # Mostly copied from scrapy.contrib.linkextractor
-IGNORED_EXTENSIONS = [
+IGNORED_EXTENSIONS = {
     # images
     'mng', 'pct', 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'pst', 'psp', 'tif',
     'tiff', 'ai', 'drw', 'dxf', 'eps', 'ps', 'svg',
@@ -38,7 +38,7 @@ IGNORED_EXTENSIONS = [
 
     # other
     'css', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'dmg', 'exe', 'bin', 'rss', 'zip', 'rar',
-]
+}
 
 
 def norm_url(url: str):
@@ -58,11 +58,6 @@ def norm_url(url: str):
         url += '?' + urlencode(sorted(parse_qsl(parsed.query)))
 
     return url
-
-
-def get_first_or_list(from_result):
-    """ Return the first element, if there's only one, otherwise returns the whole list """
-    return from_result[0] if (type(from_result) == list and len(from_result) == 1) else from_result
 
 
 def remove_multi_whitespace(string_or_list):
