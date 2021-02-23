@@ -67,10 +67,10 @@ class Microwler:
             try:
                 heads = utils.get_headers(self._settings.language)
                 async with self._session.get(url, timeout=15, headers=heads) as response:
-                    text = await response.text()
                     if self._verbose:
                         LOG.info(f'Processed: {url} [{response.status}]')
-                    return text, response.status
+                    text = await response.text()
+                    return response.status, text
             except TimeoutError:
                 if self._verbose:
                     LOG.warning(f'Timeout error: {url}')
@@ -107,8 +107,10 @@ class Microwler:
             # Invoke user-defined link filter
             ls = lfilter(ls)
 
-        # Return list of normalized urls
-        return [utils.norm_url(l) for l in ls]
+        # Normalize urls
+        ls = (utils.norm_url(l) for l in ls)
+
+        return ls
 
     async def _handle_response(self, url: str):
         try:
@@ -117,9 +119,8 @@ class Microwler:
                 self._errors[url] = 'Timeout Error'
                 return
 
-            text, status = result
-            links = self._extract_links(url, text)
-            return status, text, links
+            # forward _http_get result
+            return result
 
         except Exception as e:
             if self._verbose:
@@ -150,14 +151,22 @@ class Microwler:
             del self._results[url]
             return
 
-        status, text, links = result
+        status, text = result
 
-        tasks = None
-        if depth+1 <= self._settings.max_depth:
-            tasks = [asyncio.create_task(self._deep_crawl(link, depth+1, keep_source=keep_source)) for link in links
-                        if self._domain in link or link.startswith(self.start_url) # deep crawling
-                        if not self._seen_url(link) # only new urls
-                    ]
+        links = []
+        tasks = []
+        for link in self._extract_links(url, text):
+            links.append(link)
+            # respect max_depth
+            if depth+1 > self._settings.max_depth:
+                continue
+            # deep crawling
+            if self._domain not in link and not link.startswith(self.start_url):
+                continue
+            # only new urls
+            if self._seen_url(link):
+                continue
+            tasks.append(asyncio.create_task(self._deep_crawl(link, depth+1, keep_source=keep_source)))
 
         # Initialize Page object for this url
         page = Page(url, status, depth, links, text)
