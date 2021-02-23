@@ -1,12 +1,12 @@
 import logging
 import os
-from typing import Union, Callable, List
+from typing import Union, Callable
 
 LOG = logging.getLogger(__name__)
 
 
 class Settings(object):
-    link_filter: Union[Callable[[str], List[str]], str] = '//a/@href'
+    link_filter: Union[Callable[[str], bool], str] = '//a/@href'
     max_depth: int = 10
     max_concurrency: int = 10
     dns_providers: list = ['1.1.1.1', '8.8.8.8']

@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 from typing import Callable, Dict, Any, Union
 
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 import prettytable
 from aiohttp import AsyncResolver, TCPConnector, ClientSession
@@ -78,22 +78,37 @@ class Microwler:
 
     def _extract_links(self, url, html):
         """ Extract relevant links from an HTML document """
+
         lfilter = self._settings.link_filter
+
+        # Parse html
         dom = DOMParser.fromstring(html)
-        dom.make_links_absolute(url)
+
+        # Default xpath link filter
+        link_xpath = '//a/@href'
+
+        if isinstance(lfilter, str):
+            # Use user-defined xpath link filter
+            link_xpath = lfilter
+
+        # Extract links
+        ls = dom.xpath(link_xpath)
+
+        # Ignore certain file extensions
+        ls = (l for l in ls if l.lower().partition('.')[-1] not in utils.IGNORED_EXTENSIONS)
+
+        # Remove duplicates
+        ls = set(ls)
+
+        # Make links absolute
+        ls = (urljoin(url, l) for l in ls)
+
         if callable(lfilter):
-            # Invoke user-defined function with a list of all links
-            links = dom.xpath('//a/@href')
-            ls = lfilter(links)
-        else:
-            # Extract all links matching the given XPath
-            ls = dom.xpath(lfilter)
-        return list({
-            link for link in ls
-            if self._domain in link or link.startswith(self.start_url)  # deep crawling
-            if not (link in self._results or link in self._errors)  # filter previously seen URLs
-            and not any([link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS])  # ignore certain file extensions
-        })
+            # Invoke user-defined link filter
+            ls = lfilter(ls)
+
+        # Return list of normalized urls
+        return [utils.norm_url(l) for l in ls]
 
     async def _handle_response(self, url: str):
         try:
@@ -140,7 +155,10 @@ class Microwler:
 
         tasks = None
         if depth+1 <= self._settings.max_depth:
-            tasks = [asyncio.create_task(self._deep_crawl(link, depth+1, keep_source=keep_source)) for link in links]
+            tasks = [asyncio.create_task(self._deep_crawl(link, depth+1, keep_source=keep_source)) for link in links
+                        if self._domain in link or link.startswith(self.start_url) # deep crawling
+                        if not self._seen_url(link) # only new urls
+                    ]
 
         # Initialize Page object for this url
         page = Page(url, status, depth, links, text)
