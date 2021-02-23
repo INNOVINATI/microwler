@@ -16,7 +16,7 @@ another way to run your crawlers and retrieve their scraped data via HTTP.
 
 You may change the port:
 ```bash
-microwler serve [-p|--port] PORT
+microwler serve [-p|--port PORT]
 ```
 
 ## API
