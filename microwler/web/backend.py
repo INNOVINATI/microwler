@@ -25,8 +25,9 @@ async def load_projects():
     global PROJECTS
     copy = dict()
     for path in os.listdir(PROJECT_FOLDER):
-        if path.endswith('.py'):
-            name = path.split('.')[0]
+        suffix = '.py'
+        if path.endswith(suffix):
+            name = path[:-len(suffix)]
             project = load_project(name, PROJECT_FOLDER)
             if name in PROJECTS:
                 PROJECTS[name]['start_url'] = project.crawler.start_url
