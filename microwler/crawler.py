@@ -59,6 +59,9 @@ class Microwler:
         else:
             self._cache = None
 
+    def _seen_url(self, url):
+        return url in self._results or url in self._errors
+
     async def _http_get(self, url):
         async with self._limiter:
             try:
@@ -115,7 +118,7 @@ class Microwler:
 
         url = utils.norm_url(url)
         # Filter previously seen URLs
-        if url in self._results or url in self._errors:
+        if self._seen_url(url):
             return
 
         if self._settings.delta_crawl:
