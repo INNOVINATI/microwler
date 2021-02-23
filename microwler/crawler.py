@@ -5,6 +5,7 @@ import logging
 import time
 from datetime import datetime
 from typing import Callable, Dict, Any, Union
+from concurrent.futures import ThreadPoolExecutor
 
 from urllib.parse import urlparse, urljoin
 
@@ -52,6 +53,7 @@ class Microwler:
         self._errors = dict()
         self._results = dict()
         self.set_cache()
+        self._executor = None
 
     def set_cache(self, force=False):
         if self._settings.caching or force:
@@ -157,10 +159,15 @@ class Microwler:
 
         # Scraping & Transformation
         if self._selectors:
-            page = page.scrape(self._selectors, keep_source=keep_source)
+            def on_other_thread(page, selectors, transformer, keep_source):
+                page = page.scrape(selectors, keep_source=keep_source)
 
-            if self._transformer is not None:
-                page = page.transform(self._transformer)
+                if transformer is not None:
+                    page = page.transform(transformer)
+
+                return page
+
+            page = await asyncio.get_event_loop().run_in_executor(self._executor, on_other_thread, page, self._selectors, self._transformer, keep_source)
 
             self._results[url] = page
 
@@ -172,10 +179,12 @@ class Microwler:
         resolver = AsyncResolver(nameservers=self._settings.dns_providers)
         tcpc = TCPConnector(resolver=resolver)
         self._session = ClientSession(loop=asyncio.get_event_loop(), connector=tcpc)
+        self._executor = ThreadPoolExecutor(max_workers=4)
         try:
             await self._deep_crawl(self.start_url, depth=0, keep_source=keep_source)
         finally:
             await self._session.close()
+            await asyncio.get_event_loop().run_in_executor(None, self._executor.shutdown)
             LOG.info(f'Crawler stopped [{self._domain}]')
 
         # Exports
