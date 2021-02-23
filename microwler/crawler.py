@@ -41,7 +41,7 @@ class Microwler:
         if not parsed.scheme:
             raise ValueError('Invalid start_url: missing scheme')
 
-        self.start_url = f'{parsed.scheme}://{parsed.netloc}{parsed.path if parsed.path else "/"}'
+        self.start_url = utils.norm_url(start_url, no_query=True)
         self._domain = parsed.netloc
         self._selectors = select
         self._transformer = transform
@@ -131,7 +131,6 @@ class Microwler:
         if depth > self._settings.max_depth:
             return
 
-        url = utils.norm_url(url)
         # Filter previously seen URLs
         if self._seen_url(url):
             return

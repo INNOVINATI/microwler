@@ -41,7 +41,7 @@ IGNORED_EXTENSIONS = {
 }
 
 
-def norm_url(url: str):
+def norm_url(url: str, no_query: bool = False):
     parsed = urlparse(url)
 
     # Drop fragments and rebuild URL
@@ -53,7 +53,7 @@ def norm_url(url: str):
         path = '/'+path
     url += path
 
-    if parsed.query:
+    if not no_query and parsed.query:
         # Sort query parameters if there are any
         url += '?' + urlencode(sorted(parse_qsl(parsed.query)))
 
