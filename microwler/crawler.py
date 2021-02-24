@@ -146,7 +146,7 @@ class Microwler:
             if depth+1 > self._settings.max_depth:
                 continue
             # deep crawling
-            if self._domain not in link:
+            if urlparse(link).netloc != self._domain:
                 continue
             # drop known urls
             if self._seen_url(link):
