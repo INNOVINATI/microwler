@@ -33,6 +33,9 @@ class Page(object):
         self.html = html
         self.data = {}
 
+    def __lt__(self, other):
+        return self.url < other.url
+
     def scrape(self, selectors: dict, keep_source=False):
         """
         Extracts data using the given selectors. Selectors are either `XPaths` (strings) or callables.

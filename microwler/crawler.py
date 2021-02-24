@@ -99,7 +99,7 @@ class Microwler:
         ls = (l for l in ls if l.lower().partition('.')[-1] not in utils.IGNORED_EXTENSIONS)
 
         # Remove duplicates
-        ls = set(ls)
+        ls = sorted(set(ls))
 
         # Make links absolute
         ls = (urljoin(url, l) for l in ls)
@@ -182,7 +182,7 @@ class Microwler:
         if count := len(self._settings.exporters):
             LOG.info(f'Exporting to {count} destinations... [{self._domain}]')
             for exporter_cls in self._settings.exporters:
-                instance = exporter_cls(self._domain, list(self._results.values()), self._settings)
+                instance = exporter_cls(self._domain, sorted(self._results.values()), self._settings)
                 instance.export()
 
         # Caching
