@@ -62,7 +62,7 @@ class Microwler:
     def _seen_url(self, url):
         return url in self._results or url in self._errors
 
-    async def _http_get(self, url):
+    async def _request(self, url):
         async with self._limiter:
             try:
                 heads = utils.get_headers(self._settings.language)
@@ -71,7 +71,8 @@ class Microwler:
                         LOG.info(f'Processed: {url} [{response.status}]')
                     text = await response.text()
                     return response.status, text
-            except TimeoutError:
+            except Exception as e:
+                self._errors[url] = str(e)
                 if self._verbose:
                     LOG.warning(f'Timeout error: {url}')
                 return
@@ -112,22 +113,6 @@ class Microwler:
 
         return ls
 
-    async def _handle_response(self, url: str):
-        try:
-            result = await self._http_get(url)
-            if not result:
-                self._errors[url] = 'Timeout Error'
-                return
-
-            # forward _http_get result
-            return result
-
-        except Exception as e:
-            if self._verbose:
-                LOG.error(f'Download error: {e} [{url}]')
-            self._errors[url] = str(e)
-            return
-
     async def _deep_crawl(self, url: str, depth: int = 0, keep_source=False):
         if depth > self._settings.max_depth:
             return
@@ -145,7 +130,7 @@ class Microwler:
         # Set a dummy for each result, so duplicate links can be detected via dict keys
         self._results[url] = None
 
-        result = await self._handle_response(url)
+        result = await self._request(url)
         if not result:
             # self._errors has an entry for normalized_url
             del self._results[url]
@@ -157,21 +142,20 @@ class Microwler:
         tasks = []
         for link in self._extract_links(url, text):
             links.append(link)
-            # respect max_depth
+            # respect depth limit
             if depth+1 > self._settings.max_depth:
                 continue
             # deep crawling
-            if self._domain not in link and not link.startswith(self.start_url):
+            if self._domain not in link:
                 continue
-            # only new urls
+            # drop known urls
             if self._seen_url(link):
                 continue
             tasks.append(asyncio.create_task(self._deep_crawl(link, depth+1, keep_source=keep_source)))
 
-        # Initialize Page object for this url
         page = Page(url, status, depth, links, text)
 
-        # Extraction
+        # Scraping & Transformation
         if self._selectors:
             page = page.scrape(self._selectors, keep_source=keep_source)
 
@@ -219,15 +203,15 @@ class Microwler:
         """
 
         self._verbose = verbose
-        start = time.time()
         LOG.info('Starting engine ...')
         loop = asyncio.get_event_loop()
+        start = time.time()
         if loop.is_running():
             task_name = f'[{datetime.now()}] {self.start_url}'
             return loop.create_task(self._crawl(keep_source=keep_source), name=task_name)
         loop.run_until_complete(self._crawl(keep_source=keep_source))
-        loop.close()
         duration = time.time() - start
+        loop.close()
 
         if len(self._results):
             if self._verbose:
