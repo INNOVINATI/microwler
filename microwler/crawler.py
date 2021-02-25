@@ -117,95 +117,71 @@ class Microwler:
         return ls
 
     async def _crawl_page(self, url: str, depth :int = 0, keep_source=False):
-        if url in self._results:
-            # Not the first call of _crawl_page with this url
-            result = self._results[url]
-
-            if isinstance(result, asyncio.Event):
-                # Wait until the page is crawled
-                await result.wait()
-                result = self._results[url]
-
-            assert isinstance(result, Page)
-            page = result
-            if page and page.depth > depth:
-                # lower page depth
-                page.depth = depth
-            return page
-
-
-        if url in self._errors:
-            # Not the first call of _crawl_page with this url
-            return None
-
         if self._settings.delta_crawl:
             if url != self.start_url and url in self._cache:
                 if self._verbose:
                     LOG.info(f'Dropped pre-cached URL [{url}]')
                 return None
 
+        result = await self._request(url)
+        if not result:
+            # No valid result for url
+            assert url in self._errors
+            return None
 
-        # First call of _crawl_page with this url
-        # Initialize asyncio.Event for future calls to wait for
-        ready_event = asyncio.Event()
-        self._results[url] = ready_event
-        try:
-            result = await self._request(url)
-            if not result:
-                # No valid result for url
-                assert url in self._errors
-                # Remove ready_event from _results
-                del self._results[url]
-                return None
+        status, text = result
 
-            status, text = result
+        links = list(self._extract_links(url, text))
 
-            links = list(self._extract_links(url, text))
+        # Initialize Page object for this url
+        page = Page(url, status, depth, links, text)
 
-            # Initialize Page object for this url
-            page = Page(url, status, depth, links, text)
+        # Store page in _results
+        self._results[url] = page
 
-            # Store page in _results replacing ready_event
-            self._results[url] = page
+        # Scraping & Transformation
+        if self._selectors:
+            def on_other_thread(page, selectors, transformer, keep_source):
+                page.scrape(selectors, keep_source=keep_source)
 
-            # Scraping & Transformation
-            if self._selectors:
-                def on_other_thread(page, selectors, transformer, keep_source):
-                    page.scrape(selectors, keep_source=keep_source)
+                if transformer is not None:
+                    page.transform(transformer)
 
-                    if transformer is not None:
-                        page.transform(transformer)
+            # scraping & transformations done with ThreadPoolExecutor
+            self._extraction_tasks.append(asyncio.get_event_loop().run_in_executor(self._executor, on_other_thread, page, self._selectors, self._transformer, keep_source))
 
-                # scraping & transformations done with ThreadPoolExecutor
-                self._extraction_tasks.append(asyncio.get_event_loop().run_in_executor(self._executor, on_other_thread, page, self._selectors, self._transformer, keep_source))
-
-            return page
-
-        finally:
-            # Notify waiters
-            ready_event.set()
+        return page
+    
+    async def _crawl_batch(self, batch, depth, keep_source=False):
+        futures = [self._crawl_page(url) for url in batch]
+        results = []
+        for future in asyncio.as_completed(futures):
+            try:
+                result = (await future)
+                if result is not None:
+                    results.append(result)
+            except Exception as e:
+                LOG.error(f'Error while crawling: {e}')
+                exit(1)
+        return results
 
     async def _deep_crawl(self, url: str, depth: int = 0, keep_source=False):
-        page = await self._crawl_page(url, depth)
-
-        if page is None or page.depth < depth:
-            # page already handled by a concurrent _deep_crawl
-            return
-
-        # respect depth limit
-        if depth+1 > self._settings.max_depth:
-            return
-
-        tasks = []
-        for link in page.links:
-            # deep crawling
-            if urlparse(link).netloc != self._domain:
-                continue
-
-            tasks.append(self._deep_crawl(link, depth+1, keep_source=keep_source))
-
-        if tasks:
-            await asyncio.wait(tasks)
+        batch = {url}
+        depth = 0
+        while batch and depth <= self._settings.max_depth:
+            pages = await self._crawl_batch(batch, depth)
+            batch.clear()
+            for page in pages:
+                for link in page.links:
+                    if self._seen_url(link):
+                        # filter out already crawled urls
+                        continue
+                    if urlparse(link).netloc != self._domain:
+                        # deep crawling
+                        continue
+                    batch.add(link)
+            
+            depth += 1
 
     async def _crawl(self, keep_source=False):
         LOG.info(f'Crawler started [{self._domain}]')
