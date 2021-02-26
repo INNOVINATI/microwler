@@ -52,7 +52,6 @@ class Microwler:
         self._verbose = False
         self._errors = dict()
         self._results = dict()
-        self._result_ready = dict()
         self.set_cache()
         self._executor = None
         self._extraction_tasks = None
@@ -118,31 +117,45 @@ class Microwler:
         return ls
 
     async def _crawl_page(self, url: str, depth :int = 0, keep_source=False):
-        if ready_event := self._result_ready.get(url):
+        if url in self._results:
             # Not the first call of _crawl_page with this url
-            # Wait until the page is crawled
-            if not ready_event.is_set():
-                await ready_event.wait()
-            page = self._results.get(url)
+            result = self._results[url]
+
+            if isinstance(result, asyncio.Event):
+                # Wait until the page is crawled
+                await result.wait()
+                result = self._results[url]
+
+            assert isinstance(result, Page)
+            page = result
             if page and page.depth > depth:
                 # lower page depth
                 page.depth = depth
             return page
 
+
+        if url in self._errors:
+            # Not the first call of _crawl_page with this url
+            return None
+
+        if self._settings.delta_crawl:
+            if url != self.start_url and url in self._cache:
+                if self._verbose:
+                    LOG.info(f'Dropped pre-cached URL [{url}]')
+                return None
+
+
         # First call of _crawl_page with this url
         # Initialize asyncio.Event for future calls to wait for
-        ready_event = self._result_ready.setdefault(url, asyncio.Event())
+        ready_event = asyncio.Event()
+        self._results[url] = ready_event
         try:
-            if self._settings.delta_crawl:
-                if url != self.start_url and url in self._cache:
-                    if self._verbose:
-                        LOG.info(f'Dropped pre-cached URL [{url}]')
-                    return None
-
             result = await self._request(url)
             if not result:
                 # No valid result for url
                 assert url in self._errors
+                # Remove ready_event from _results
+                del self._results[url]
                 return None
 
             status, text = result
@@ -152,7 +165,7 @@ class Microwler:
             # Initialize Page object for this url
             page = Page(url, status, depth, links, text)
 
-            # Store page in _results
+            # Store page in _results replacing ready_event
             self._results[url] = page
 
             # Scraping & Transformation
