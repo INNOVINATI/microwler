@@ -153,17 +153,9 @@ class Microwler:
         return page
     
     async def _crawl_batch(self, batch, depth, keep_source=False):
-        futures = [self._crawl_page(url) for url in batch]
-        results = []
-        for future in asyncio.as_completed(futures):
-            try:
-                result = (await future)
-                if result is not None:
-                    results.append(result)
-            except Exception as e:
-                LOG.error(f'Error while crawling: {e}')
-                exit(1)
-        return results
+        aws = (self._crawl_page(url) for url in batch)
+        results = await asyncio.gather(*aws)
+        return filter(None, results)
 
     async def _deep_crawl(self, url: str, depth: int = 0, keep_source=False):
         batch = {url}
