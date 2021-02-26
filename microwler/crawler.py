@@ -118,15 +118,20 @@ class Microwler:
         return ls
 
     async def _crawl_page(self, url: str, depth :int = 0, keep_source=False):
-        if event := self._result_ready.get(url):
-            await event.wait()
+        if ready_event := self._result_ready.get(url):
+            # Not the first call of _crawl_page with this url
+            # Wait until the page is crawled
+            if not ready_event.is_set():
+                await ready_event.wait()
             page = self._results.get(url)
             if page and page.depth > depth:
                 # lower page depth
                 page.depth = depth
             return page
 
-        event = self._result_ready.setdefault(url, asyncio.Event())
+        # First call of _crawl_page with this url
+        # Initialize asyncio.Event for future calls to wait for
+        ready_event = self._result_ready.setdefault(url, asyncio.Event())
         try:
             if self._settings.delta_crawl:
                 if url != self.start_url and url in self._cache:
@@ -136,6 +141,8 @@ class Microwler:
 
             result = await self._request(url)
             if not result:
+                # No valid result for url
+                assert url in self._errors
                 return None
 
             status, text = result
@@ -144,6 +151,8 @@ class Microwler:
 
             # Initialize Page object for this url
             page = Page(url, status, depth, links, text)
+
+            # Store page in _results
             self._results[url] = page
 
             # Scraping & Transformation
@@ -154,13 +163,14 @@ class Microwler:
                     if transformer is not None:
                         page.transform(transformer)
 
+                # scraping & transformations done with ThreadPoolExecutor
                 self._extraction_tasks.append(asyncio.get_event_loop().run_in_executor(self._executor, on_other_thread, page, self._selectors, self._transformer, keep_source))
 
             return page
 
         finally:
             # Notify waiters
-            event.set()
+            ready_event.set()
 
     async def _deep_crawl(self, url: str, depth: int = 0, keep_source=False):
         page = await self._crawl_page(url, depth)
@@ -169,16 +179,17 @@ class Microwler:
             # page already handled by a concurrent _deep_crawl
             return
 
+        # respect depth limit
+        if depth+1 > self._settings.max_depth:
+            return
+
         tasks = []
         for link in page.links:
-            # respect depth limit
-            if depth+1 > self._settings.max_depth:
-                continue
             # deep crawling
             if urlparse(link).netloc != self._domain:
                 continue
 
-            tasks.append(asyncio.create_task(self._deep_crawl(link, depth+1, keep_source=keep_source)))
+            tasks.append(self._deep_crawl(link, depth+1, keep_source=keep_source))
 
         if tasks:
             await asyncio.wait(tasks)
