@@ -46,7 +46,7 @@ class Microwler:
         self._domain = parsed.netloc
         self._selectors = select
         self._transformer = transform
-        self._settings = Settings(settings)
+        self._settings = Settings(**settings)
         self._session: Union[ClientSession, None] = None
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
