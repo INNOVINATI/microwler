@@ -2,8 +2,9 @@
 
 ![PyPI](https://img.shields.io/pypi/v/microwler)
 ![PyPI - Status](https://img.shields.io/pypi/status/microwler)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/INNOVINATI/microwler/Run%20Test%20Cases/master)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
+
+> **Warning: this repository is not actively maintained**
 
 **Microwler** is a micro-framework for asynchronous web crawling and scraping implemented in Python.
 It is designed for *deep* crawls, i.e. retrieving every page of a specific website.
@@ -38,7 +39,7 @@ If needed, we'll setup more precise guidelines on how to contribute at some poin
 > dependencies for docs and tests.
 
 ## License
-Copyright (c) 2020-2021 Maximilian Wolf
+Copyright (c) 2020-2023 Maximilian Wolf
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
