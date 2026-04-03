@@ -1,0 +1,43 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      # The build and publish steps only run when Release Please merges a release PR
+      # (i.e. when release_created is true). On all other pushes to main this job
+      # ends after the release-please-action step above.
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+
+      - uses: astral-sh/setup-uv@v5
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          enable-cache: true
+
+      - name: Build distribution
+        if: ${{ steps.release.outputs.release_created }}
+        run: uv build
+
+      - name: Publish to PyPI
+        if: ${{ steps.release.outputs.release_created }}
+        run: uv publish
+        env:
+          # Set PYPI_API_TOKEN in the repository's Actions secrets
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
