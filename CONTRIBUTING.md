@@ -1,81 +1,98 @@
 # Contributing to Microwler
 
-## Branch Model
+Microwler is maintained as a solo-developer FOSS project and accepts outside pull requests.
+Keep changes small, keep branches short-lived, and let automation do the repetitive work.
 
-This project uses **trunk-based development**. `main` is the only long-lived branch and is always shippable.
+## Tooling Baseline
 
+- Python `3.12+` is required locally and in CI.
+- Use Astral tools for Python and backend workflows: `uv`, `ruff`, and `ty`.
+- Install the dev environment and hooks before opening a PR:
+
+```bash
+uv sync --group dev
+uv run prek install
+uv run prek install-hooks
 ```
-feat/foo ──┐
-fix/bar ───┼──▶  PR → main  ──▶  Release Please PR → tag + PyPI
-chore/baz ─┘
+
+## Local Checks
+
+Run these before you push:
+
+```bash
+uv run prek run --all-files
+uv run ty check microwler/
+uv run pytest
+uv build --no-sources
+uv run zensical build
 ```
+
+`prek` is the local entry point for repo hygiene, GitHub Actions linting, Ruff fixes, and Ruff formatting.
+
+## Branching And Commits
+
+Microwler uses trunk-based development. `main` is the only long-lived branch.
 
 | Branch | Purpose |
 |---|---|
-| `main` | Protected. Every commit is a candidate for release. |
-| `feat/<name>` | New features — branch from `main`, PR back to `main` |
-| `fix/<name>` | Bug fixes — branch from `main`, PR back to `main` |
-| `chore/<name>` | Tooling, dependencies, configuration |
+| `main` | Protected and always shippable |
+| `feat/<name>` | New features |
+| `fix/<name>` | Bug fixes |
+| `chore/<name>` | Tooling, dependency, or maintenance work |
 | `docs/<name>` | Documentation-only changes |
-| `refactor/<name>` | Code refactoring without behavior change |
+| `refactor/<name>` | Internal code cleanup without an intended behavior change |
 | `ci/<name>` | CI/CD workflow changes |
 
-Topic branches should be short-lived (hours to days, not weeks).
+Use short-lived topic branches and open PRs directly against `main`.
 
-## Commit Convention
+All commits must follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/). Every commit must follow:
-
-```
+```text
 <type>(<scope>): <description>
 ```
 
-**Types that trigger a version bump:**
-- `feat:` → bumps **minor** (`0.1.x` → `0.2.0`)
-- `fix:` → bumps **patch** (`0.1.8` → `0.1.9`)
-- `feat!:` or body with `BREAKING CHANGE:` footer → bumps **major** (`0.x.y` → `1.0.0`)
+Examples:
 
-**Types that appear in CHANGELOG but don't bump the version:**
-- `docs:`, `style:`, `refactor:`, `test:`, `chore:`, `ci:`, `perf:`
-
-### Examples
-
-```
+```text
 feat(crawler): add configurable request timeout per domain
-fix(settings): move mutable class defaults to __init__
-chore(deps): bump aiohttp to 3.10
-ci: pin setup-uv to v5
-docs(changelog): bootstrap CHANGELOG.md
+fix(settings): move mutable defaults into __init__
+chore(tooling): upgrade project baseline to Python 3.12
+ci(release): switch PyPI publishing to trusted publishing
+docs(contributing): document prek and Release Please workflow
 ```
 
-## Development Setup
+Prefer one conventional commit per completed unit of work. Maintainer-generated commits should not include `Co-authored-by` trailers.
 
-```bash
-# Requires uv: https://docs.astral.sh/uv/
-uv sync --group dev
+## Pull Requests
 
-# Run tests
-uv run pytest
+1. Branch from `main`.
+2. Make atomic commits as you complete each step.
+3. Run the local checks listed above.
+4. Open a PR to `main`.
+5. Wait for CI to pass on:
+   - `uv run prek run --all-files`
+   - `uv run ty check microwler/`
+   - `uv run pytest` on Python 3.12 and 3.13
+   - `uv build --no-sources`
+   - `uv run zensical build`
 
-# Lint
-uv run ruff check microwler/ tests/
+Fork-based PRs are welcome. The CI workflow is safe to run for external contributors because it does not require secrets.
 
-# Format
-uv run ruff format microwler/ tests/
+## Releases
 
-# Type check
-uv run ty check microwler/
-```
+Microwler uses:
 
-## Pull Request Process
+- [Semantic Versioning](https://semver.org/)
+- [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
+- [Release Please](https://github.com/googleapis/release-please)
 
-1. Branch from `main` using the naming convention above
-2. Write conventional commits throughout (each commit should be atomic and meaningful)
-3. Open a PR targeting `main`
-4. All CI checks must pass (lint, typecheck, test matrix across Python 3.10–3.12)
-5. At least one approval required
-6. Squash and merge into `main`
+Release Please reads conventional commits on `main`, updates `CHANGELOG.md`, opens a release PR, and proposes the next version. Merging that release PR creates the GitHub release and triggers package publication to PyPI via trusted publishing.
 
-Releases are fully automated via [Release Please](https://github.com/googleapis/release-please).
-When your PR merges, Release Please opens or updates a release PR that batches all pending
-changes. Merging that PR cuts the release and publishes to PyPI.
+### Maintainer Setup
+
+Two one-time repository settings are required for fully automated releases:
+
+1. Add a fine-grained `RELEASE_PLEASE_TOKEN` GitHub Actions secret with permission to create and update pull requests and releases.
+2. Configure a PyPI trusted publisher for this repository and the `.github/workflows/release-please.yml` workflow.
+
+If either setting is missing, release automation will stop at the missing boundary instead of falling back to long-lived credentials.

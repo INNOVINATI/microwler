@@ -68,7 +68,7 @@ read the [Parsel documentation](https://parsel.readthedocs.io/en/latest/usage.ht
 
 ## Data format
 Internally, an HTML document is represented as `Page`. Here's a JSON representation of what this could look like, which corresponds to the output of
-[this source code](https://github.com/INNOVINATI/microwler/blob/master/test_cases.py#L37).
+[this test fixture](https://github.com/INNOVINATI/microwler/blob/main/tests/test_crawl.py).
 
 ```json
 {
