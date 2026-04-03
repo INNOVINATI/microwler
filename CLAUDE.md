@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Install all dependencies including dev tools (requires uv: https://docs.astral.sh/uv/)
 uv sync --group dev
 
-# Run all tests
+# Run all tests (hit live site: quotes.toscrape.com — requires network)
 uv run pytest
 
 # Run a single test
@@ -64,15 +64,16 @@ Python script, or HTTP API.
   or callables) and transformers to scraped data, then discards raw HTML (unless `keep_source=True`).
 
 - **`scrape.py`** — Built-in selector functions (`title`, `headings`, `paragraphs`, `meta`, `emails`,
-  `images`, `canonicals`, `schemas`). Built on `parsel.Selector`.
+  `images`, `canonicals`, `schemas`). Built on `parsel.Selector`. Importable as `from microwler import scrape`.
 
 - **`export.py`** — Plugin-based export system. `BaseExporter` is the abstract base; `FileExporter`
   handles file I/O. Built-ins: `JSONExporter`, `CSVExporter`, `HTMLExporter`. Users extend
   `BaseExporter` for custom outputs.
 
 - **`settings.py`** — `Settings` class. All mutable defaults are per-instance (not class-level) to
-  prevent shared state. Key fields: `link_filter`, `max_depth` (default 10), `max_concurrency`
-  (default 20), `caching`, `delta_crawl`, `exporters`. Enabling `delta_crawl` auto-enables caching.
+  prevent shared state. Keys: `link_filter` (XPath, default `//a/@href`), `max_depth` (10),
+  `max_concurrency` (20), `dns_providers`, `language`, `caching`, `delta_crawl`, `export_to`,
+  `exporters`. Enabling `delta_crawl` auto-enables `caching`.
 
 - **`utils.py`** — URL normalization (sorted query params, no fragments, absolute URLs), header
   helpers, and misc utilities.
