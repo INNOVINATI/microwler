@@ -1,0 +1,38 @@
+[project]
+site_name = "Microwler"
+site_description = "A micro-framework for asynchronous deep crawls and web scraping written in Python"
+site_author = "Maximilian Wolf"
+site_url = "https://innovinati.github.io/microwler/"
+repo_url = "https://github.com/INNOVINATI/microwler/"
+repo_name = "INNOVINATI/microwler"
+copyright = "powered by <a href='https://innovinati.com/'>INNOVINATI</a>"
+docs_dir = "docs"
+site_dir = "site"
+use_directory_urls = true
+
+[project.theme]
+name = "material"
+language = "en"
+logo = "static/logo.png"
+features = [
+    "content.code.copy",
+    "navigation.expand",
+    "search.highlight",
+]
+
+[project.extra]
+social = [
+    { icon = "fontawesome/brands/github", link = "https://github.com/INNOVINATI" },
+    { icon = "fontawesome/brands/linkedin", link = "https://linkedin.com/company/innovinati" },
+]
+
+[project.nav]
+pages = [
+    { title = "Home", file = "index.md" },
+    { title = "Getting Started", file = "getting-started.md" },
+    { title = "Configuration", file = "configuration.md" },
+    { title = "Scraping", file = "scraping.md" },
+    { title = "Exporting", file = "exporting.md" },
+    { title = "Web Service", file = "webservice.md" },
+    { title = "FAQs", file = "faq.md" },
+]
