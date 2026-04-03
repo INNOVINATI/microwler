@@ -95,7 +95,7 @@ def dump_cache(ctx, path):
 @click.pass_context
 def clear_cache(ctx):
     """Clear the project getCache"""
-    project = load_project(ctx["project"])
+    project = load_project(ctx.obj["project"])
     if project.crawler._cache is not None:
         project.crawler.clear_cache()
     else:
