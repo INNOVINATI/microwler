@@ -38,11 +38,12 @@ uv build
 
 ## Branch Model
 
+Trunk-based development. `main` is the only long-lived branch.
+
 | Branch | Purpose |
 |---|---|
-| `main` | Protected. Latest published release. Only Release Please PRs merge here. |
-| `dev` | Integration branch. All PRs target this. CI must pass before merge. |
-| `feat/*`, `fix/*`, `chore/*`, `docs/*` | Short-lived topic branches |
+| `main` | Protected. Always shippable. PRs require passing CI. |
+| `feat/*`, `fix/*`, `chore/*`, `docs/*`, `ci/*`, `refactor/*` | Short-lived topic branches — PR directly to `main` |
 
 All commits must follow **Conventional Commits** (`feat:`, `fix:`, `chore:`, `docs:`, `ci:`, etc.).
 Release Please parses these to auto-bump versions and generate CHANGELOG.md.
