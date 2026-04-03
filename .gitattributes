@@ -1,0 +1,11 @@
+# Normalize line endings to LF on all platforms
+* text=auto eol=lf
+
+# Python source files explicitly
+*.py text eol=lf
+
+# Force binary treatment for built assets
+*.png binary
+*.gif binary
+*.jpg binary
+*.ico binary

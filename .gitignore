@@ -1,11 +1,31 @@
-.idea
-venv/
-build/
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
 dist/
-__pycache__
-*.egg-info
-export/
-projects/
-.microwler/
-dump-*.json
+build/
+
+# Virtual environments — use .venv/ (uv convention)
+.venv/
+
+# Tool caches
+.ruff_cache/
+.ty_cache/
+.mypy_cache/
 .pytest_cache/
+
+# IDE
+.idea/
+.vscode/
+
+# Microwler runtime artifacts
+.microwler/
+exports/
+projects/
+dump-*.json
+
+# Documentation build output
+site/
+
+# OS
+.DS_Store
