@@ -33,12 +33,14 @@ class Microwler:
         settings: dict | None = None,
     ):
         """
-        Setup a new `Microwler` instance
+        Setup a new `Microwler` instance.
+
         Arguments:
             start_url: the URL to start crawling
-            select: A `dict` with *selectors* [(read more)](/microwler/scraping/#selectors)
-            transform: Function to transform scraped data after crawling ([read more](/microwler/faq/#what-are-transformers))
-            settings: A `dict` with configuration parameters for the crawler [(read more)](/microwler/configuration/#settings)
+            select: a dict of named selectors — XPath strings or callables that receive
+                    a Parsel Selector and return any Python value
+            transform: optional function applied to each page's scraped data dict after crawling
+            settings: configuration dict; see Settings for available keys
         """
         self.start_url = start_url
         parsed = urlparse(start_url)
@@ -47,7 +49,7 @@ class Microwler:
         self._selectors = select
         self._transformer = transform
         self._settings = Settings(settings)
-        self._seen_urls = set()
+        self._seen_urls: set[str] = set()
         self._session: ClientSession | None = None
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
@@ -55,13 +57,13 @@ class Microwler:
         self._results: dict[str, Page | None] = {}
         self.set_cache()
 
-    def set_cache(self, force=False):
+    def set_cache(self, force: bool = False) -> None:
         if self._settings.caching or force:
-            self._cache = Index(f"./.microwler/cache/{self._domain}")
+            self._cache: Index | None = Index(f"./.microwler/cache/{self._domain}")
         else:
             self._cache = None
 
-    async def _get(self, url):
+    async def _get(self, url: str) -> tuple[str | None, int | None]:
         async with self._limiter:
             try:
                 heads = utils.get_headers(self._settings.language)
@@ -75,23 +77,22 @@ class Microwler:
                     LOG.warning(f"Timeout error: {url}")
                 return None, None
 
-    def _find_links(self, html):
-        """Extract relevant links from an HTML document"""
+    def _find_links(self, html: str) -> list[str]:
+        """Extract same-domain links from an HTML document, filtering binary file extensions."""
         dom = DOMParser.fromstring(html)
         dom.make_links_absolute(self._base_url)
         links = {
             link
             for link in dom.xpath(self._settings.link_filter)
-            if link.startswith(self._base_url)  # stay on this website
-            if link
-            not in self._results  # try to filter global duplicates in order to avoid extra loop steps later
+            if link.startswith(self._base_url)  # stay on this domain
+            if link not in self._results  # skip already-queued URLs to avoid redundant batches
             and not any(
                 link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS
-            )  # ignore file extensions
+            )  # skip non-HTML resources
         }
         return list(links)
 
-    async def _get_one(self, url):
+    async def _get_one(self, url: str) -> tuple[str, int, str, list[str]] | None:
         try:
             text, status = await self._get(url)
             if text is None and status is None:
@@ -105,7 +106,7 @@ class Microwler:
             self._errors[url] = str(e)
             return None
 
-    async def _get_batch(self, to_fetch):
+    async def _get_batch(self, to_fetch: list[str]) -> list[tuple]:
         futures, results = [], []
         for url in to_fetch:
             normalized_url = utils.norm_url(url)
@@ -129,11 +130,18 @@ class Microwler:
                 exit(1)
         return results
 
-    async def _crawl(self, loop):
+    async def _crawl(self) -> None:
+        """Run the full crawl loop.
+
+        Uses a plain ClientSession without the deprecated loop= parameter, which was
+        removed in aiohttp 3.9. The event loop is managed by the caller (asyncio.run
+        for synchronous entry, or an existing loop when awaited from async code).
+        """
         LOG.info(f"Crawler started [{self._domain}]")
         resolver = AsyncResolver(nameservers=self._settings.dns_providers)
         tcpc = TCPConnector(resolver=resolver)
-        self._session = ClientSession(loop=loop, connector=tcpc)
+        # No loop= argument — aiohttp infers the running loop automatically
+        self._session = ClientSession(connector=tcpc)
         pipeline = [self.start_url]
         try:
             for depth in range(self._settings.max_depth + 1):
@@ -147,7 +155,7 @@ class Microwler:
             await self._session.close()
             LOG.info(f"Crawler stopped [{self._domain}]")
 
-    def _process(self, sort_urls=False, keep_source=False):
+    def _process(self, sort_urls: bool = False, keep_source: bool = False) -> None:
         if sort_urls:
             LOG.info(f"Sorting results ... [{self._domain}]")
             self._results = {url: self._results[url] for url in sorted(self._results)}
@@ -172,22 +180,23 @@ class Microwler:
                 if page.url not in self._errors:
                     self._cache[page.url] = page.__dict__
 
-    def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False):
+    def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False) -> None:
         """
-        Starts the crawler instance. You can retrieve the results using the `crawler.data` or `crawler.pages` properties.
-        Arguments:
-            verbose: log progress to `stdout` while crawling
-            sort_urls: sort result list by URL
-            keep_source: per default, the page content will be after scraping
-        """
+        Start the crawler synchronously. Results are available via `.results` and `.errors`.
 
+        Arguments:
+            verbose: stream progress to stdout via the logger
+            sort_urls: sort results alphabetically by URL before processing
+            keep_source: retain raw HTML on each Page after scraping (discarded by default)
+        """
         self._verbose = verbose
         start = time.time()
         LOG.info("Starting engine ...")
-        loop = asyncio.get_event_loop()
-        future = asyncio.Task(self._crawl(loop=loop))
-        loop.run_until_complete(future)
-        loop.close()
+
+        # asyncio.run() creates a fresh event loop, runs the coroutine to completion,
+        # and closes the loop — the correct pattern since Python 3.7 and mandatory in
+        # 3.10+ where get_event_loop() emits DeprecationWarning outside a running loop.
+        asyncio.run(self._crawl())
         crawl_time = time.time() - start
 
         if len(self._results):
@@ -207,40 +216,45 @@ class Microwler:
             table.add_column("Total Time", [f"{round(total_time, 2)}s"])
             print(table)
 
-    async def run_async(self, event_loop, sort_urls: bool = False, keep_source: bool = False):
+    async def run_async(self, sort_urls: bool = False, keep_source: bool = False) -> None:
         """
-        For running the crawler from another `asyncio` app, which has an existing event loop, i.e. Quart.
+        Run the crawler from within an existing async application (e.g. a Quart route handler).
+
+        The caller's event loop owns the scheduling context — simply awaiting this coroutine
+        is the correct pattern. The event_loop parameter has been removed because passing a
+        loop object into aiohttp was deprecated in 3.8 and removed in 3.9.
+
         Arguments:
-             event_loop: existing event loop, i.e. as a result of asyncio.get_event_loop()
-             sort_urls: sort results alphabetically by URL
-             keep_source: per default, if selectors are defined, the HTML source will be discarded
+            sort_urls: sort results alphabetically by URL before processing
+            keep_source: retain raw HTML on each Page after scraping (discarded by default)
         """
-        await event_loop.create_task(self._crawl(event_loop))
+        await self._crawl()
         if len(self._results):
             self._process(sort_urls=sort_urls, keep_source=keep_source)
 
     @property
-    def results(self) -> [dict]:
+    def results(self) -> list[dict]:
         return [page.__dict__ for page in self._results.values()]
 
     @property
-    def errors(self) -> dict:
+    def errors(self) -> dict[str, str]:
         return self._errors
 
     @property
-    def cache(self):
+    def cache(self) -> list:
         if self._cache is not None:
             return list(self._cache.values())
         raise ValueError("Cache is disabled")
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         if self._cache is not None:
             size = len(self._cache)
             self._cache.clear()
             LOG.info(f"Removed {size} items from cache")
+            return
         raise ValueError("Cache is disabled")
 
-    def dump_cache(self, path: str | None = None):
+    def dump_cache(self, path: str | None = None) -> None:
         path = path or f"./dump-{self._domain}.json"
         with open(path, "w") as file:
             file.write(json.dumps([page.__dict__ for page in self._cache.values()]))
