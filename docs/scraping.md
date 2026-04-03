@@ -1,9 +1,9 @@
 # Scraping Data
-**Microwler** provides several ways of extracting data from web pages by defining *selectors*. 
-If you're familiar with Scrapy selectors, you will notice a strong similarity - 
+**Microwler** provides several ways of extracting data from web pages by defining *selectors*.
+If you're familiar with Scrapy selectors, you will notice a strong similarity -
 because both use the excellent `Parsel` library. This allows you to [build
-complex selectors](#parsel) with XPath, CSS and RegEx, even offering the possibility to chain selectors. 
-Alternatively, you can use the [generic selectors](#generic) that are built-in or use simple [XPath strings](#xpath). 
+complex selectors](#parsel) with XPath, CSS and RegEx, even offering the possibility to chain selectors.
+Alternatively, you can use the [generic selectors](#generic) that are built-in or use simple [XPath strings](#xpath).
 Let's check it out!
 
 ## Selectors
@@ -22,7 +22,7 @@ selectors = {
 ```
 
 These generic selectors will return a single element whenever it makes sense, i.e. `scrape.title` would
-give you the text content of the `<title>` tag as a string. 
+give you the text content of the `<title>` tag as a string.
 You can find all currently available selectors in the [microwler.scrape][] module.
 
 
@@ -43,10 +43,10 @@ selectors = {
 ```
 
 #### Parsel
-In case you want to do something more complex, you can also choose to *define 
-selectors as callables*, i.e. lambda expressions or regular functions, 
-which is what the crawler does when using generic selectors. 
-In this case, the current HTML document will be injected as only argument 
+In case you want to do something more complex, you can also choose to *define
+selectors as callables*, i.e. lambda expressions or regular functions,
+which is what the crawler does when using generic selectors.
+In this case, the current HTML document will be injected as only argument
 in the form of a [parsel.Selector](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.Selector):
 
 ```python
@@ -62,12 +62,12 @@ selectors = {
 ```
 
 These examples are very basic and do not show the full power of `Parsel`. For instance,
-it also allows you to *chain selectors* and/or use regex expressions. For more info 
+it also allows you to *chain selectors* and/or use regex expressions. For more info
 read the [Parsel documentation](https://parsel.readthedocs.io/en/latest/usage.html).
 
 
 ## Data format
-Internally, an HTML document is represented as `Page`. Here's a JSON representation of what this could look like, which corresponds to the output of 
+Internally, an HTML document is represented as `Page`. Here's a JSON representation of what this could look like, which corresponds to the output of
 [this source code](https://github.com/INNOVINATI/microwler/blob/master/test_cases.py#L37).
 
 ```json

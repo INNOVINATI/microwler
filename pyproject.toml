@@ -9,16 +9,15 @@ description = "A micro-framework for asynchronous deep crawls and web scraping w
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Maximilian Wolf", email = "maximilian.wolf@innovinati.com" }]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Framework :: AsyncIO",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
@@ -53,8 +52,10 @@ serve = "microwler.cli.cmd:start_server"
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
-    "ruff>=0.4",
-    "ty>=0.0.1a0",
+    "prek>=0.3.5",
+    "ruff>=0.14.10",
+    "ty>=0.0.22",
+    "types-lxml>=2026.2.16",
     "zensical>=0.0.7",
     "hypercorn>=0.16",
 ]
@@ -65,7 +66,7 @@ artifacts = ["microwler/py.typed"]
 
 # ── Ruff ────────────────────────────────────────────────────────────────────
 [tool.ruff]
-target-version = "py310"
+target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
@@ -94,7 +95,3 @@ indent-style = "space"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-
-# ── ty ───────────────────────────────────────────────────────────────────────
-[tool.ty.environment]
-python-version = "3.10"

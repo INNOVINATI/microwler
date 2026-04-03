@@ -94,7 +94,9 @@ def norm_url(url: str):
 
 def get_first_or_list(from_result):
     """Return the first element, if there's only one, otherwise returns the whole list"""
-    return from_result[0] if (isinstance(from_result, list) and len(from_result) == 1) else from_result
+    return (
+        from_result[0] if (isinstance(from_result, list) and len(from_result) == 1) else from_result
+    )
 
 
 def remove_multi_whitespace(string_or_list):

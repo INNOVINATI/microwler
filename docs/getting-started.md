@@ -19,7 +19,7 @@ pip install microwler
 ## Usage
 ### CLI (recommended)
 #### Create a project
-Make sure you created a workspace as suggested in the [previous section](#installation). 
+Make sure you created a workspace as suggested in the [previous section](#installation).
 Within that folder, create a new project providing a name and the URL to start crawling with:
 ```bash
 new quotes https://quotes.toscrape.com/

@@ -18,7 +18,12 @@ class Page:
     """
 
     def __init__(
-        self, url: str, status_code: int, depth: int, links: list | None = None, html: bytes | None = None
+        self,
+        url: str,
+        status_code: int,
+        depth: int,
+        links: list | None = None,
+        html: bytes | None = None,
     ):
         """
         Arguments:

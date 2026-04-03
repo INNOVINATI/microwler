@@ -24,7 +24,7 @@ Core features:
 
 Sounds good? Head over to the [Getting Started guide](https://innovinati.github.io/microwler/getting-started) now!
 
-If you're familiar with **Microwler**, you can install the package directly from PyPI using:<br> 
+If you're familiar with **Microwler**, you can install the package directly from PyPI using:<br>
 `pip install microwler`
 
 <hr>

@@ -180,7 +180,9 @@ class Microwler:
                 if page.url not in self._errors:
                     self._cache[page.url] = page.__dict__
 
-    def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False) -> None:
+    def run(
+        self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False
+    ) -> None:
         """
         Start the crawler synchronously. Results are available via `.results` and `.errors`.
 

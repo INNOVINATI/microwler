@@ -1,7 +1,7 @@
 # Web Service
 
-**Microwler** ships with a JSON API 
-built with [Quart](https://pypi.org/project/Quart/). It provides 
+**Microwler** ships with a JSON API
+built with [Quart](https://pypi.org/project/Quart/). It provides
 a simple way to run your crawlers and retrieve their scraped data via HTTP.
 
 ## Usage
@@ -28,7 +28,7 @@ serve [-p|--port PORT]
         - data
     rendering:
         heading_level: 3
-        
+
 ## Microwler UI
 Once the webservice is started, it will serve a NuxtJS application at `localhost:<PORT>/`
 
