@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from datetime import datetime
+from importlib.metadata import version
 
 from quart import Quart, Response, send_from_directory
 from quart_cors import cors
@@ -15,13 +16,16 @@ app = cors(app, allow_origin="*")
 
 STATIC = os.path.join(os.path.dirname(__file__), "frontend/dist")
 PROJECTS: dict = {}
+
+# importlib.metadata reads the installed package version at runtime, so the version
+# string stays correct after upgrades without needing manual edits in source code.
 STATUS = {
-    "version": "0.1.8",
+    "version": version("microwler"),
     "up_since": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 }
 
 
-async def load_projects():
+async def load_projects() -> None:
     global PROJECTS
     copy: dict = {}
     for path in os.listdir(PROJECT_FOLDER):
@@ -42,27 +46,25 @@ async def load_projects():
 
 
 @app.before_serving
-async def init():
+async def init() -> None:
     await load_projects()
 
 
 @app.route("/status")
 async def status():
     """
-    Return the service status
+    Return the service status.
 
     - Route: `/status`
     - Method: `GET`
     - Response example:
     ```json
     {
-        app: {
-            up_since: "2021-02-05 17:42:13",
-            version: "0.1.7"
+        "app": {
+            "up_since": "2021-02-05 17:42:13",
+            "version": "0.1.8"
         },
-        projects: [
-            "quotes"
-        ]
+        "projects": ["quotes"]
     }
     ```
     """
@@ -77,62 +79,46 @@ async def status():
 
 
 @app.route("/status/<project_name>")
-async def project(project_name):
+async def project(project_name: str):
     """
-    Return the project status
+    Return the project status.
 
     - Route: `/status/<str:project_name>`
     - Method: `GET`
     - Response example:
     ```json
     {
-        name: "quotes",
-        start_url: "https://quotes.toscrape.com/"
-        last_run: {
-            state: "finished successfully",
-            timestamp: "2021-02-05 17:47"
-        },
+        "name": "quotes",
+        "start_url": "https://quotes.toscrape.com/",
+        "last_run": {
+            "state": "finished successfully",
+            "timestamp": "2021-02-05 17:47"
+        }
     }
     ```
     """
-
     return PROJECTS[project_name]
 
 
 @app.route("/crawl/<project_name>")
 async def crawl(project_name: str):
     """
-    Run the project's crawler and return the results
+    Run the project's crawler and return the results.
 
     - Route: `/crawl/<str:project_name>`
     - Method: `GET`
     - Response example:
-    ```
+    ```json
     {
-        data: [
+        "data": [
             {
-                url: "https://quotes.toscrape.com/"
-                status_code: 200,
-                depth: 0,
-                discovered: "2021-02-05",
-                links: [
-                    "https://quotes.toscrape.com/tag/inspirational/",
-                    "https://quotes.toscrape.com/author/Jane-Austen",
-                    "https://quotes.toscrape.com/tag/obvious/page/1/",
-                    "https://quotes.toscrape.com/tag/friends/",
-                    "https://quotes.toscrape.com/tag/misattributed-eleanor-roosevelt/page/1/",
-                    ...
-                ],
-                data: {
-                    title: "Quotes to Scrape"
-                    headings: {
-                        h1: ["Quotes to Scrape"],
-                        h2: ["Top Ten tags"],
-                        h3: [""]
-                    },
-                },
-            },
-            ...
+                "url": "https://quotes.toscrape.com/",
+                "status_code": 200,
+                "depth": 0,
+                "discovered": "2021-02-05",
+                "links": ["https://quotes.toscrape.com/tag/inspirational/", "..."],
+                "data": {"title": "Quotes to Scrape"}
+            }
         ]
     }
     ```
@@ -140,9 +126,10 @@ async def crawl(project_name: str):
     PROJECTS[project_name]["last_run"]["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M")
     try:
         project = load_project(project_name, project_folder=PROJECT_FOLDER)
-        loop = asyncio.get_event_loop()
         project.crawler.set_cache(force=True)
-        await project.crawler.run_async(event_loop=loop)
+        # run_async() is awaited directly — Quart's Hypercorn-managed loop owns the
+        # scheduling context, so no loop reference needs to be threaded through.
+        await project.crawler.run_async()
         PROJECTS[project_name]["last_run"]["state"] = "finished successfully"
         return {"data": project.crawler.results}
     except Exception as e:
@@ -154,26 +141,25 @@ async def crawl(project_name: str):
 @app.route("/data/<project_name>")
 async def data(project_name: str):
     """
-    Return the project's cached data
+    Return the project's cached data.
 
     - Route: `/data/<str:project_name>`
     - Method: `GET`
-    - Response is in the same format as [above][microwler.web.backend.crawl]
+    - Response is in the same format as `/crawl/<project_name>`.
     """
     project = load_project(project_name, project_folder=PROJECT_FOLDER)
     project.crawler.set_cache(force=True)
     cache = project.crawler.cache
-    response = {"data": cache}
-    return response
+    return {"data": cache}
 
 
 @app.route("/<folder>/<file>", methods=["GET"])
-async def serve_folder(folder, file):
+async def serve_folder(folder: str, file: str):
     return await send_from_directory(os.path.join(STATIC, folder), file)
 
 
 @app.route("/<file>", methods=["GET"])
-async def serve_file(file):
+async def serve_file(file: str):
     return await send_from_directory(STATIC, file)
 
 
@@ -182,11 +168,12 @@ async def serve_index():
     return await send_from_directory(STATIC, "index.html")
 
 
-def start_app(port: int = 5000):
+def start_app(port: int = 5000) -> None:
     """
-    Starts the production-ready ASGI application using Hypercorn
+    Start the production ASGI server via Hypercorn.
+
     Arguments:
-         port: the port to run on
+        port: TCP port to bind to
     """
     from hypercorn.asyncio import serve
     from hypercorn.config import Config
