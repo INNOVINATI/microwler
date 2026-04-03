@@ -1,6 +1,8 @@
 import importlib
 import importlib.util
 import os
+from types import ModuleType
+from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlparse
 
 from random_user_agent.params import OperatingSystem, SoftwareName
@@ -15,7 +17,7 @@ UAFactory = UserAgent(
 )
 
 
-def get_headers(language: str):
+def get_headers(language: str) -> dict[str, str]:
     """Constructs request headers with given language header and random user-agent"""
     return {
         "User-Agent": UAFactory.get_random_user_agent(),
@@ -84,7 +86,7 @@ IGNORED_EXTENSIONS = [
 ]
 
 
-def norm_url(url: str):
+def norm_url(url: str) -> str:
     parsed = urlparse(url)
     # Sort query parameters if there are any
     query = "?" + urlencode(sorted(parse_qsl(parsed.query))) if parsed.query else ""
@@ -92,24 +94,27 @@ def norm_url(url: str):
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path if parsed.path.startswith('/') else f'/{parsed.path}'}{query}"
 
 
-def get_first_or_list(from_result):
+def get_first_or_list(from_result: list[Any]) -> Any:
     """Return the first element, if there's only one, otherwise returns the whole list"""
     return (
         from_result[0] if (isinstance(from_result, list) and len(from_result) == 1) else from_result
     )
 
 
-def remove_multi_whitespace(string_or_list):
+def remove_multi_whitespace(string_or_list: str | list[str]) -> str | list[str]:
     """Cleans redundant whitespace from extracted data"""
     if isinstance(string_or_list, str):
         return " ".join(string_or_list.split())
     return [" ".join(string.split()) for string in string_or_list]
 
 
-def load_project(project_name, project_folder=None):
+def load_project(project_name: str, project_folder: str | None = None) -> ModuleType:
     dir_path = project_folder or PROJECT_FOLDER
     path = os.path.join(dir_path, project_name + ".py")
     spec = importlib.util.spec_from_file_location(project_name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load project module from {path}")
+
     project = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(project)
     return project

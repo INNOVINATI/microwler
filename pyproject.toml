@@ -51,7 +51,6 @@ serve = "microwler.cli.cmd:start_server"
 [dependency-groups]
 dev = [
     "pytest>=8.0",
-    "pytest-asyncio>=0.23",
     "prek>=0.3.5",
     "ruff>=0.14.10",
     "ty>=0.0.22",
@@ -93,5 +92,4 @@ indent-style = "space"
 
 # ── pytest ───────────────────────────────────────────────────────────────────
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 testpaths = ["tests"]
