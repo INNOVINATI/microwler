@@ -6,11 +6,10 @@ from parsel import Selector
 
 from microwler.utils import get_first_or_list
 
-
 LOG = logging.getLogger(__name__)
 
 
-class Page(object):
+class Page:
     """
     Internal representation of a webpage
 
@@ -18,7 +17,9 @@ class Page(object):
     > if selectors and a corresponding transformer function are defined.
     """
 
-    def __init__(self, url: str, status_code: int, depth: int, links: list = None, html: bytes = None):
+    def __init__(
+        self, url: str, status_code: int, depth: int, links: list | None = None, html: bytes | None = None
+    ):
         """
         Arguments:
             url: the URL of this page
@@ -28,7 +29,7 @@ class Page(object):
             html: HTML body
         """
         self.url = url
-        self.discovered = datetime.date.today().strftime('%Y-%m-%d')
+        self.discovered = datetime.date.today().strftime("%Y-%m-%d")
         self.status_code = status_code
         self.depth = depth
         self.links = links
@@ -48,12 +49,12 @@ class Page(object):
         try:
             dom = Selector(text=self.html)
             for field, selector in selectors.items():
-                if type(selector) == str:
+                if isinstance(selector, str):
                     self.data[field] = get_first_or_list(dom.xpath(selector))
                 else:
                     self.data[field] = selector(dom)
         except ParserError as e:
-            LOG.warning(f'Parsing error: {e}')
+            LOG.warning(f"Parsing error: {e}")
 
         if not keep_source:
             del self.html
@@ -75,6 +76,6 @@ class Page(object):
                 self.data = func(self.data)
                 return self
             except Exception as e:
-                LOG.warning(f'Transformer error: {e}')
+                LOG.warning(f"Transformer error: {e}")
                 return self
-        raise ValueError('You need to provide selectors in order to use a transformer')
+        raise ValueError("You need to provide selectors in order to use a transformer")

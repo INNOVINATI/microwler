@@ -41,7 +41,8 @@ class FileExporter(BaseExporter):
     exports to JSON, CSV or HTML tables. Take a look at the following exporters
     and their implementation to understand its usage.
     """
-    extension = ''
+
+    extension = ""
 
     def convert(self):
         """
@@ -51,22 +52,23 @@ class FileExporter(BaseExporter):
         raise NotImplementedError()
 
     def export(self):
-        """ Writes data to file """
+        """Writes data to file"""
         data = self.convert()
-        timestamp = datetime.now().strftime('%Y-%m-%d-%H:%M')
-        path = os.path.join(self.settings.export_to, f'{self.domain}_{timestamp}.{self.extension}')
+        timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M")
+        path = os.path.join(self.settings.export_to, f"{self.domain}_{timestamp}.{self.extension}")
         try:
             os.makedirs(self.settings.export_to, exist_ok=True)
-            with open(path, 'w') as file:
+            with open(path, "w") as file:
                 file.write(data)
-            LOG.info(f'Exported data as {self.extension.upper()} to: {path} [{self.domain}]')
+            LOG.info(f"Exported data as {self.extension.upper()} to: {path} [{self.domain}]")
         except Exception as e:
-            LOG.error(f'Error during export: {e} [{self.domain}]')
+            LOG.error(f"Error during export: {e} [{self.domain}]")
 
 
 class JSONExporter(FileExporter):
-    """ Exports to JSON files """
-    extension = 'json'
+    """Exports to JSON files"""
+
+    extension = "json"
 
     def convert(self):
         data = json.dumps(self.data)
@@ -74,26 +76,30 @@ class JSONExporter(FileExporter):
 
 
 class CSVExporter(FileExporter):
-    """ Exports to CSV files """
-    extension = 'csv'
+    """Exports to CSV files"""
+
+    extension = "csv"
 
     def convert(self):
-        headers = ';'.join([key.upper() for key in self.data[0].keys()])
-        rows = '\n'.join([';'.join([str(val) for val in obj.values()]) for obj in self.data])
-        table = '\n'.join([headers, rows])
+        headers = ";".join([key.upper() for key in self.data[0].keys()])
+        rows = "\n".join([";".join([str(val) for val in obj.values()]) for obj in self.data])
+        table = "\n".join([headers, rows])
         return table
 
 
 class HTMLExporter(FileExporter):
-    """ Exports data as <table> to HTML files """
-    extension = 'html'
+    """Exports data as <table> to HTML files"""
+
+    extension = "html"
 
     def convert(self):
-        styles = 'width: 100%; border: 1px solid grey; text-align: center'
-        headers = ''.join([f'<th>{key.upper()}</th>' for key in self.data[0].keys()])
-        rows = ''.join([f"<tr>{''.join([f'<td>{val}</td>' for val in obj.values()])}</tr>" for obj in self.data])
+        styles = "width: 100%; border: 1px solid grey; text-align: center"
+        headers = "".join([f"<th>{key.upper()}</th>" for key in self.data[0].keys()])
+        rows = "".join(
+            [
+                f"<tr>{''.join([f'<td>{val}</td>' for val in obj.values()])}</tr>"
+                for obj in self.data
+            ]
+        )
         table = f'<!DOCTYPE html><html><body><table style="{styles}"><tr>{headers}</tr><tbody>{rows}</tbody></table><body></html>'
         return table
-
-
-

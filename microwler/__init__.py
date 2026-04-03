@@ -22,14 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
 import os
 
-from microwler.crawler import Microwler
-
-import logging
-
+from microwler.crawler import Microwler as Microwler
 from microwler.utils import PROJECT_FOLDER
 
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(asctime)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 os.makedirs(PROJECT_FOLDER, exist_ok=True)

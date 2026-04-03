@@ -1,1 +1,1 @@
-from microwler.web.backend import start_app
+from microwler.web.backend import start_app as start_app
