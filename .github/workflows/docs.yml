@@ -12,7 +12,7 @@ permissions:
 
 # Allow only one concurrent deployment; cancel in-progress runs on new pushes
 concurrency:
-  group: pages
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -25,12 +25,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/configure-pages@v5
+
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          python-version: "3.12"
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --locked --group dev
 
       - name: Build documentation
         run: uv run zensical build
