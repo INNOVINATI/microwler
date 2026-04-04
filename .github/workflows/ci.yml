@@ -3,36 +3,50 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint & Format
+  hygiene:
+    name: Hygiene
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          python-version: "3.12"
 
-      - name: Check lint
-        run: uv run --group dev ruff check microwler/ tests/
+      - name: Install dependencies
+        run: uv sync --locked --group dev
 
-      - name: Check formatting
-        run: uv run --group dev ruff format --check microwler/ tests/
+      - name: Run prek
+        run: uv run prek run --all-files
 
   typecheck:
-    name: Type Check
+    name: Type check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --locked --group dev
 
       - name: Run ty
-        run: uv run --group dev ty check microwler/
+        run: uv run ty check microwler/
 
   test:
     name: Tests (Python ${{ matrix.python-version }})
@@ -40,17 +54,51 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --locked --group dev
 
       - name: Run tests
         run: uv run pytest --tb=short -v
+
+  build:
+    name: Build package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --locked --group dev
+
+      - name: Build distributions
+        run: uv build --no-sources
+
+  docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --locked --group dev
+
+      - name: Build documentation
+        run: uv run zensical build

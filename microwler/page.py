@@ -1,5 +1,7 @@
 import datetime
 import logging
+from collections.abc import Callable
+from typing import Any
 
 from lxml.etree import ParserError
 from parsel import Selector
@@ -7,6 +9,9 @@ from parsel import Selector
 from microwler.utils import get_first_or_list
 
 LOG = logging.getLogger(__name__)
+
+type SelectorMap = dict[str, str | Callable[[Selector], Any]]
+type TransformFunc = Callable[[dict[str, Any]], dict[str, Any]]
 
 
 class Page:
@@ -18,7 +23,12 @@ class Page:
     """
 
     def __init__(
-        self, url: str, status_code: int, depth: int, links: list | None = None, html: bytes | None = None
+        self,
+        url: str,
+        status_code: int,
+        depth: int,
+        links: list[str] | None = None,
+        html: str | None = None,
     ):
         """
         Arguments:
@@ -32,11 +42,11 @@ class Page:
         self.discovered = datetime.date.today().strftime("%Y-%m-%d")
         self.status_code = status_code
         self.depth = depth
-        self.links = links
+        self.links = links or []
         self.html = html
-        self.data = {}
+        self.data: dict[str, Any] = {}
 
-    def scrape(self, selectors: dict, keep_source=False):
+    def scrape(self, selectors: SelectorMap, keep_source: bool = False) -> "Page":
         """
         Extracts data using the given selectors. Selectors are either `XPaths` (strings) or callables.
         If a callable is given, it will receive the parsed DOM as only argument,
@@ -57,11 +67,11 @@ class Page:
             LOG.warning(f"Parsing error: {e}")
 
         if not keep_source:
-            del self.html
+            self.html = None
 
         return self
 
-    def transform(self, func):
+    def transform(self, func: TransformFunc) -> "Page":
         """
         Applies a given function to this page's data.
         Recommended usage of transformers is to manipulate the input (`self.data`)

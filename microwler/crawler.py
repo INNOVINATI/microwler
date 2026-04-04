@@ -19,6 +19,11 @@ from microwler.settings import Settings
 
 LOG = logging.getLogger(__name__)
 
+type SelectorFunc = Callable[[Selector], Any]
+type SelectorMap = dict[str, str | SelectorFunc]
+type TransformFunc = Callable[[dict[str, Any]], dict[str, Any]]
+type CrawlResult = tuple[str, int, str, list[str]]
+
 
 class Microwler:
     """
@@ -28,9 +33,9 @@ class Microwler:
     def __init__(
         self,
         start_url: str,
-        select: dict[str, str | Callable[[Selector], Any]] | None = None,
-        transform: Callable[[dict], dict] | None = None,
-        settings: dict | None = None,
+        select: SelectorMap | None = None,
+        transform: TransformFunc | None = None,
+        settings: dict[str, Any] | None = None,
     ):
         """
         Setup a new `Microwler` instance.
@@ -54,7 +59,7 @@ class Microwler:
         self._limiter = asyncio.BoundedSemaphore(self._settings.max_concurrency)
         self._verbose = False
         self._errors: dict[str, str] = {}
-        self._results: dict[str, Page | None] = {}
+        self._results: dict[str, Page] = {}
         self.set_cache()
 
     def set_cache(self, force: bool = False) -> None:
@@ -63,11 +68,20 @@ class Microwler:
         else:
             self._cache = None
 
-    async def _get(self, url: str) -> tuple[str | None, int | None]:
+    def _reset_runtime_state(self) -> None:
+        self._seen_urls.clear()
+        self._errors.clear()
+        self._results.clear()
+
+    async def _get(self, url: str) -> tuple[str, int] | None:
+        session = self._session
+        if session is None:
+            raise RuntimeError("Crawler session is not initialized")
+
         async with self._limiter:
             try:
                 heads = utils.get_headers(self._settings.language)
-                async with self._session.get(url, timeout=15, headers=heads) as response:
+                async with session.get(url, timeout=15, headers=heads) as response:
                     text = await response.text()
                     if self._verbose:
                         LOG.info(f"Processed: {url} [{response.status}]")
@@ -75,7 +89,7 @@ class Microwler:
             except TimeoutError:
                 if self._verbose:
                     LOG.warning(f"Timeout error: {url}")
-                return None, None
+                return None
 
     def _find_links(self, html: str) -> list[str]:
         """Extract same-domain links from an HTML document, filtering binary file extensions."""
@@ -85,40 +99,45 @@ class Microwler:
             link
             for link in dom.xpath(self._settings.link_filter)
             if link.startswith(self._base_url)  # stay on this domain
-            if link not in self._results  # skip already-queued URLs to avoid redundant batches
+            if link not in self._seen_urls  # skip already-queued URLs to avoid redundant batches
             and not any(
                 link.lower().endswith(e) for e in utils.IGNORED_EXTENSIONS
             )  # skip non-HTML resources
         }
         return list(links)
 
-    async def _get_one(self, url: str) -> tuple[str, int, str, list[str]] | None:
+    async def _get_one(self, url: str) -> CrawlResult | None:
         try:
-            text, status = await self._get(url)
-            if text is None and status is None:
+            response = await self._get(url)
+            if response is None:
                 self._errors[url] = "Timeout Error"
-            else:
-                links = self._find_links(text)
-                return url, status, text, links
+                return None
+
+            text, status = response
+            links = self._find_links(text)
+            return url, status, text, links
         except Exception as e:
             if self._verbose:
                 LOG.error(f"Download error: {e} [{url}]")
             self._errors[url] = str(e)
             return None
 
-    async def _get_batch(self, to_fetch: list[str]) -> list[tuple]:
-        futures, results = [], []
+    async def _get_batch(self, to_fetch: list[str]) -> list[CrawlResult]:
+        futures: list[asyncio.Future[CrawlResult | None] | asyncio.Task[CrawlResult | None]] = []
+        results: list[CrawlResult] = []
+        cache = self._cache
+
         for url in to_fetch:
             normalized_url = utils.norm_url(url)
-            if normalized_url in self._results:
+            if normalized_url in self._seen_urls:
                 continue
-            if self._settings.delta_crawl:
-                if normalized_url in self._cache:
-                    if self._verbose:
-                        LOG.info(f"Dropped pre-cached URL [{normalized_url}]")
-                    continue
-            self._results[normalized_url] = None
-            futures.append(self._get_one(normalized_url))
+            if self._settings.delta_crawl and cache is not None and normalized_url in cache:
+                if self._verbose:
+                    LOG.info(f"Dropped pre-cached URL [{normalized_url}]")
+                continue
+
+            self._seen_urls.add(normalized_url)
+            futures.append(asyncio.create_task(self._get_one(normalized_url)))
 
         for future in asyncio.as_completed(futures):
             try:
@@ -137,11 +156,13 @@ class Microwler:
         removed in aiohttp 3.9. The event loop is managed by the caller (asyncio.run
         for synchronous entry, or an existing loop when awaited from async code).
         """
+        self._reset_runtime_state()
         LOG.info(f"Crawler started [{self._domain}]")
         resolver = AsyncResolver(nameservers=self._settings.dns_providers)
         tcpc = TCPConnector(resolver=resolver)
         # No loop= argument — aiohttp infers the running loop automatically
-        self._session = ClientSession(connector=tcpc)
+        session = ClientSession(connector=tcpc)
+        self._session = session
         pipeline = [self.start_url]
         try:
             for depth in range(self._settings.max_depth + 1):
@@ -152,7 +173,8 @@ class Microwler:
                     page = Page(url, status, depth, links, text)
                     self._results[url] = page
         finally:
-            await self._session.close()
+            await session.close()
+            self._session = None
             LOG.info(f"Crawler stopped [{self._domain}]")
 
     def _process(self, sort_urls: bool = False, keep_source: bool = False) -> None:
@@ -163,10 +185,10 @@ class Microwler:
         if self._selectors:
             LOG.info(f"Extracting data ... [{self._domain}]")
             for url, page in self._results.items():
-                self._results[url] = page.scrape(self._selectors, keep_source=keep_source)
-
+                processed_page = page.scrape(self._selectors, keep_source=keep_source)
                 if self._transformer is not None:
-                    self._results[url] = page.transform(self._transformer)
+                    processed_page = processed_page.transform(self._transformer)
+                self._results[url] = processed_page
         count = len(self._settings.exporters)
         if count:
             LOG.info(f"Exporting to {count} destinations... [{self._domain}]")
@@ -180,7 +202,9 @@ class Microwler:
                 if page.url not in self._errors:
                     self._cache[page.url] = page.__dict__
 
-    def run(self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False) -> None:
+    def run(
+        self, verbose: bool = False, sort_urls: bool = False, keep_source: bool = False
+    ) -> None:
         """
         Start the crawler synchronously. Results are available via `.results` and `.errors`.
 
@@ -228,12 +252,13 @@ class Microwler:
             sort_urls: sort results alphabetically by URL before processing
             keep_source: retain raw HTML on each Page after scraping (discarded by default)
         """
+        self._verbose = False
         await self._crawl()
         if len(self._results):
             self._process(sort_urls=sort_urls, keep_source=keep_source)
 
     @property
-    def results(self) -> list[dict]:
+    def results(self) -> list[dict[str, Any]]:
         return [page.__dict__ for page in self._results.values()]
 
     @property
@@ -241,7 +266,7 @@ class Microwler:
         return self._errors
 
     @property
-    def cache(self) -> list:
+    def cache(self) -> list[dict[str, Any]]:
         if self._cache is not None:
             return list(self._cache.values())
         raise ValueError("Cache is disabled")
@@ -255,9 +280,12 @@ class Microwler:
         raise ValueError("Cache is disabled")
 
     def dump_cache(self, path: str | None = None) -> None:
+        if self._cache is None:
+            raise ValueError("Cache is disabled")
+
         path = path or f"./dump-{self._domain}.json"
         with open(path, "w") as file:
-            file.write(json.dumps([page.__dict__ for page in self._cache.values()]))
+            file.write(json.dumps(list(self._cache.values())))
 
 
 if __name__ == "__main__":

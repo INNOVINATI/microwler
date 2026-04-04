@@ -1,10 +1,10 @@
 # Documentation
 
-<img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/logo.png" width="200px" alt="Microwler">
+<img src="https://github.com/INNOVINATI/microwler/raw/main/docs/static/logo.png" width="200px" alt="Microwler">
 
 ![PyPI](https://img.shields.io/pypi/v/microwler)
 ![PyPI - Status](https://img.shields.io/pypi/status/microwler)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/INNOVINATI/microwler/Run%20Test%20Cases/master)
+![CI](https://github.com/INNOVINATI/microwler/actions/workflows/ci.yml/badge.svg?branch=main)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
 
 **Microwler** is a micro-framework for asynchronous web crawling and scraping implemented in Python.
@@ -24,13 +24,13 @@ Core features:
 
 Sounds good? Head over to the [Getting Started guide](https://innovinati.github.io/microwler/getting-started) now!
 
-If you're familiar with **Microwler**, you can install the package directly from PyPI using:<br> 
-`pip install microwler`
+If you're familiar with **Microwler**, you can install the package directly from PyPI using:<br>
+`uv add microwler`
 
 <hr>
 
 <small>
-Copyright (c) 2020-2021 Maximilian Wolf
+Copyright (c) 2020-2026 Maximilian Wolf
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

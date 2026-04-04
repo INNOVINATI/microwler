@@ -1,10 +1,10 @@
-<img src="https://github.com/INNOVINATI/microwler/raw/master/docs/static/logo.png" width="200px" alt="Microwler">
+<img src="https://github.com/INNOVINATI/microwler/raw/main/docs/static/logo.png" width="200px" alt="Microwler">
 
 ![PyPI](https://img.shields.io/pypi/v/microwler)
 ![PyPI - Status](https://img.shields.io/pypi/status/microwler)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/INNOVINATI/microwler)
 
-> **Warning: this repository is not actively maintained**
+> Maintained as a solo-developer FOSS project. Small, reviewable pull requests are welcome.
 
 **Microwler** is a micro-framework for asynchronous web crawling and scraping implemented in Python.
 It is designed for *deep* crawls, i.e. retrieving every page of a specific website.
@@ -23,7 +23,13 @@ Core features:
 
 Sounds good? Head over to the [Getting Started guide](https://innovinati.github.io/microwler/getting-started) now!
 
-If you're familiar with **Microwler**, you can install the package from PyPI using: `pip install microwler`.
+Microwler targets Python `3.12+`.
+
+If you're familiar with **Microwler**, you can install the package from PyPI using `uv`:
+
+```bash
+uv add microwler
+```
 
 ## Inspiration
 Many concepts were inspired by experience with `Scrapy`, the industry standard for web crawling with Python.
@@ -32,14 +38,12 @@ We tried to focus on making things as simple as possible for developers.
 With Microwler, you can build crawlers and extract relevant data in a breeze - and in a single file.
 
 ## Contributing
-We're happy about every meaningful contribution to this project via pull requests.
-If needed, we'll setup more precise guidelines on how to contribute at some point.
-
-> Note: you'll need to install `pip install -r requirements-dev.txt` to include required
-> dependencies for docs and tests.
+Contributions are welcome via short-lived branches and pull requests to `main`.
+For local setup, hooks, CI expectations, conventional commits, and the release workflow,
+see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
-Copyright (c) 2020-2023 Maximilian Wolf
+Copyright (c) 2020-2026 Maximilian Wolf
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

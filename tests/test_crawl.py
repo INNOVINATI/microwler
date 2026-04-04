@@ -1,32 +1,23 @@
-"""
-Integration tests for the Microwler crawl engine.
+from urllib.parse import urljoin
 
-These tests hit a live external site (https://quotes.toscrape.com/) — a purpose-built
-scraping sandbox that is intentionally stable. This keeps the tests grounded in real
-HTTP behavior rather than mocked responses that can mask serialization or parsing bugs.
-
-pytest-asyncio is configured with asyncio_mode = "auto" in pyproject.toml, so no
-@pytest.mark.asyncio decorator is required on async test functions.
-"""
+from diskcache import Index
 
 from microwler import Microwler, scrape
 from microwler.export import HTMLExporter, JSONExporter
 
-# ── Fixtures ────────────────────────────────────────────────────────────────
 
-BASE_URL = "https://quotes.toscrape.com/"
-
-
-# ── Tests ────────────────────────────────────────────────────────────────────
-
-
-async def test_basic_crawl():
-    """A minimal crawl should complete and return at least one result."""
-    crawler = Microwler(BASE_URL, settings={"max_depth": 1, "max_concurrency": 5})
+def test_basic_crawl(crawl_site) -> None:
+    """A minimal crawl should complete and return the first layer of internal pages."""
+    crawler = Microwler(crawl_site.base_url, settings={"max_depth": 1, "max_concurrency": 5})
     crawler.run()
 
-    assert len(crawler.results) > 0, "Expected at least one crawled page"
-    # Every result must have the required Page fields
+    urls = {page["url"] for page in crawler.results}
+    assert urls == {
+        crawl_site.base_url,
+        urljoin(crawl_site.base_url, "inspirational"),
+        urljoin(crawl_site.base_url, "plain"),
+    }
+
     for page in crawler.results:
         assert "url" in page
         assert "status_code" in page
@@ -34,55 +25,53 @@ async def test_basic_crawl():
         assert "discovered" in page
 
 
-async def test_selectors():
+def test_selectors(crawl_site) -> None:
     """Selectors should populate the data field on each page."""
-    selectors = {
-        "title": scrape.title,
-        "headings": scrape.headings,
-    }
     crawler = Microwler(
-        BASE_URL,
-        select=selectors,
+        crawl_site.base_url,
+        select={
+            "title": scrape.title,
+            "headings": scrape.headings,
+            "meta": scrape.meta,
+        },
         settings={"max_depth": 1, "max_concurrency": 5},
     )
     crawler.run()
 
-    assert len(crawler.results) > 0
-    for page in crawler.results:
-        # Scraped pages must have the data dict populated
-        assert "data" in page
-        assert "title" in page["data"]
-        assert "headings" in page["data"]
+    assert len(crawler.results) == 3
+    root_page = next(page for page in crawler.results if page["url"] == crawl_site.base_url)
+    assert root_page["data"]["title"] == "Microwler Test Root"
+    assert root_page["data"]["headings"]["h1"] == ["Microwler Test Root"]
+    assert root_page["data"]["meta"] == {"description": "Root page for crawler tests"}
 
 
-async def test_transformer():
-    """A transformer function should modify the scraped data before results are stored."""
-    selectors = {"title": scrape.title}
+def test_transformer(crawl_site) -> None:
+    """A transformer should modify scraped data before results are stored."""
 
-    def transformer(data: dict) -> dict:
-        data["title"] = data["title"].upper() if data.get("title") else data["title"]
+    def transformer(data: dict[str, object]) -> dict[str, object]:
+        title = data.get("title")
+        if isinstance(title, str):
+            data["title"] = title.upper()
         return data
 
     crawler = Microwler(
-        BASE_URL,
-        select=selectors,
+        crawl_site.base_url,
+        select={"title": scrape.title},
         transform=transformer,
         settings={"max_depth": 1, "max_concurrency": 5},
     )
     crawler.run()
 
-    assert len(crawler.results) > 0
     for page in crawler.results:
         title = page.get("data", {}).get("title")
-        if title:
-            # Transformer uppercases titles — verify it ran
-            assert title == title.upper(), f"Expected uppercase title, got: {title!r}"
+        if isinstance(title, str):
+            assert title == title.upper()
 
 
-async def test_link_filter():
-    """A custom link_filter XPath should restrict which URLs are followed."""
+def test_link_filter(crawl_site) -> None:
+    """A custom link filter should restrict the pages that get followed."""
     crawler = Microwler(
-        BASE_URL,
+        crawl_site.base_url,
         settings={
             "link_filter": "//a[contains(@href, 'inspirational')]/@href",
             "max_depth": 2,
@@ -91,19 +80,18 @@ async def test_link_filter():
     )
     crawler.run()
 
-    assert len(crawler.results) > 0
-    # All discovered URLs must match the filter pattern
-    for page in crawler.results:
-        if page["url"] != BASE_URL:
-            assert "inspirational" in page["url"], (
-                f"URL outside filter scope was crawled: {page['url']}"
-            )
+    urls = {page["url"] for page in crawler.results}
+    assert urls == {
+        crawl_site.base_url,
+        urljoin(crawl_site.base_url, "inspirational"),
+        urljoin(crawl_site.base_url, "inspirational/deeper"),
+    }
 
 
-async def test_exporters(tmp_path):
-    """Exporters should write files to the configured export_to directory."""
+def test_exporters(crawl_site, tmp_path) -> None:
+    """Exporters should write files to the configured export directory."""
     crawler = Microwler(
-        BASE_URL,
+        crawl_site.base_url,
         select={"title": scrape.title},
         settings={
             "max_depth": 1,
@@ -115,40 +103,30 @@ async def test_exporters(tmp_path):
     crawler.run()
 
     exports = list(tmp_path.iterdir())
-    assert len(exports) == 2, f"Expected 2 export files, found: {[f.name for f in exports]}"
-
-    suffixes = {f.suffix for f in exports}
-    assert ".json" in suffixes, "Expected a JSON export file"
-    assert ".html" in suffixes, "Expected an HTML export file"
-
-    for f in exports:
-        assert f.stat().st_size > 0, f"Export file is empty: {f.name}"
+    assert len(exports) == 2
+    assert {file.suffix for file in exports} == {".json", ".html"}
+    assert all(file.stat().st_size > 0 for file in exports)
 
 
-async def test_caching(tmp_path):
-    """With caching enabled, a second crawl should not re-fetch already-cached URLs."""
-    import os
+def test_delta_crawl_uses_cache(crawl_site, tmp_path) -> None:
+    """A delta crawl should skip URLs that are already cached."""
+    cache_dir = tmp_path / "cache"
 
-    # Point the cache at a temp directory to avoid polluting the project directory
-    os.environ["MICROWLER_TEST_CACHE"] = str(tmp_path)
-
-    crawler = Microwler(
-        BASE_URL,
-        settings={
-            "max_depth": 1,
-            "max_concurrency": 5,
-            "caching": True,
-        },
+    first_crawler = Microwler(
+        crawl_site.base_url,
+        settings={"max_depth": 1, "max_concurrency": 5, "delta_crawl": True},
     )
-    # Force the cache to the temp directory by monkeypatching the cache path
-    crawler._cache = None  # reset before set_cache
-    crawler._settings.caching = True
-    from diskcache import Index
+    first_crawler._cache = Index(str(cache_dir))
+    first_crawler.run()
 
-    crawler._cache = Index(str(tmp_path / "cache"))
+    requests_after_first_run = crawl_site.request_counts.copy()
+    assert len(first_crawler.cache) == 3
 
-    crawler.run()
-    first_run_count = len(crawler.results)
+    second_crawler = Microwler(
+        crawl_site.base_url,
+        settings={"max_depth": 1, "max_concurrency": 5, "delta_crawl": True},
+    )
+    second_crawler._cache = Index(str(cache_dir))
+    second_crawler.run()
 
-    assert first_run_count > 0
-    assert len(crawler._cache) > 0, "Expected cache to be populated after crawl"
+    assert crawl_site.request_counts == requests_after_first_run

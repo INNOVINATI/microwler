@@ -9,7 +9,57 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "draft": false,
-      "prerelease": false
+      "prerelease": false,
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "include-v-in-release-name": true,
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "Added"
+        },
+        {
+          "type": "fix",
+          "section": "Fixed"
+        },
+        {
+          "type": "perf",
+          "section": "Changed"
+        },
+        {
+          "type": "refactor",
+          "section": "Changed"
+        },
+        {
+          "type": "deps",
+          "section": "Changed"
+        },
+        {
+          "type": "docs",
+          "section": "Documentation"
+        },
+        {
+          "type": "build",
+          "section": "Build"
+        },
+        {
+          "type": "ci",
+          "section": "CI"
+        },
+        {
+          "type": "test",
+          "section": "Tests"
+        },
+        {
+          "type": "chore",
+          "section": "Maintenance"
+        },
+        {
+          "type": "style",
+          "section": "Style",
+          "hidden": true
+        }
+      ]
     }
   }
 }

@@ -6,20 +6,21 @@ Before you start, create a workspace/folder for **Microwler** projects and enter
 mkdir microwler && cd $_
 ```
 
-Now, create a virtual environment using Python 3.7 or higher and activate it:
+Now, create a virtual environment using Python 3.12 or higher and activate it:
 ```bash
-virtualenv venv -p python3.x && source venv/bin/activate
+uv venv --python 3.12
+source .venv/bin/activate
 ```
 
 Install `microwler` from PyPI:
 ```bash
-pip install microwler
+uv pip install microwler
 ```
 
 ## Usage
 ### CLI (recommended)
 #### Create a project
-Make sure you created a workspace as suggested in the [previous section](#installation). 
+Make sure you created a workspace as suggested in the [previous section](#installation).
 Within that folder, create a new project providing a name and the URL to start crawling with:
 ```bash
 new quotes https://quotes.toscrape.com/
@@ -61,12 +62,19 @@ for page in crawler.results:
 #### Run from asyncio app
 
 If you want to start your crawler from an application that is already running an `asyncio` event loop,
-you should use `Microwler.run_async(loop)`. Here's a simple example:
+you should use `Microwler.run_async()`. Here's a simple example:
 
 ```python
-...
-crawler = Microwler(...)
-loop = asyncio.get_event_loop()
-await crawler.run_async(event_loop=loop)
-print(crawler.results)
+import asyncio
+
+from microwler import Microwler
+
+
+async def main():
+    crawler = Microwler("https://quotes.toscrape.com/")
+    await crawler.run_async()
+    print(crawler.results)
+
+
+asyncio.run(main())
 ```

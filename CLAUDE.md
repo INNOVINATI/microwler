@@ -2,51 +2,65 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Tooling Standard
+
+- Python `3.12+` only.
+- Use Astral tools for Python and backend workflows:
+  - `uv` for dependency management, environments, packaging, and publishing
+  - `ruff` for linting and formatting
+  - `ty` for static type checking
+- Use `prek` for local hooks and repo hygiene automation.
+
 ## Commands
 
 ```bash
-# Install all dependencies including dev tools (requires uv: https://docs.astral.sh/uv/)
+# Install all dependencies including dev tools
 uv sync --group dev
 
-# Run all tests
+# Install local hooks
+uv run prek install
+uv run prek install-hooks
+
+# Run the full local gate
+uv run prek run --all-files
+uv run ty check microwler/
 uv run pytest
+uv build --no-sources
+uv run zensical build
 
 # Run a single test
 uv run pytest tests/test_crawl.py::test_basic_crawl
 
-# Lint (check only)
-uv run ruff check microwler/ tests/
-
-# Lint + auto-fix
-uv run ruff check --fix microwler/ tests/
-
-# Format
-uv run ruff format microwler/ tests/
-
-# Type check
-uv run ty check microwler/
-
 # Serve documentation locally
 uv run zensical serve
-
-# Build documentation
-uv run zensical build
-
-# Build distribution package
-uv build
 ```
 
-## Branch Model
+## Branch And Commit Rules
 
-Trunk-based development. `main` is the only long-lived branch.
+Microwler uses trunk-based development. `main` is the only long-lived branch.
 
 | Branch | Purpose |
 |---|---|
-| `main` | Protected. Always shippable. PRs require passing CI. |
-| `feat/*`, `fix/*`, `chore/*`, `docs/*`, `ci/*`, `refactor/*` | Short-lived topic branches — PR directly to `main` |
+| `main` | Protected. Always shippable. |
+| `feat/*`, `fix/*`, `chore/*`, `docs/*`, `ci/*`, `refactor/*` | Short-lived topic branches targeting `main` |
 
-All commits must follow **Conventional Commits** (`feat:`, `fix:`, `chore:`, `docs:`, `ci:`, etc.).
-Release Please parses these to auto-bump versions and generate CHANGELOG.md.
+All commits must use Conventional Commits. Prefer one commit per completed step. Do not add `Co-authored-by` trailers to maintainer-generated commits.
+
+## CI And Release Flow
+
+- CI runs on pull requests and pushes to `main`.
+- The expected validation suite is:
+  - `uv run prek run --all-files`
+  - `uv run ty check microwler/`
+  - `uv run pytest`
+  - `uv build --no-sources`
+  - `uv run zensical build`
+- Releases use Semantic Versioning, Keep a Changelog sections, and Release Please.
+- Release Please manages the release PR and changelog updates.
+- PyPI publication uses trusted publishing from `.github/workflows/release-please.yml`.
+- Repository-level prerequisites:
+  - `RELEASE_PLEASE_TOKEN` GitHub Actions secret
+  - PyPI trusted publisher entry for this repository/workflow
 
 ## Architecture
 
@@ -64,15 +78,16 @@ Python script, or HTTP API.
   or callables) and transformers to scraped data, then discards raw HTML (unless `keep_source=True`).
 
 - **`scrape.py`** — Built-in selector functions (`title`, `headings`, `paragraphs`, `meta`, `emails`,
-  `images`, `canonicals`, `schemas`). Built on `parsel.Selector`.
+  `images`, `canonicals`, `schemas`). Built on `parsel.Selector`. Importable as `from microwler import scrape`.
 
 - **`export.py`** — Plugin-based export system. `BaseExporter` is the abstract base; `FileExporter`
   handles file I/O. Built-ins: `JSONExporter`, `CSVExporter`, `HTMLExporter`. Users extend
   `BaseExporter` for custom outputs.
 
 - **`settings.py`** — `Settings` class. All mutable defaults are per-instance (not class-level) to
-  prevent shared state. Key fields: `link_filter`, `max_depth` (default 10), `max_concurrency`
-  (default 20), `caching`, `delta_crawl`, `exporters`. Enabling `delta_crawl` auto-enables caching.
+  prevent shared state. Keys: `link_filter` (XPath, default `//a/@href`), `max_depth` (10),
+  `max_concurrency` (20), `dns_providers`, `language`, `caching`, `delta_crawl`, `export_to`,
+  `exporters`. Enabling `delta_crawl` auto-enables `caching`.
 
 - **`utils.py`** — URL normalization (sorted query params, no fragments, absolute URLs), header
   helpers, and misc utilities.
@@ -92,12 +107,12 @@ Python script, or HTTP API.
 
 ### Data flow
 
-```
+```text
 User defines Microwler subclass (project file)
-  → crawler.py fetches URLs asynchronously (aiohttp)
-  → page.py scrapes each response using selectors from scrape.py
-  → results collected in _results/_cache
-  → export.py writes output via configured exporters
+  -> crawler.py fetches URLs asynchronously (aiohttp)
+  -> page.py scrapes each response using selectors from scrape.py
+  -> results collected in _results/_cache
+  -> export.py writes output via configured exporters
 ```
 
 ### File conventions
