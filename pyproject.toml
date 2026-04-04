@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "microwler"
-version = "0.1.8"
+version = "0.1.9"
 description = "A micro-framework for asynchronous deep crawls and web scraping written in Python"
 readme = "README.md"
 license = { file = "LICENSE" }
